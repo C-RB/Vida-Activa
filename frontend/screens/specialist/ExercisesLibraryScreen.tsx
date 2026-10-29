@@ -57,7 +57,7 @@ export default function ExercisesLibraryScreen() {
 
   const handleAdd = (exercise: Exercise) => {
     router.push({
-      pathname: routes.createRutine as any,
+      pathname: routes.createRoutine as any,
       params: {
         patientId,
         selectedExercise: JSON.stringify(exercise),

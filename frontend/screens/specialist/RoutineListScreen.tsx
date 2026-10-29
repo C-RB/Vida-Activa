@@ -85,7 +85,7 @@ export default function RoutineListScreen() {
   if (!fontsLoaded) return null;
 
   const handleCreate = () => {
-    router.push({ pathname: routes.createRutine as any, params: { patientId } });
+    router.push({ pathname: routes.createRoutine as any, params: { patientId } });
   };
 
   const handleDelete = (routine: RoutineWithExercises) => {

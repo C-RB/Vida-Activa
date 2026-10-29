@@ -1,6 +1,6 @@
 import React from "react";
-import CreateRutineScreen from "@/screens/specialist/CreateRutineScreen";
+import CreateRoutineScreen from "@/screens/specialist/CreateRoutineScreen";
 
-export default function CreateRutine() {
-  return <CreateRutineScreen />;
+export default function CreateRoutine() {
+  return <CreateRoutineScreen />;
 }
