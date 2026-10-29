@@ -26,37 +26,30 @@ import { MIN_VISIBILITY } from '../../validation/landmarkIndices';
 import { updateExerciseProgress } from '../../services/sessionService';
 
 import { Colors, GradientColors } from "../../constants/theme";
-// ─── Constants ────────────────────────────────────────────────────────────────
 
-// MediaPipe BlazePose skeleton: only body joints, skip face/feet noise
+// MediaPipe BlazePose skeleton: body joints only, no face or feet.
 const CONNECTIONS: [number, number][] = [
-  [11, 12],           // hombros
-  [11, 13], [13, 15], // brazo izquierdo
-  [12, 14], [14, 16], // brazo derecho
-  [11, 23], [12, 24], // tronco
-  [23, 24],           // caderas
-  [23, 25], [25, 27], // pierna izquierda
-  [24, 26], [26, 28], // pierna derecha
+  [11, 12],           // shoulders
+  [11, 13], [13, 15], // left arm
+  [12, 14], [14, 16], // right arm
+  [11, 23], [12, 24], // trunk
+  [23, 24],           // hips
+  [23, 25], [25, 27], // left leg
+  [24, 26], [26, 28], // right leg
 ];
 
-// Solo dibujamos los landmarks que aportan al esqueleto/feedback: los que aparecen
-// en CONNECTIONS (juntas del cuerpo) más NOSE(0) para la referencia de cabeza.
-// Evita pintar cara (1-10), manos (17-22) y pies (29-32) que ningún validador usa.
+// Only landmarks used by the skeleton and feedback: the CONNECTIONS joints plus NOSE (0) for head reference.
 const DRAW_LANDMARK_INDICES: number[] = Array.from(new Set([0, ...CONNECTIONS.flat()]));
 
-const FRAME_INTERVAL = 4; // procesa 1 de cada 4 frames → ~7 fps a 30 fps cámara
+const FRAME_INTERVAL = 4; // process 1 of every 4 frames (~7 fps from a 30 fps camera)
 
-// Objetivo de reps por serie (hoy fijo, igual que el "/10" que muestra la UI).
+// Target reps per series (fixed for now, matching the "/10" in the UI).
 const REP_GOAL = 10;
 
-// Initialized once at module level — cheap, just a JS object
 const posePlugin = VisionCameraProxy.initFrameProcessorPlugin('detectPose', {});
 
-// ─── Skeleton overlay ─────────────────────────────────────────────────────────
-// Los landmarks viven en el estado INTERNO de este componente y se actualizan vía
-// ref (update()), no por props del root. Así, al llegar un frame solo re-renderiza
-// el esqueleto y nunca ActiveExerciseScreen. width/height siguen llegando por props
-// (cameraSize del root). React.memo evita re-render cuando width/height no cambian.
+// Landmarks live in this component's own state and are updated through a ref (update()), so a new frame
+// only re-renders the skeleton and never ActiveExerciseScreen. width/height still come as props.
 export type PoseSkeletonHandle = { update: (lms: Landmark[]) => void };
 
 const PoseSkeleton = React.memo(
@@ -70,15 +63,13 @@ const PoseSkeleton = React.memo(
 
     if (landmarks.length === 0 || width === 0) return null;
 
-    // El bitmap ya llega rotado 270° desde Kotlin (portrait nativo), por lo que
-    // MediaPipe devuelve coordenadas en portrait y ya NO hay que intercambiar x↔y.
-    // Solo se aplica el espejo selfie en X de la cámara frontal.
-    const sx = (lm: Landmark) => (1 - lm.x) * width;        // espejo selfie en X
-    const sy = (lm: Landmark) => lm.y * height;             // y directo (portrait)
+    // The bitmap arrives rotated 270° from Kotlin (native portrait), so MediaPipe returns portrait
+    // coordinates and x/y must not be swapped. Only the front camera's selfie mirror on X is applied.
+    const sx = (lm: Landmark) => (1 - lm.x) * width;        // selfie mirror on X
+    const sy = (lm: Landmark) => lm.y * height;             // y as is (portrait)
 
     return (
       <Svg style={StyleSheet.absoluteFill} width={width} height={height}>
-        {/* Líneas del esqueleto */}
         {CONNECTIONS.map(([a, b]) => {
           const lA = landmarks[a];
           const lB = landmarks[b];
@@ -97,7 +88,6 @@ const PoseSkeleton = React.memo(
           );
         })}
 
-        {/* Puntos de cada articulación (solo los índices relevantes) */}
         {DRAW_LANDMARK_INDICES.map((i) => {
           const lm = landmarks[i];
           if (!lm || lm.visibility < MIN_VISIBILITY) return null;
@@ -119,50 +109,14 @@ const PoseSkeleton = React.memo(
   ),
 );
 
-// ─── Pendiente: flujo completo del ejercicio ─────────────────────────────────
-//
-// La pantalla hoy hace tres cosas: pide cámara, corre el frame processor con
-// el validador del ejercicio activo, y muestra reps + feedback. Lo que falta
-// para tener el flujo end-to-end de la rutina:
-//
-//   1. Avance de serie:
-//      Cuando `(routine.currentReps + localReps) >= routine.totalReps`,
-//      cerrar la serie actual: persistir reps al back, resetear `localReps`,
-//      incrementar `currentSeries`, y entrar en un estado 'rest' con
-//      temporizador (descanso entre series).
-//
-//   2. Avance de ejercicio:
-//      Cuando se completen todas las series del ejercicio actual, pasar al
-//      siguiente ejercicio de la rutina. Esto implica que `getActiveRoutine`
-//      eventualmente devuelva una lista de ejercicios y un índice, no un
-//      único ejercicio plano como ahora.
-//
-//   3. Fin de rutina:
-//      Al terminar el último ejercicio, navegar a `/post-exercise-survey`
-//      automáticamente (hoy lo dispara el botón "Terminar" manualmente).
-//
-//   4. Botón "Pausar":
-//      Conectar handler que congele `isActive` de la cámara y pause la
-//      máquina de estados del validador (sin perder el contador).
-//
-//   5. Persistencia de progreso:
-//      Cada rep completada y cada serie cerrada deberían reportarse al back
-//      (servicio nuevo en `services/`), no solo quedar en memoria.
-//
-//   6. Manejo de "salida sin completar":
-//      Si el usuario aprieta back o "Terminar" antes de completar, decidir
-//      si se descarta lo hecho o se reporta parcial.
-//
-// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ActiveExerciseScreen() {
   const router = useRouter();
 
   const { index, sessionId, seIds } = useLocalSearchParams();
   const exercise = EXERCISES[Number(index ?? 0)];
 
-  // seIds = ids reales de session_exercises (CSV, ordenados por order_index)
-  // creados en POST /api/sessions. Resolvemos el del ejercicio actual por índice
-  // (EXERCISES y session_exercises comparten el mismo orden order_index).
+  // seIds: real session_exercise ids (CSV, ordered by order_index) created by POST /api/sessions;
+  // the current exercise's id is resolved by index (EXERCISES and session_exercises share the order).
   const sessionExerciseId =
     typeof seIds === 'string' && seIds.length > 0
       ? seIds.split(',')[Number(index ?? 0)]
@@ -176,8 +130,7 @@ export default function ActiveExerciseScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('front');
 
-  // Fijamos el formato más cercano a 640×480: MediaPipe reescala a 256×256 igual,
-  // así que convertir frames 1080p sería trabajo desperdiciado en el frame processor.
+  // Pick the format closest to 640×480: MediaPipe rescales to 256×256 anyway, so 1080p frames would be wasted work.
   const format = useCameraFormat(device, [
     { videoResolution: { width: 640, height: 480 } },
   ]);
@@ -187,31 +140,25 @@ export default function ActiveExerciseScreen() {
   const [poseFeedbackOk, setPoseFeedbackOk] = useState<boolean>(true);
   const [localReps, setLocalReps]   = useState(0);
 
-  // ── Sesión backend (POST /api/sessions) ────────────────────────────────────
   const [sessionLoading, setSessionLoading] = useState(true);
   const [sessionError, setSessionError]     = useState<string | null>(null);
   const [progressError, setProgressError]   = useState<string | null>(null);
 
-  // Los landmarks NO viven en el estado del root: se envían directo al esqueleto
-  // por ref para que un frame nuevo no re-renderice ActiveExerciseScreen.
+  // Landmarks are not root state: they go straight to the skeleton by ref so a new frame doesn't re-render this screen.
   const skeletonRef = useRef<PoseSkeletonHandle>(null);
 
-  // Acumulador autoritativo de reps detectadas: useRef para no disparar render
-  // por frame; useState arriba sólo refleja el valor para el badge.
+  // Authoritative detected-reps accumulator: a ref avoids a render per frame; the state above only feeds the badge.
   const localRepsRef = useRef(0);
 
-  // session_id devuelto por el POST y series ya persistidas: en refs para que el
-  // callback del frame processor lea siempre el valor vigente sin re-suscribirse.
+  // session_id from the POST and persisted series live in refs so the frame-processor callback always reads the current value.
   const sessionIdRef        = useRef<string | null>(null);
   const seriesCompletedRef  = useRef(0);
 
-  // Reset de reps locales al cambiar de ejercicio
   useEffect(() => {
     localRepsRef.current = 0;
     setLocalReps(0);
   }, [exercise.exerciseId]);
 
-  // ── Session initialized from previous screen ──────────────────────────────────
   const startSession = useCallback(() => {
     setSessionLoading(false);
     setSessionError(null);
@@ -224,7 +171,6 @@ export default function ActiveExerciseScreen() {
     startSession();
   }, [startSession]);
 
-  // ── Persistir progreso al cerrar una serie (PUT) ────────────────────────────
   const persistProgress = useCallback(
     async (seriesCompleted: number, repsCompleted: number) => {
       const sid = sessionIdRef.current;
@@ -244,10 +190,8 @@ export default function ActiveExerciseScreen() {
 
   const validator = useExerciseValidator(exercise.exerciseId, 1);
 
-  // ── Frame counter (worklet-safe shared value para throttle) ────────────────
   const frameCount = useSharedValue(0);
 
-  // ── Callback JS: actualiza state y deriva feedback ────────────────────────
   const onLandmarksDetected = useCallback((lms: Landmark[]) => {
     skeletonRef.current?.update(lms);
 
@@ -265,8 +209,7 @@ export default function ActiveExerciseScreen() {
       localRepsRef.current += 1;
       setLocalReps(localRepsRef.current);
 
-      // ¿Se cerró una serie? Cada REP_GOAL reps cuenta como una serie completada
-      // → persistir el progreso acumulado al backend.
+      // Every REP_GOAL reps closes a series: persist the accumulated progress to the backend.
       const seriesNow = Math.floor(localRepsRef.current / REP_GOAL);
       if (seriesNow > seriesCompletedRef.current) {
         seriesCompletedRef.current = seriesNow;
@@ -275,16 +218,13 @@ export default function ActiveExerciseScreen() {
     }
   }, [validator, persistProgress]);
 
-  // Bridge worklet → JS (estable entre renders gracias a useMemo)
   const onLandmarksJS = useMemo(
     () => Worklets.createRunOnJS(onLandmarksDetected),
     [onLandmarksDetected],
   );
 
-  // ── Frame processor ────────────────────────────────────────────────────────
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    // Throttle: solo procesa 1 de cada FRAME_INTERVAL frames
     frameCount.value += 1;
     if (frameCount.value % FRAME_INTERVAL !== 0) return;
 
@@ -298,7 +238,6 @@ export default function ActiveExerciseScreen() {
     setCameraSize({ width, height });
   }, []);
 
-  // ── Render guards ─────────────────────────────────────────────────────────
   if (!fontsLoaded) return null;
 
   if (!hasPermission) {
@@ -318,7 +257,7 @@ export default function ActiveExerciseScreen() {
     return <View style={styles.container}><ActivityIndicator size="large" /></View>;
   }
 
-  // Sesión iniciándose: bloqueamos hasta tener session_id (o un error que reintentar)
+  // Session starting: block until there is a session_id (or an error to retry)
   if (sessionLoading) {
     return (
       <LinearGradient colors={GradientColors as any} style={styles.permissionContainer}>
@@ -354,7 +293,6 @@ export default function ActiveExerciseScreen() {
         <View style={{ width: 30 }} />
       </View>
 
-      {/* ── Cámara a pantalla completa con controles superpuestos ──────── */}
       <View style={styles.content} onLayout={onCameraLayout}>
         <Camera
           style={StyleSheet.absoluteFill}
@@ -367,16 +305,13 @@ export default function ActiveExerciseScreen() {
           onLayout={onCameraLayout}
         />
 
-        {/* Overlay SVG de esqueleto */}
         <PoseSkeleton
           ref={skeletonRef}
           width={cameraSize.width}
           height={cameraSize.height}
         />
 
-        {/* ── Controles superpuestos en la parte inferior ─────────────── */}
         <View style={styles.controlsOverlay}>
-          {/* Aviso no bloqueante si falló el guardado de progreso */}
           {progressError && (
             <View style={[styles.feedbackBadge, { backgroundColor: Colors.danger }]}>
               <Ionicons name="cloud-offline-outline" size={26} color={Colors.onPrimary} style={{ marginRight: 10 }} />
@@ -384,7 +319,6 @@ export default function ActiveExerciseScreen() {
             </View>
           )}
 
-          {/* Badge de feedback */}
           {activeFeedback && (
             <View style={[
               styles.feedbackBadge,
@@ -432,15 +366,13 @@ export default function ActiveExerciseScreen() {
             onPress={() => {
               const currentIndex = Number(index ?? 0);
               if (currentIndex < EXERCISES.length - 1) {
-                // Propagar sessionId y seIds al siguiente ejercicio: sin esto el
-                // PUT de progreso queda sin ids del 2do ejercicio en adelante.
+                // Forward sessionId and seIds to the next exercise; without them the progress PUT has no ids from the 2nd exercise on.
                 const sid = sessionIdRef.current ?? '';
                 router.push(
                   `/instruction?index=${currentIndex + 1}&sessionId=${sid}&seIds=${seIds ?? ''}`
                 );
               } else {
-                // Pasamos el session_id para que la pantalla final pueda
-                // llamar a POST /api/sessions/{id}/complete.
+                // Pass session_id so the final screen can call POST /api/sessions/{id}/complete.
                 router.push({
                   pathname: '/post-exercise-survey',
                   params: { sessionId: sessionIdRef.current ?? '' },
@@ -456,7 +388,6 @@ export default function ActiveExerciseScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container:           { flex: 1 },
   permissionContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },

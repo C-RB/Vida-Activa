@@ -8,8 +8,6 @@ import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/them
 import { routes } from "../../router/routes";
 import { completeSession, getSessionById } from "../../services/sessionService";
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function ExerciseSessionCompletedScreen() {
   const router = useRouter();
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
@@ -17,9 +15,7 @@ export default function ExerciseSessionCompletedScreen() {
   const [completing, setCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
 
-  // Resumen real de la sesión. La sesión ya viene completada desde
-  // PostExerciseSurveyScreen, así que GET /api/sessions/{id} ya trae
-  // duration_minutes y los session_exercises con series_completed.
+  // The session arrives already completed from PostExerciseSurveyScreen, so GET /api/sessions/{id} has the duration and series.
   const [loadingStats, setLoadingStats] = useState(true);
   const [exercisesCount, setExercisesCount] = useState<number | null>(null);
   const [seriesCount, setSeriesCount] = useState<number | null>(null);
@@ -49,13 +45,13 @@ export default function ExerciseSessionCompletedScreen() {
 
   if (!fontsLoaded) return null;
 
-  // "—" cuando no hay dato real (sin sessionId o fallo de carga).
+  // "—" when there is no real data (no sessionId or the load failed).
   const fmt = (n: number | null) => (n != null ? `${n}` : "—");
 
   const handleComplete = async () => {
     setCompleteError(null);
 
-    // Sin session_id no hay nada que completar en el backend: solo navegamos.
+    // Without a session_id there is nothing to complete on the backend: just navigate.
     if (!sessionId) {
       router.replace(routes.patientHistory as any);
       return;
@@ -74,14 +70,12 @@ export default function ExerciseSessionCompletedScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerTitle}>Sesión completada</Text>
         <Text style={styles.bannerSubtitle}>Tu esfuerzo de hoy quedó registrado</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* ── Hero ── */}
         <View style={styles.heroCard}>
           <View style={styles.heroIcon}>
             <MaterialCommunityIcons name="trophy-outline" size={72} color={Colors.btnTeal} />
@@ -92,7 +86,6 @@ export default function ExerciseSessionCompletedScreen() {
           </Text>
         </View>
 
-        {/* ── Stats ── */}
         <Text style={styles.sectionTitle}>Resumen de la sesión</Text>
         <View style={styles.statsCard}>
           {loadingStats ? (
@@ -127,7 +120,6 @@ export default function ExerciseSessionCompletedScreen() {
           )}
         </View>
 
-        {/* ── Motivational ── */}
         <View style={styles.quoteCard}>
           <MaterialCommunityIcons name="heart-pulse" size={28} color={Colors.btnTeal} />
           <Text style={styles.quoteText}>
@@ -135,7 +127,6 @@ export default function ExerciseSessionCompletedScreen() {
           </Text>
         </View>
 
-        {/* ── Error de completado ── */}
         {completeError && (
           <View style={styles.errorCard}>
             <MaterialCommunityIcons name="alert-circle-outline" size={26} color={Colors.danger} />
@@ -143,7 +134,6 @@ export default function ExerciseSessionCompletedScreen() {
           </View>
         )}
 
-        {/* ── CTA ── */}
         <TouchableOpacity
           style={[styles.cta, completing && styles.ctaDisabled]}
           onPress={handleComplete}
@@ -160,8 +150,6 @@ export default function ExerciseSessionCompletedScreen() {
     </LinearGradient>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatRow({
   icon,
@@ -185,13 +173,10 @@ function StatRow({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerTitle: {
     fontSize: 28,
@@ -205,7 +190,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // ── Hero ──
   heroCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 20,
@@ -240,7 +224,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  // ── Stats ──
   sectionTitle: {
     fontSize: 22,
     fontFamily: Fonts.bold,
@@ -289,7 +272,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(23, 32, 51, 0.15)",
   },
 
-  // ── Quote ──
   quoteCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -309,7 +291,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  // ── CTA ──
   cta: {
     backgroundColor: Colors.btnPrimary,
     borderRadius: 18,
@@ -325,7 +306,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 
-  // ── Error ──
   errorCard: {
     flexDirection: "row",
     alignItems: "center",

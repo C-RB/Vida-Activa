@@ -5,7 +5,7 @@ import { ICONS, IconName } from "../../constants/icons";
 type Props = {
   name: IconName;
   size?: number;
-  // Reemplaza el color del trazo/relleno (solo para íconos de un solo color).
+  // Replaces the stroke/fill color (single-color icons only).
   color?: string;
 };
 

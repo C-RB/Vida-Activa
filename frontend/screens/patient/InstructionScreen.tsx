@@ -25,9 +25,7 @@ const VIDEO_MAP: Record<string, any> = {
   squat: require("../../assets/videos/squat.mp4"),
 };
 
-// Pasos genéricos de respaldo SOLO si el ejercicio no tiene `instructions` en el
-// backend. El catálogo (GET /api/exercises) sí las trae para los ejercicios
-// sembrados; este fallback cubre ejercicios nuevos que aún no tengan texto.
+// Generic fallback steps, used only when the backend exercise has no `instructions`.
 const FALLBACK_INSTRUCTIONS = [
   "Colócate en la posición inicial del ejercicio",
   "Realiza el movimiento de forma lenta y controlada",
@@ -35,8 +33,7 @@ const FALLBACK_INSTRUCTIONS = [
   "Vuelve a la posición inicial y repite",
 ];
 
-// Las instrucciones del backend vienen como un párrafo; lo partimos en oraciones
-// para mostrarlas como lista numerada (misma UI que antes).
+// Backend instructions arrive as one paragraph; split into sentences for the numbered list.
 const splitInstructions = (text: string): string[] =>
   text
     .split(/(?<=\.)\s+/)
@@ -50,10 +47,8 @@ export default function InstructionScreen() {
   const { index, sessionId, seIds } = useLocalSearchParams();
   const currentIndex = Number(index ?? 0);
 
-  // Opción B: re-consultamos la rutina activa (mismo patrón que PatientHome) en
-  // vez de arrastrar el objeto por params a través de instruction → active →
-  // instruction. El índice mapea a routine.exercises ordenado por order_index,
-  // igual orden que usa el backend para crear los session_exercises.
+  // Re-fetch the active routine instead of passing it through params across instruction → active → instruction.
+  // The index maps to routine.exercises ordered by order_index (the order the backend uses for session_exercises).
   const [routineExercise, setRoutineExercise] = useState<RoutineExercise | null>(null);
   const [catalog, setCatalog] = useState<Exercise | null>(null);
   const [totalExercises, setTotalExercises] = useState<number>(0);
@@ -89,8 +84,7 @@ export default function InstructionScreen() {
 
   if (!fontsLoaded) return null;
 
-  // exerciseId real para el video (slug toe_touch/leg_raise/...). Cae al
-  // constante EXERCISES por índice solo si la rutina aún no cargó.
+  // Real exerciseId for the video; falls back to EXERCISES by index while the routine loads.
   const exerciseId = routineExercise?.exercise_id ?? EXERCISES[currentIndex]?.exerciseId;
   const exerciseName =
     catalog?.name ??

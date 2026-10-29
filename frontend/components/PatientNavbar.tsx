@@ -8,7 +8,6 @@ import { useAppFonts } from "../hooks/useAppFonts";
 import Icon from "./ui/Icon";
 import type { IconName } from "../constants/icons";
 
-// v2 / Nav paciente: Inicio · Mi avance · Perfil.
 type Active = "home" | "history" | "profile";
 
 type Props = {

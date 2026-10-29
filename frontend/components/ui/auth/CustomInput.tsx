@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   container: { marginBottom: 16 },
   label: { fontFamily: 'InterRegular', fontSize: 16, marginBottom: 8, color: '#333' },
   input: {
-    backgroundColor: Colors.border, // Color del fondo de los inputs en tu imagen
+    backgroundColor: Colors.border,
     padding: 15,
     borderRadius: 8,
     borderWidth: 1,

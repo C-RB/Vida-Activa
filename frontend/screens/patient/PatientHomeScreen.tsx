@@ -32,7 +32,6 @@ const MONTHS_LONG = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
-// Franja semanal: lunes a domingo.
 const WEEK_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
 
 // "Sábado 24 de octubre"
@@ -43,10 +42,10 @@ const formatLongDate = (d: Date): string =>
 const formatAppointmentDate = (date: string): string =>
   formatLongDate(new Date(`${date}T00:00:00`));
 
-// 0 = lunes … 6 = domingo
+// 0 = Monday … 6 = Sunday
 const mondayIndex = (d: Date): number => (d.getDay() + 6) % 7;
 
-// Inicio (00:00) de la semana de `d`, con la semana comenzando el lunes.
+// Start (00:00) of the week of `d`, weeks starting on Monday.
 const startOfWeek = (d: Date): Date => {
   const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   s.setDate(s.getDate() - mondayIndex(s));
@@ -81,15 +80,13 @@ export default function PatientHomeScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Próxima cita presencial del paciente (si tiene alguna agendada).
   useEffect(() => {
     getNextAppointment()
       .then(setNextAppointment)
       .catch(() => setNextAppointment(null));
   }, []);
 
-  // Rutina de hoy, rutinas vigentes (días programados) y sesiones recientes.
-  // getActiveRoutine devuelve null (no excepción) cuando no hay rutina hoy.
+  // getActiveRoutine returns null (not an error) when there is no routine today.
   useEffect(() => {
     if (!patientId) {
       setLoading(false);
@@ -113,7 +110,6 @@ export default function PatientHomeScreen() {
       .finally(() => setLoading(false));
   }, [patientId]);
 
-  // Navega a la encuesta previa. Sin rutina activa hoy no hace nada.
   const goToSurvey = () => {
     if (!routine) return;
     router.push(`/previous-survey?routineId=${routine.id}`);
@@ -121,7 +117,6 @@ export default function PatientHomeScreen() {
 
   const today = useMemo(() => new Date(), []);
 
-  // Resumen de la semana: días con sesión completada y días programados.
   const week = useMemo(() => {
     const start = startOfWeek(today);
     const end = new Date(start);
@@ -159,7 +154,6 @@ export default function PatientHomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Barra superior */}
         <View style={styles.topBar}>
           <Icon name="logo" size={40} />
           <Text style={[Type.title2, styles.brand]}>Vida Activa</Text>
@@ -170,7 +164,6 @@ export default function PatientHomeScreen() {
           </View>
         </View>
 
-        {/* Saludo */}
         <View style={styles.greeting}>
           <Text style={[Type.title1, styles.textPrimary]}>
             {firstName ? `Hola, ${firstName}` : "Hola"}
@@ -180,7 +173,6 @@ export default function PatientHomeScreen() {
           </Text>
         </View>
 
-        {/* Próxima sesión */}
         <View style={styles.card}>
           {loading ? (
             <ActivityIndicator color={Colors.primary} />
@@ -225,7 +217,6 @@ export default function PatientHomeScreen() {
           )}
         </View>
 
-        {/* Esta semana */}
         {week.total > 0 && (
           <View style={styles.card}>
             <View style={styles.rowBetween}>
@@ -267,7 +258,6 @@ export default function PatientHomeScreen() {
           </View>
         )}
 
-        {/* Próxima cita presencial */}
         {nextAppointment && (
           <View style={[styles.card, styles.row]}>
             <View style={styles.infoBadge}>
