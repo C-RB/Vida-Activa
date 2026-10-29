@@ -1,94 +1,85 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  Animated,
-  Easing,
+  ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
-import { LinearGradient } from "expo-linear-gradient";
-import { SvgXml } from "react-native-svg";
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-  type HandlerStateChangeEvent,
-  type PanGestureHandlerEventPayload,
-} from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PatientNavbar from "../../components/PatientNavbar";
+import Icon from "../../components/ui/Icon";
+import Button from "../../components/ui/Button";
+import { Colors, Radius, Type } from "../../constants/theme";
+import { useAppFonts } from "../../hooks/useAppFonts";
 import {
   getNextAppointment,
   NextAppointment,
 } from "../../services/appointmentService";
 import {
   getActiveRoutine,
+  getRoutinesByPatient,
   RoutineWithExercises,
 } from "../../services/routineService";
+import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
 
-import { Colors, GradientColors } from "../../constants/theme";
-const WEEKDAYS_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const MONTHS_SHORT = [
-  "ene", "feb", "mar", "abr", "may", "jun",
-  "jul", "ago", "sep", "oct", "nov", "dic",
+const WEEKDAYS_LONG = [
+  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado",
 ];
+const MONTHS_LONG = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+// Franja semanal: lunes a domingo.
+const WEEK_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
 
-// "2026-06-25" → "Jue 25 jun"
-const formatAppointmentDate = (date: string): string => {
-  const d = new Date(`${date}T00:00:00`);
-  return `${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+// "Sábado 24 de octubre"
+const formatLongDate = (d: Date): string =>
+  `${WEEKDAYS_LONG[d.getDay()]} ${d.getDate()} de ${MONTHS_LONG[d.getMonth()]}`;
+
+// "2026-10-29" → "Jueves 29 de octubre"
+const formatAppointmentDate = (date: string): string =>
+  formatLongDate(new Date(`${date}T00:00:00`));
+
+// 0 = lunes … 6 = domingo
+const mondayIndex = (d: Date): number => (d.getDay() + 6) % 7;
+
+// Inicio (00:00) de la semana de `d`, con la semana comenzando el lunes.
+const startOfWeek = (d: Date): Date => {
+  const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  s.setDate(s.getDate() - mondayIndex(s));
+  return s;
 };
 
-const TRIANGULOS_SVG = `<svg width="312" height="256" viewBox="0 0 312 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d_202_395)">
-<path d="M152.22 3.84887C154.193 1.7597 157.517 1.75971 159.49 3.84888L282.865 134.48C285.876 137.669 283.616 142.914 279.23 142.914H32.4803C28.0943 142.914 25.8337 137.669 28.8452 134.48L152.22 3.84887Z" fill="#1D5FD1"/>
-</g>
-<g filter="url(#filter1_d_202_395)">
-<path d="M152.22 68.9946C154.193 66.9055 157.517 66.9055 159.49 68.9946L282.865 199.626C285.876 202.815 283.616 208.059 279.23 208.059H32.4803C28.0943 208.059 25.8337 202.815 28.8452 199.626L152.22 68.9946Z" fill="#E8F0FE" fill-opacity="0.93" shape-rendering="crispEdges"/>
-</g>
-<defs>
-<filter id="filter0_d_202_395" x="23.4703" y="2.28198" width="264.769" height="148.632" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dy="4"/>
-<feGaussianBlur stdDeviation="2"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_202_395"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_202_395" result="shape"/>
-</filter>
-<filter id="filter1_d_202_395" x="23.4703" y="67.4277" width="264.769" height="148.632" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dy="4"/>
-<feGaussianBlur stdDeviation="2"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_202_395"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_202_395" result="shape"/>
-</filter>
-</defs>
-</svg>`;
+// "10:00:00" → "10:00"
+const shortTime = (t: string): string => t.slice(0, 5);
+
+const initialsOf = (fullName: string): string =>
+  fullName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
 
 export default function PatientHomeScreen() {
   const router = useRouter();
-  const [showNotification, setShowNotification] = useState(true);
-  const [nextAppointment, setNextAppointment] = useState<NextAppointment | null>(null);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const triangleAnim = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
+  const fontsLoaded = useAppFonts();
 
+  const patient = getSession()?.patient;
+  const patientId = patient?.id;
+  const fullName = patient?.fullName ?? "";
+  const firstName = fullName.split(" ")[0] ?? "";
+
+  const [nextAppointment, setNextAppointment] =
+    useState<NextAppointment | null>(null);
   const [routine, setRoutine] = useState<RoutineWithExercises | null>(null);
+  const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   // Próxima cita presencial del paciente (si tiene alguna agendada).
   useEffect(() => {
@@ -97,219 +88,295 @@ export default function PatientHomeScreen() {
       .catch(() => setNextAppointment(null));
   }, []);
 
-  // Carga la rutina vigente para hoy del paciente logueado. getActiveRoutine
-  // devuelve null (no excepcion) cuando el backend responde 404 sin rutina.
+  // Rutina de hoy, rutinas vigentes (días programados) y sesiones recientes.
+  // getActiveRoutine devuelve null (no excepción) cuando no hay rutina hoy.
   useEffect(() => {
-    const patientId = getSession()?.patient?.id;
     if (!patientId) {
       setLoading(false);
       return;
     }
-    getActiveRoutine(patientId)
-      .then(setRoutine)
-      .catch((e) => console.error("Error fetching active routine:", e))
+    Promise.all([
+      getActiveRoutine(patientId).catch((e) => {
+        console.error("Error fetching active routine:", e);
+        return null;
+      }),
+      getRoutinesByPatient(patientId).catch(() => []),
+      getPatientById(patientId)
+        .then((p) => p.sessions)
+        .catch(() => [] as Session[]),
+    ])
+      .then(([active, all, recent]) => {
+        setRoutine(active);
+        setRoutines(all);
+        setSessions(recent);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [patientId]);
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(triangleAnim, {
-          toValue: -18,
-          duration: 750,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(triangleAnim, {
-          toValue: 0,
-          duration: 750,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [triangleAnim]);
-
-  const dismissNotification = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => setShowNotification(false));
-  };
-
-  // Navega a la encuesta previa. Si no hay rutina activa hoy, no hace nada
-  // (ni el tap ni el swipe deben navegar sin rutina).
+  // Navega a la encuesta previa. Sin rutina activa hoy no hace nada.
   const goToSurvey = () => {
     if (!routine) return;
     router.push(`/previous-survey?routineId=${routine.id}`);
   };
 
-  // Swipe hacia arriba (sentido de la animacion de los triangulos) o hacia la
-  // derecha dispara la misma accion que el tap.
-  const handleSwipe = (
-    e: HandlerStateChangeEvent<PanGestureHandlerEventPayload>
-  ) => {
-    if (e.nativeEvent.state === State.END) {
-      const { translationX, translationY } = e.nativeEvent;
-      if (translationY < -50 || translationX > 50) {
-        goToSurvey();
-      }
-    }
-  };
+  const today = useMemo(() => new Date(), []);
+
+  // Resumen de la semana: días con sesión completada y días programados.
+  const week = useMemo(() => {
+    const start = startOfWeek(today);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+
+    const done = new Set<number>();
+    sessions.forEach((s) => {
+      if (!s.completed || !s.dateIso) return;
+      const d = new Date(s.dateIso);
+      if (d >= start && d < end) done.add(mondayIndex(d));
+    });
+
+    const planned = new Set<number>();
+    routines.forEach((r) => {
+      const from = new Date(`${r.start_date}T00:00:00`);
+      const to = new Date(`${r.end_date}T23:59:59`);
+      if (from < end && to >= start) planned.add((r.day_of_week - 1) % 7);
+    });
+
+    return {
+      done,
+      total: Math.max(planned.size, done.size),
+      todayIdx: mondayIndex(today),
+    };
+  }, [sessions, routines, today]);
 
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {showNotification && nextAppointment && (
-        <Animated.View style={[styles.notification, { opacity: fadeAnim }]}>
-          <MaterialCommunityIcons name="calendar-clock" size={52} color={Colors.onPrimary} />
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationTitle}>Próxima cita presencial</Text>
-            <Text style={styles.notificationBody}>
-              {formatAppointmentDate(nextAppointment.date)} - {nextAppointment.time}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 8 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Barra superior */}
+        <View style={styles.topBar}>
+          <Icon name="logo" size={40} />
+          <Text style={[Type.title2, styles.brand]}>Vida Activa</Text>
+          <View style={styles.avatar}>
+            <Text style={[Type.bodyStrong, styles.avatarText]}>
+              {initialsOf(fullName)}
             </Text>
           </View>
-          <TouchableOpacity style={styles.closeButton} onPress={dismissNotification}>
-            <MaterialCommunityIcons name="close" size={26} color={Colors.onPrimary} />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+        </View>
 
-      <View style={styles.content}>
-        <Text style={styles.welcomeText}>
-          Bienvenido iniciemos{"\n"}el entrenamiento
-        </Text>
-
-        {/* Nombre real de la rutina vigente para hoy (o estado vacio). */}
-        {loading ? (
-          <ActivityIndicator size="small" color={Colors.textPrimary} style={{ marginTop: 12 }} />
-        ) : routine ? (
-          <Text style={styles.routineName}>{routine.name}</Text>
-        ) : (
-          <Text style={styles.emptyRoutine}>
-            No tienes rutina programada para hoy
+        {/* Saludo */}
+        <View style={styles.greeting}>
+          <Text style={[Type.title1, styles.textPrimary]}>
+            {firstName ? `Hola, ${firstName}` : "Hola"}
           </Text>
+          <Text style={[Type.body, styles.textSecondary]}>
+            {formatLongDate(today)}
+          </Text>
+        </View>
+
+        {/* Próxima sesión */}
+        <View style={styles.card}>
+          {loading ? (
+            <ActivityIndicator color={Colors.primary} />
+          ) : routine ? (
+            <>
+              <View style={styles.row}>
+                <Icon name="bell" size={52} />
+                <View style={styles.flex}>
+                  <Text style={[Type.secondary, styles.textSecondary]}>
+                    Su próxima sesión
+                  </Text>
+                  <Text style={[Type.title2, styles.textPrimary]}>
+                    Hoy a las {shortTime(routine.scheduled_time)}
+                  </Text>
+                  <Text
+                    style={[Type.secondary, styles.textSecondary]}
+                    numberOfLines={1}
+                  >
+                    {routine.name}
+                  </Text>
+                </View>
+              </View>
+              <Button
+                title="Empezar ahora"
+                variant="soft"
+                height={48}
+                onPress={goToSurvey}
+              />
+            </>
+          ) : (
+            <View style={styles.row}>
+              <Icon name="bell" size={52} />
+              <View style={styles.flex}>
+                <Text style={[Type.secondary, styles.textSecondary]}>
+                  Su próxima sesión
+                </Text>
+                <Text style={[Type.bodyStrong, styles.textPrimary]}>
+                  Hoy no tiene sesión programada
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Esta semana */}
+        {week.total > 0 && (
+          <View style={styles.card}>
+            <View style={styles.rowBetween}>
+              <Text style={[Type.bodyStrong, styles.textPrimary]}>
+                Esta semana
+              </Text>
+              <Text style={[Type.secondary, styles.textSecondary]}>
+                {week.done.size} de {week.total}{" "}
+                {week.total === 1 ? "sesión" : "sesiones"}
+              </Text>
+            </View>
+            <View style={styles.rowBetween}>
+              {WEEK_LETTERS.map((letter, i) => {
+                const isDone = week.done.has(i);
+                const isToday = i === week.todayIdx;
+                return (
+                  <View key={i} style={styles.dayItem}>
+                    <View
+                      style={[
+                        styles.dayCircle,
+                        isDone && styles.dayCircleDone,
+                        isToday && !isDone && styles.dayCircleToday,
+                      ]}
+                    >
+                      {isDone && <Icon name="check" size={20} />}
+                    </View>
+                    <Text
+                      style={[
+                        Type.label,
+                        { color: isToday ? Colors.primary : Colors.textSecondary },
+                      ]}
+                    >
+                      {letter}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
         )}
 
-        <PanGestureHandler onHandlerStateChange={handleSwipe}>
-          <View style={styles.swipeArea}>
-            <Animated.View
-              style={[
-                styles.triangles,
-                { transform: [{ translateY: triangleAnim }] },
-              ]}
-            >
-              <SvgXml xml={TRIANGULOS_SVG} width={280} height={230} />
-            </Animated.View>
-
-            {routine && (
-              <TouchableOpacity onPress={goToSurvey}>
-                <Text style={styles.slideText}>Desliza{"\n"}Para iniciar</Text>
-              </TouchableOpacity>
-            )}
+        {/* Próxima cita presencial */}
+        {nextAppointment && (
+          <View style={[styles.card, styles.row]}>
+            <View style={styles.infoBadge}>
+              <Icon name="calendar" size={30} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={[Type.bodyStrong, styles.textPrimary]}>
+                Próxima cita presencial
+              </Text>
+              <Text style={[Type.secondary, styles.textSecondary]}>
+                {formatAppointmentDate(nextAppointment.date)} ·{" "}
+                {nextAppointment.time}
+              </Text>
+            </View>
           </View>
-        </PanGestureHandler>
-      </View>
+        )}
+      </ScrollView>
 
       <PatientNavbar active="home" />
-
-      <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
-        <MaterialCommunityIcons name="home-outline" size={24} color={Colors.textPrimary} />
-      </TouchableOpacity>
-    </LinearGradient>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  notification: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-    margin: 20,
-    padding: 15,
-  },
-  notificationText: {
-    flex: 1,
-    marginLeft: 12,
-    paddingRight: 24,
-  },
-  notificationTitle: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
-    color: Colors.onPrimary,
-  },
-  notificationBody: {
-    fontSize: 20,
-    fontFamily: "InterRegular",
-    color: Colors.onPrimary,
-    marginTop: 2,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 8,
-    right: 10,
-    padding: 6,
+    backgroundColor: Colors.background,
   },
   content: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    gap: 20,
+  },
+  flex: {
     flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 20,
   },
-  welcomeText: {
-    fontSize: 32,
-    fontFamily: "InterSemiBold",
+  textPrimary: {
     color: Colors.textPrimary,
-    textAlign: "center",
-    marginTop: 30,
-    lineHeight: 40,
   },
-  routineName: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
+  textSecondary: {
+    color: Colors.textSecondary,
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  brand: {
+    flex: 1,
+    color: Colors.textPrimary,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
     color: Colors.primary,
-    textAlign: "center",
-    marginTop: 12,
   },
-  emptyRoutine: {
-    fontSize: 18,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-    textAlign: "center",
-    marginTop: 12,
-    paddingHorizontal: 20,
+  greeting: {
+    gap: 4,
   },
-  swipeArea: {
-    alignItems: "center",
-  },
-  triangles: {
-    alignItems: "center",
-  },
-  slideText: {
-    fontSize: 28,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-    textAlign: "center",
-    marginTop: 20,
-    lineHeight: 36,
-  },
-  backToSplash: {
-    position: "absolute",
-    top: 50,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  card: {
     backgroundColor: Colors.surface,
     borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radius.card,
+    padding: 20,
+    gap: 14,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  rowBetween: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  dayItem: {
+    alignItems: "center",
+    gap: 6,
+  },
+  dayCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dayCircleDone: {
+    backgroundColor: Colors.primarySoft,
+  },
+  dayCircleToday: {
+    borderWidth: 2,
     borderColor: Colors.primary,
+  },
+  infoBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.infoSoft,
     alignItems: "center",
     justifyContent: "center",
   },

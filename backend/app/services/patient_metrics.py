@@ -75,6 +75,7 @@ def get_patient_metrics_and_sessions(db: Session, patient_id: str):
                 name=r.name if r and r.name else "Sesión",
                 duration=duration_str,
                 date=date_str,
+                dateIso=s.date.isoformat() if s.date else None,
                 completed=s.is_completed or False
             )
         )

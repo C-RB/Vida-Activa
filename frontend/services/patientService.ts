@@ -20,6 +20,7 @@ export interface Session {
   name: string;
   duration: string;
   date: string;
+  dateIso?: string | null; // ISO 8601, para agrupar por día
   completed: boolean;
 }
 

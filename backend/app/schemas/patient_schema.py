@@ -7,6 +7,7 @@ class SessionItem(BaseModel):
     name: str
     duration: str
     date: str
+    dateIso: Optional[str] = None
     completed: bool
 
 class ComplianceMetrics(BaseModel):
