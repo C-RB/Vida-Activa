@@ -15,14 +15,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
 import AdminNavbar from "../../components/AdminNavbar";
-import { listUsers, setUserStatus, AdminUser, RoleEs } from "../../services/userService";
+import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
-const ROLES: RoleEs[] = ["admin", "especialista", "paciente"];
+const ROLES: UserRoleKey[] = ["admin", "specialist", "patient"];
 
 // Left-border accent: grey when inactive, red for admins, teal otherwise.
-const borderColorFor = (role: RoleEs, isActive: boolean) => {
+const borderColorFor = (role: UserRoleKey, isActive: boolean) => {
   if (!isActive) return "#A9A9A9";
   return role === "admin" ? Colors.warning : Colors.primary;
 };
@@ -205,7 +205,7 @@ export default function AdminUsersScreen() {
                     <Text style={[
                       styles.roleText,
                       user.role === 'admin' && { color: Colors.danger }
-                    ]}>{user.role}</Text>
+                    ]}>{ROLE_LABEL[user.role]}</Text>
                   </View>
 
                   <View style={styles.actionsContainer}>
@@ -290,7 +290,7 @@ export default function AdminUsersScreen() {
                       <Text style={[
                         styles.rolePillText,
                         editingUser.role === role && styles.rolePillTextActive
-                      ]}>{role}</Text>
+                      ]}>{ROLE_LABEL[role]}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>

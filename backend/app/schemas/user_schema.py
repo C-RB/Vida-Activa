@@ -4,16 +4,15 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from app.models.user_model import UserRole
 
-# Maps frontend Spanish role names to backend enum values
 _ROLE_MAP = {
-    "paciente": UserRole.PATIENT,
-    "especialista": UserRole.SPECIALIST,
+    "patient": UserRole.PATIENT,
+    "specialist": UserRole.SPECIALIST,
     "admin": UserRole.ADMIN,
 }
 
 
 def role_from_str(value: str) -> UserRole:
-    """Resolve a role from either a Spanish label or the enum value itself."""
+    """Resolve a role from its lowercase key or the enum value itself."""
     normalized = value.strip().lower()
     if normalized in _ROLE_MAP:
         return _ROLE_MAP[normalized]
@@ -23,7 +22,7 @@ def role_from_str(value: str) -> UserRole:
 class CreateUserRequest(BaseModel):
     fullName: str
     email: EmailStr
-    role: str  # accepts 'paciente', 'especialista', 'PATIENT', 'SPECIALIST', etc.
+    role: str  # accepts 'patient', 'specialist', 'admin' (any case)
     # Optional role-specific fields
     rut: Optional[str] = None
     specialty: Optional[str] = None
