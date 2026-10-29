@@ -16,6 +16,8 @@ import { routes } from "../../router/routes";
 import { getExercises, Exercise } from "../../services/exerciseService";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import ExerciseCard from "../../components/specialist/ExerciseCard";
+import StateMessage from "../../components/ui/StateMessage";
 export default function ExercisesLibraryScreen() {
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
   const router = useRouter();
@@ -68,40 +70,6 @@ export default function ExercisesLibraryScreen() {
     router.push(routes.patientList as any);
   };
 
-  const ExerciseCard = ({
-    exercise,
-    onAdd,
-  }: {
-    exercise: Exercise;
-    onAdd: (exercise: Exercise) => void;
-  }) => (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <MaterialCommunityIcons name="run" size={24} color={Colors.primary} />
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.cardName}>{exercise.name}</Text>
-          {exercise.description ? (
-            <Text style={styles.cardMeta}>{exercise.description}</Text>
-          ) : null}
-        </View>
-        <TouchableOpacity style={styles.addBtn} onPress={() => onAdd(exercise)}>
-          <MaterialCommunityIcons name="plus" size={20} color={Colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      {exercise.multimedia_url ? (
-        <View style={styles.videoPlaceholder}>
-          <MaterialCommunityIcons
-            name="play-circle-outline"
-            size={20}
-            color={Colors.textPrimary}
-          />
-          <Text style={styles.videoText}>Video disponible</Text>
-        </View>
-      ) : null}
-    </View>
-  );
-
   if (!fontsLoaded) return null;
 
   return (
@@ -145,9 +113,9 @@ export default function ExercisesLibraryScreen() {
             style={{ marginTop: 32 }}
           />
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <StateMessage error={error} />
         ) : filtered.length === 0 ? (
-          <Text style={styles.emptyText}>No hay ejercicios para mostrar.</Text>
+          <StateMessage empty="No hay ejercicios para mostrar." />
         ) : (
           filtered.map((exercise) => (
             <ExerciseCard
@@ -216,59 +184,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     color: Colors.textPrimary,
     padding: 0,
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardTop: { flexDirection: "row", alignItems: "center" },
-  cardName: { fontSize: 15, fontFamily: "InterSemiBold", color: Colors.textPrimary },
-  cardMeta: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-    marginTop: 2,
-  },
-  videoPlaceholder: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: Colors.background,
-  },
-  videoText: {
-    marginLeft: 8,
-    fontSize: 13,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-  },
-  errorText: {
-    marginTop: 32,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: "InterRegular",
-    color: Colors.danger,
-  },
-  emptyText: {
-    marginTop: 32,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-  },
-  addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: Colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
   },
   cancelBtn: {
     backgroundColor: Colors.danger,

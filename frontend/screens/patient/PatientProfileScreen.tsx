@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
-import BottomNav from '../../components/BottomNav';
+import BottomNav from '../../components/layout/BottomNav';
 import { getSession } from '../../services/authStore';
 
 

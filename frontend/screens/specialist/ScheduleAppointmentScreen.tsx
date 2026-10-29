@@ -19,9 +19,10 @@ import {
   TimeSlot,
   AppointmentPatient,
 } from "../../services/appointmentService";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import SectionCard from "../../components/ui/SectionCard";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MONTHS_ES = [
@@ -45,34 +46,6 @@ function buildCalendar(year: number, month: number): CalDay[][] {
   const weeks: CalDay[][] = [];
   for (let i = 0; i < flat.length; i += 7) weeks.push(flat.slice(i, i + 7));
   return weeks;
-}
-
-function StepBadge({ step }: { step: number }) {
-  return (
-    <View style={styles.stepBadge}>
-      <Text style={styles.stepBadgeText}>{step}</Text>
-    </View>
-  );
-}
-
-function SectionCard({
-  step,
-  title,
-  children,
-}: {
-  step: number;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.sectionCard}>
-      <View style={styles.sectionCardHeader}>
-        <StepBadge step={step} />
-        <Text style={styles.sectionCardTitle}>{title}</Text>
-      </View>
-      {children}
-    </View>
-  );
 }
 
 export default function ScheduleAppointmentScreen() {
@@ -425,37 +398,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bold,
   },
 
-  sectionCard: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-  },
-  sectionCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    gap: 10,
-  },
-  stepBadge: {
-    backgroundColor: Colors.btnTeal,
-    borderRadius: 8,
-    width: 26,
-    height: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stepBadgeText: {
-    fontSize: 13,
-    fontFamily: Fonts.bold,
-    color: Colors.textOnDark,
-  },
-  sectionCardTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    flex: 1,
-  },
 
   slotsGrid: {
     flexDirection: "row",

@@ -18,6 +18,7 @@ import { useRouter } from "expo-router";
 import { createUserApi, CreateUserPayload } from "../services/userService";
 
 import { Colors, GradientColors } from "../constants/theme";
+import Chip from "../components/ui/Chip";
 const GENDERS = ["Masculino", "Femenino", "Otro"] as const;
 
 // Formats a Chilean RUT while typing (12.345.678-9).
@@ -174,43 +175,19 @@ export default function CreateUserScreen() {
 
             <Text style={styles.fieldLabel}>ROL DEL USUARIO</Text>
             <View style={styles.pillRow}>
-              <TouchableOpacity
-                style={[styles.pill, role === "patient" && styles.pillActive]}
+              <Chip
+                label="Paciente"
+                mdi="account-outline"
+                selected={role === "patient"}
                 onPress={() => setRole("patient")}
-              >
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={18}
-                  color={role === "patient" ? Colors.onPrimary : Colors.textPrimary}
-                />
-                <Text
-                  style={[
-                    styles.pillText,
-                    role === "patient" && styles.pillTextActive,
-                  ]}
-                >
-                  Paciente
-                </Text>
-              </TouchableOpacity>
+              />
 
-              <TouchableOpacity
-                style={[styles.pill, role === "specialist" && styles.pillActive]}
+              <Chip
+                label="Especialista"
+                mdi="medical-bag"
+                selected={role === "specialist"}
                 onPress={() => setRole("specialist")}
-              >
-                <MaterialCommunityIcons
-                  name="medical-bag"
-                  size={18}
-                  color={role === "specialist" ? Colors.onPrimary : Colors.textPrimary}
-                />
-                <Text
-                  style={[
-                    styles.pillText,
-                    role === "specialist" && styles.pillTextActive,
-                  ]}
-                >
-                  Especialista
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
 
             <Text style={styles.fieldLabel}>RUT</Text>
@@ -293,20 +270,12 @@ export default function CreateUserScreen() {
                 <Text style={styles.fieldLabel}>GÉNERO</Text>
                 <View style={styles.pillRow}>
                   {GENDERS.map((g) => (
-                    <TouchableOpacity
+                    <Chip
                       key={g}
-                      style={[styles.pill, gender === g && styles.pillActive]}
+                      label={g}
+                      selected={gender === g}
                       onPress={() => setGender(g)}
-                    >
-                      <Text
-                        style={[
-                          styles.pillText,
-                          gender === g && styles.pillTextActive,
-                        ]}
-                      >
-                        {g}
-                      </Text>
-                    </TouchableOpacity>
+                    />
                   ))}
                 </View>
 
@@ -475,30 +444,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
     color: Colors.textPrimary,
     letterSpacing: 0.3,
-  },
-  pill: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 10,
-    backgroundColor: Colors.background,
-  },
-  pillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  pillText: {
-    fontSize: 13,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-  },
-  pillTextActive: {
-    color: Colors.onPrimary,
   },
   submitBtn: {
     backgroundColor: Colors.primary,

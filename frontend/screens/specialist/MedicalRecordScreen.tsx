@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
 import { Colors, GradientColors, BannerStyle } from "../../constants/theme";
 import {
@@ -20,71 +20,10 @@ import {
   togglePatientStatus,
   Patient,
 } from "../../services/patientService";
-
-function ContactRow({
-  icon,
-  value,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  value: string;
-}) {
-  return (
-    <View style={styles.contactRow}>
-      <View style={styles.contactIconWrap}>
-        <MaterialCommunityIcons name={icon} size={18} color={Colors.primary} />
-      </View>
-      <Text style={styles.contactText}>{value}</Text>
-    </View>
-  );
-}
-
-function MetricBar({
-  label,
-  progress,
-  topMargin,
-}: {
-  label: string;
-  progress: number;
-  topMargin?: number;
-}) {
-  return (
-    <View style={{ marginTop: topMargin ?? 0 }}>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${progress}%` }]} />
-      </View>
-    </View>
-  );
-}
-
-function SessionItem({
-  name,
-  duration,
-  date,
-  completed,
-}: {
-  name: string;
-  duration: string;
-  date: string;
-  completed: boolean;
-}) {
-  return (
-    <View style={styles.sessionItem}>
-      <View style={styles.sessionLeft}>
-        <Text style={styles.sessionName}>{name}</Text>
-        <Text style={styles.sessionDuration}>{duration}</Text>
-      </View>
-      <View style={styles.sessionRight}>
-        <Text style={styles.sessionDate}>{date}</Text>
-        {completed && (
-          <View style={styles.sessionBadge}>
-            <Text style={styles.sessionBadgeText}>Completado</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-}
+import InfoRow from "../../components/ui/InfoRow";
+import ProgressRow from "../../components/ui/ProgressRow";
+import SessionCard from "../../components/session/SessionCard";
+import SectionTitle from "../../components/ui/SectionTitle";
 
 export default function MedicalRecordScreen() {
   const router = useRouter();
@@ -172,12 +111,12 @@ export default function MedicalRecordScreen() {
         </View>
 
         <View style={styles.sectionLabel}>
-          <Text style={styles.sectionTitle}>Información de Contacto</Text>
+          <SectionTitle>Información de Contacto</SectionTitle>
         </View>
         <View style={styles.card}>
-          <ContactRow icon="email-outline" value={patient.email} />
-          <ContactRow icon="phone-outline" value={patient.phone} />
-          <ContactRow icon="map-marker-outline" value={patient.address} />
+          <InfoRow mdi="email-outline" value={patient.email} />
+          <InfoRow mdi="phone-outline" value={patient.phone} />
+          <InfoRow mdi="map-marker-outline" value={patient.address} />
         </View>
 
         <TouchableOpacity
@@ -206,25 +145,19 @@ export default function MedicalRecordScreen() {
           <Text style={styles.metricsSubLabel}>
             Sesiones completadas esta semana
           </Text>
-          <MetricBar
+          <ProgressRow
             label={`${metrics.adherencePercent}% Adherencia`}
             progress={metrics.adherencePercent}
-            topMargin={12}
           />
         </View>
 
         <View style={styles.sectionLabel}>
-          <Text style={styles.sectionTitle}>Historial de Sesiones</Text>
+          <SectionTitle>Historial de Sesiones</SectionTitle>
         </View>
         <View style={styles.card}>
           {sessions.map((s, i) => (
             <React.Fragment key={s.id}>
-              <SessionItem
-                name={s.name}
-                duration={s.duration}
-                date={s.date}
-                completed={s.completed}
-              />
+              <SessionCard session={s} />
               {i < sessions.length - 1 && <View style={styles.divider} />}
             </React.Fragment>
           ))}
@@ -281,11 +214,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 2,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-  },
   patientRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -325,23 +253,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "InterSemiBold",
     color: Colors.textPrimary,
-  },
-  contactRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  contactIconWrap: {
-    backgroundColor: Colors.cardBgAlt,
-    padding: 6,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  contactText: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-    flex: 1,
   },
   agendarBtn: {
     backgroundColor: Colors.btnPrimary,
@@ -384,65 +295,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     color: Colors.textSecondary,
     marginTop: 4,
-  },
-  metricLabel: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-    marginBottom: 6,
-  },
-  progressTrack: {
-    width: "100%",
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.cardBg,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.textPrimary,
-  },
-  sessionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingVertical: 10,
-  },
-  sessionLeft: {
-    flex: 1,
-  },
-  sessionName: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-  },
-  sessionDuration: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: Colors.textSecondary,
-    marginTop: 3,
-  },
-  sessionRight: {
-    alignItems: "flex-end",
-    marginLeft: 10,
-  },
-  sessionDate: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  sessionBadge: {
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  sessionBadgeText: {
-    fontSize: 11,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
   },
   divider: {
     height: 1,

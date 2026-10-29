@@ -4,10 +4,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
+import InfoRow from "../../components/ui/InfoRow";
+import SectionTitle from "../../components/ui/SectionTitle";
 
 
 const PLACEHOLDER = "No establecido";
@@ -68,13 +70,13 @@ export default function SpecialistProfileScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Información personal</Text>
+          <SectionTitle>Información personal</SectionTitle>
           <View style={styles.infoCard}>
-            <InfoRow icon="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
+            <InfoRow mdi="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
             <View style={styles.divider} />
-            <InfoRow icon="phone-outline" label="Teléfono" value={profile?.phone || PLACEHOLDER} />
+            <InfoRow mdi="phone-outline" label="Teléfono" value={profile?.phone || PLACEHOLDER} />
             <View style={styles.divider} />
-            <InfoRow icon="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
+            <InfoRow mdi="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
           </View>
 
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
@@ -89,28 +91,6 @@ export default function SpecialistProfileScreen() {
   );
 }
 
-
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <View style={styles.infoIconBg}>
-        <MaterialCommunityIcons name={icon} size={20} color={Colors.btnTeal} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue}>{value}</Text>
-      </View>
-    </View>
-  );
-}
 
 
 const styles = StyleSheet.create({
@@ -177,43 +157,11 @@ const styles = StyleSheet.create({
     color: Colors.textOnDark,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
   infoCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  infoIconBg: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  infoLabel: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: Colors.textSecondary,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginTop: 2,
   },
   divider: {
     height: 1,

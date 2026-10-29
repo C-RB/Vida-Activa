@@ -4,52 +4,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { getDashboard, DashboardResponse } from "../../services/specialistService";
 
 import { Colors, GradientColors } from "../../constants/theme";
-type StatCardProps = {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  iconColor: string;
-  value: string;
-  label: string;
-  alert?: boolean;
-};
-
-function StatCard({ icon, iconColor, value, label, alert }: StatCardProps) {
-  return (
-    <View style={styles.statCard}>
-      {alert && <View style={styles.alertDot} />}
-      <View style={styles.statIconWrap}>
-        <MaterialCommunityIcons name={icon} size={24} color={iconColor} />
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-type MetricRowProps = {
-  label: string;
-  value: string;
-  progress: number;
-  topMargin?: number;
-};
-
-function MetricRow({ label, value, progress, topMargin }: MetricRowProps) {
-  return (
-    <View style={{ marginTop: topMargin ?? 0 }}>
-      <View style={styles.metricRow}>
-        <Text style={styles.metricLabel}>{label}</Text>
-        <Text style={styles.metricValue}>{value}</Text>
-      </View>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${progress}%` }]} />
-      </View>
-    </View>
-  );
-}
-
+import StatCard from "../../components/ui/StatCard";
+import ProgressRow from "../../components/ui/ProgressRow";
 // "—" when there is no real data (loading or network error).
 const fmt = (n: number | null | undefined) => (n != null ? `${n}` : "—");
 
@@ -105,27 +65,24 @@ export default function SpecialistHomeScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.grid}>
             <StatCard
-              icon="account-group-outline"
-              iconColor={Colors.primary}
+              mdi="account-group-outline"
               value={fmt(stats?.total_patients)}
               label="Pacientes"
             />
             <StatCard
-              icon="run-fast"
-              iconColor={Colors.primary}
+              mdi="run-fast"
               value={fmt(stats?.active_today)}
               label="Activos Hoy"
             />
             <StatCard
-              icon="alert-outline"
-              iconColor={Colors.danger}
+              mdi="alert-outline"
+              tone="danger"
               value={fmt(stats?.alerts)}
               label="Alertas"
               alert={(stats?.alerts ?? 0) > 0}
             />
             <StatCard
-              icon="trending-up"
-              iconColor={Colors.primary}
+              mdi="trending-up"
               value={stats != null ? `${stats.avg_adherence}%` : "—"}
               label="Progreso Prom."
             />
@@ -137,16 +94,15 @@ export default function SpecialistHomeScreen() {
               <MaterialCommunityIcons name="chart-bar" size={22} color={Colors.primary} />
             </View>
 
-            <MetricRow
+            <ProgressRow
               label="Sesiones completadas"
               value={sessionsValue}
               progress={sessionsProgress}
             />
-            <MetricRow
+            <ProgressRow
               label="Cumplimiento diario"
               value={compliance != null ? `${compliance}%` : "—"}
               progress={compliance ?? 0}
-              topMargin={16}
             />
           </View>
         </ScrollView>
@@ -211,44 +167,8 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: 12,
     marginHorizontal: 16,
-  },
-  statCard: {
-    width: "47%",
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    position: "relative",
-  },
-  statIconWrap: {
-    backgroundColor: Colors.background,
-    padding: 8,
-    borderRadius: 10,
-    alignSelf: "flex-start",
-  },
-  alertDot: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.danger,
-  },
-  statValue: {
-    fontSize: 32,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-    marginTop: 10,
-  },
-  statLabel: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
   },
   metricsCard: {
     backgroundColor: Colors.surface,
@@ -269,33 +189,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "InterSemiBold",
     color: Colors.textPrimary,
-  },
-  metricRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  metricLabel: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-  },
-  metricValue: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
-    color: Colors.primary,
-  },
-  progressTrack: {
-    width: "100%",
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.primarySoft,
-    marginTop: 6,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.primaryPressed,
   },
 });

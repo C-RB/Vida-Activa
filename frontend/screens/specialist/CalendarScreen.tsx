@@ -12,9 +12,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useLocalSearchParams } from "expo-router";
 import { getAppointmentsByDate, Appointment } from "../../services/calendarService";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import StateMessage from "../../components/ui/StateMessage";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MONTHS_ES = [
@@ -186,11 +187,11 @@ export default function CalendarScreen() {
           {isLoading ? (
             <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 40 }} />
           ) : !selectedDay ? (
-            <Text style={styles.emptyText}>Selecciona un día para ver las citas.</Text>
+            <StateMessage empty="Selecciona un día para ver las citas." />
           ) : appointments.length === 0 ? (
             <View style={styles.emptyCard}>
               <MaterialCommunityIcons name="calendar-check" size={40} color={Colors.onPrimary} />
-              <Text style={styles.emptyText}>No hay citas para esta fecha.</Text>
+              <StateMessage empty="No hay citas para esta fecha." />
             </View>
           ) : (
             appointments.map((appointment) => (
@@ -323,13 +324,6 @@ const styles = StyleSheet.create({
     padding: 30,
     alignItems: "center",
     justifyContent: "center",
-  },
-  emptyText: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
-    color: "rgba(23, 32, 51, 0.6)",
-    textAlign: "center",
-    marginTop: 10,
   },
 
   appointmentCard: {

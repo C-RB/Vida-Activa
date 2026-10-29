@@ -3,11 +3,11 @@ import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
 import { useFonts } from "expo-font";
 
-import { Colors } from "../constants/theme";
+import { Colors } from "../../constants/theme";
 export default function SurveySlider({ label, value, onChange }: { label: string, value: number, onChange: (val: number) => void }) {
     const [fontsLoaded] = useFonts({
-        InterRegular: require("../assets/fonts/Inter_400Regular.ttf"),
-        InterSemiBold: require("../assets/fonts/Inter_600SemiBold.ttf"),
+        InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
+        InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
     });
     if (!fontsLoaded) return null;
 

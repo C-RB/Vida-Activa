@@ -18,6 +18,7 @@ import { useRouter } from "expo-router";
 import { getPatientByRut, assignPatientToSpecialist, Patient } from "../../services/patientService";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import SectionTitle from "../../components/ui/SectionTitle";
 const formatRut = (value: string) => {
   // Keep only digits and K, max 9 chars (8 body + check digit): a longer formatted RUT would be cut by the
   // input's maxLength mid-format and desync the native and controlled values (repeated or phantom digits).
@@ -167,7 +168,7 @@ export default function AssignPatientScreen({
                 </View>
               </View>
 
-              <Text style={styles.sectionTitle}>Información de Contacto</Text>
+              <SectionTitle>Información de Contacto</SectionTitle>
 
               <View style={styles.card}>
                 <View style={styles.contactItem}>
@@ -347,13 +348,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
   contactItem: {
     flexDirection: "row",
     alignItems: "center",

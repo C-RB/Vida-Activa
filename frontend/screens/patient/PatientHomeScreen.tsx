@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import Icon from "../../components/ui/Icon";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -188,7 +188,7 @@ export default function PatientHomeScreen() {
               <Button
                 title="Empezar ahora"
                 variant="soft"
-                height={48}
+                compact
                 onPress={goToSurvey}
               />
             </>

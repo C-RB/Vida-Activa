@@ -4,11 +4,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import Chip from "../../components/ui/Chip";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 // Role filter pills.
 const FILTERS: { label: string; role?: UserRoleKey }[] = [
   { label: "Todos" },
@@ -77,7 +80,7 @@ export default function AdminMainScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Panel Principal</Text>
+          <SectionTitle>Panel Principal</SectionTitle>
           <Text style={styles.sectionSubtitle}>Resumen de actividad y gestión del sistema.</Text>
         </View>
 
@@ -117,7 +120,7 @@ export default function AdminMainScreen() {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+          <SectionTitle>Acciones Rápidas</SectionTitle>
         </View>
         <View style={styles.actionsContainer}>
           <TouchableOpacity 
@@ -138,32 +141,25 @@ export default function AdminMainScreen() {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Resumen de Usuarios</Text>
+          <SectionTitle>Resumen de Usuarios</SectionTitle>
         </View>
         
         <View style={styles.filtersContainer}>
           {FILTERS.map(({ label }) => (
-            <TouchableOpacity
+            <Chip
               key={label}
-              style={[
-                styles.filterPill,
-                activeFilter === label && styles.filterPillActive
-              ]}
+              label={label}
+              mdi={label === "Todos" ? "filter-variant" : undefined}
+              selected={activeFilter === label}
               onPress={() => setActiveFilter(label)}
-            >
-              {label === 'Todos' && <MaterialCommunityIcons name="filter-variant" size={14} color={Colors.textPrimary} style={{marginRight: 4}} />}
-              <Text style={[
-                styles.filterPillText,
-                activeFilter === label && styles.filterPillTextActive
-              ]}>{label}</Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
 
         {loading ? (
           <ActivityIndicator color={Colors.textPrimary} size="large" style={{ marginTop: 30 }} />
         ) : visibleUsers.length === 0 ? (
-          <Text style={styles.emptyText}>No hay usuarios para mostrar.</Text>
+          <StateMessage empty="No hay usuarios para mostrar." />
         ) : (
           <View style={styles.userListContainer}>
             {visibleUsers.map((user) => (
@@ -263,11 +259,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 10,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-  },
   sectionSubtitle: {
     fontSize: 12,
     fontFamily: "InterRegular",
@@ -353,26 +344,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
     gap: 8,
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  filterPillActive: {
-    backgroundColor: Colors.surface,
-  },
-  filterPillText: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  filterPillTextActive: {
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
   },
   userListContainer: {
     gap: 12,

@@ -20,6 +20,9 @@ import { routes } from "../../router/routes";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { createRoutine, RoutineCreate } from "../../services/routineService";
+import Stepper from "../../components/ui/Stepper";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 
 // Exercise inside the routine being built (editable by the specialist).
 type BuilderItem = {
@@ -192,7 +195,7 @@ export default function CreateRoutineScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Datos de la rutina</Text>
+          <SectionTitle>Datos de la rutina</SectionTitle>
 
           <Text style={styles.label}>Nombre</Text>
           <TextInput
@@ -283,7 +286,7 @@ export default function CreateRoutineScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ejercicios disponibles</Text>
+          <SectionTitle>Ejercicios disponibles</SectionTitle>
 
           {loadingExercises ? (
             <ActivityIndicator
@@ -292,7 +295,7 @@ export default function CreateRoutineScreen() {
               style={{ marginTop: 16 }}
             />
           ) : exercisesError ? (
-            <Text style={styles.errorText}>{exercisesError}</Text>
+            <StateMessage error={exercisesError} />
           ) : available.length === 0 ? (
             <Text style={styles.mutedText}>No hay ejercicios en la biblioteca.</Text>
           ) : (
@@ -379,14 +382,14 @@ export default function CreateRoutineScreen() {
                 </View>
 
                 <View style={styles.rowBlock}>
-                  <Counter
+                  <Stepper
                     label="Series"
                     value={item.total_series}
                     onChange={(v) =>
                       updateItem(item.exercise_id, "total_series", v)
                     }
                   />
-                  <Counter
+                  <Stepper
                     label="Repeticiones"
                     value={item.total_reps}
                     onChange={(v) =>
@@ -395,7 +398,7 @@ export default function CreateRoutineScreen() {
                   />
                 </View>
 
-                <Counter
+                <Stepper
                   label="Descanso (seg)"
                   value={item.rest_time_seconds}
                   step={5}
@@ -408,7 +411,7 @@ export default function CreateRoutineScreen() {
           )}
         </View>
 
-        {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+        {saveError ? <StateMessage error={saveError} /> : null}
 
         <View style={styles.actionsRow}>
           <TouchableOpacity
@@ -434,39 +437,6 @@ export default function CreateRoutineScreen() {
         </View>
       </ScrollView>
     </LinearGradient>
-  );
-}
-
-function Counter({
-  label,
-  value,
-  onChange,
-  step = 1,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  step?: number;
-}) {
-  return (
-    <View style={styles.fieldHalf}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.counterBox}>
-        <TouchableOpacity
-          onPress={() => onChange(Math.max(0, value - step))}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MaterialCommunityIcons name="minus" size={20} color={Colors.textOnDark} />
-        </TouchableOpacity>
-        <Text style={styles.counterValue}>{value}</Text>
-        <TouchableOpacity
-          onPress={() => onChange(value + step)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MaterialCommunityIcons name="plus" size={20} color={Colors.textOnDark} />
-        </TouchableOpacity>
-      </View>
-    </View>
   );
 }
 
@@ -646,30 +616,7 @@ const styles = StyleSheet.create({
 
   rowBlock: { flexDirection: "row", gap: 12, marginBottom: 12 },
   fieldHalf: { flex: 1 },
-  counterBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.btnTeal,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  counterValue: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
-    color: Colors.textOnDark,
-    minWidth: 24,
-    textAlign: "center",
-  },
 
-  errorText: {
-    marginTop: 16,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.btnDanger,
-  },
   mutedText: {
     fontSize: 13,
     fontFamily: Fonts.regular,

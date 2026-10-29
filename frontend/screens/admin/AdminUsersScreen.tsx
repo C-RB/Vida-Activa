@@ -14,11 +14,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import Chip from "../../components/ui/Chip";
 const ROLES: UserRoleKey[] = ["admin", "specialist", "patient"];
 
 // Left-border accent: grey when inactive, red for admins, teal otherwise.
@@ -276,19 +277,12 @@ export default function AdminUsersScreen() {
                 <Text style={styles.inputLabel}>Rol del Usuario</Text>
                 <View style={styles.rolesContainer}>
                   {ROLES.map((role) => (
-                    <TouchableOpacity
+                    <Chip
                       key={role}
-                      style={[
-                        styles.rolePill,
-                        editingUser.role === role && styles.rolePillActive
-                      ]}
-                      onPress={() => setEditingUser({...editingUser, role})}
-                    >
-                      <Text style={[
-                        styles.rolePillText,
-                        editingUser.role === role && styles.rolePillTextActive
-                      ]}>{ROLE_LABEL[role]}</Text>
-                    </TouchableOpacity>
+                      label={ROLE_LABEL[role]}
+                      selected={editingUser.role === role}
+                      onPress={() => setEditingUser({ ...editingUser, role })}
+                    />
                   ))}
                 </View>
 
@@ -599,27 +593,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
     marginBottom: 10,
-  },
-  rolePill: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  rolePillActive: {
-    backgroundColor: Colors.primaryPressed,
-    borderColor: Colors.primary,
-  },
-  rolePillText: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-  },
-  rolePillTextActive: {
-    color: Colors.onPrimary,
-    fontFamily: "InterSemiBold",
   },
   modalActions: {
     flexDirection: 'row',

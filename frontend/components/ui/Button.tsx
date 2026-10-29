@@ -17,7 +17,8 @@ type Props = {
   variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
-  height?: number;
+  // Shorter button with smaller text, for use inside cards.
+  compact?: boolean;
   style?: ViewStyle;
 };
 
@@ -34,7 +35,7 @@ export default function Button({
   variant = "primary",
   loading = false,
   disabled = false,
-  height = 64,
+  compact = false,
   style,
 }: Props) {
   const c = PALETTE[variant];
@@ -48,7 +49,7 @@ export default function Button({
       style={[
         styles.base,
         {
-          height,
+          height: compact ? 48 : 64,
           backgroundColor: c.bg,
           borderColor: c.border ?? "transparent",
           borderWidth: c.border ? 1.5 : 0,
@@ -60,7 +61,7 @@ export default function Button({
       {loading ? (
         <ActivityIndicator color={c.fg} />
       ) : (
-        <Text style={[Type.button, { color: c.fg }]}>{title}</Text>
+        <Text style={[compact ? Type.bodyStrong : Type.button, { color: c.fg }]}>{title}</Text>
       )}
     </TouchableOpacity>
   );

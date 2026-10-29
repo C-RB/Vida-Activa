@@ -15,7 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { Colors, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import {

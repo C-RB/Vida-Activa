@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from "expo-linear-gradient";
-import MoodOption from "../../components/MoodOption";
+import MoodOption from "../../components/survey/MoodOption";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";

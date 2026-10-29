@@ -7,6 +7,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import { completeSession, getSessionById } from "../../services/sessionService";
+import InfoRow from "../../components/ui/InfoRow";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 
 export default function ExerciseSessionCompletedScreen() {
   const router = useRouter();
@@ -86,32 +89,36 @@ export default function ExerciseSessionCompletedScreen() {
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Resumen de la sesión</Text>
+        <SectionTitle>Resumen de la sesión</SectionTitle>
         <View style={styles.statsCard}>
           {loadingStats ? (
             <ActivityIndicator color={Colors.btnTeal} style={{ paddingVertical: 24 }} />
           ) : (
             <>
-              <StatRow
-                icon="dumbbell"
+              <InfoRow
+                inline
+                mdi="dumbbell"
                 label="Ejercicios completados"
                 value={fmt(exercisesCount)}
               />
               <View style={styles.divider} />
-              <StatRow
-                icon="repeat-variant"
+              <InfoRow
+                inline
+                mdi="repeat-variant"
                 label="Series realizadas"
                 value={fmt(seriesCount)}
               />
               <View style={styles.divider} />
-              <StatRow
-                icon="clock-outline"
+              <InfoRow
+                inline
+                mdi="clock-outline"
                 label="Duración total"
                 value={durationMin != null ? `${durationMin} min` : "—"}
               />
               <View style={styles.divider} />
-              <StatRow
-                icon="check-circle-outline"
+              <InfoRow
+                inline
+                mdi="check-circle-outline"
                 label="Estado"
                 value="Completada"
                 highlight
@@ -130,7 +137,7 @@ export default function ExerciseSessionCompletedScreen() {
         {completeError && (
           <View style={styles.errorCard}>
             <MaterialCommunityIcons name="alert-circle-outline" size={26} color={Colors.danger} />
-            <Text style={styles.errorText}>{completeError}</Text>
+            <StateMessage error={completeError} />
           </View>
         )}
 
@@ -148,28 +155,6 @@ export default function ExerciseSessionCompletedScreen() {
         </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
-  );
-}
-
-function StatRow({
-  icon,
-  label,
-  value,
-  highlight,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <View style={styles.statRow}>
-      <View style={styles.statIconBg}>
-        <MaterialCommunityIcons name={icon} size={28} color={Colors.btnTeal} />
-      </View>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, highlight && styles.statValueHighlight]}>{value}</Text>
-    </View>
   );
 }
 
@@ -224,13 +209,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  sectionTitle: {
-    fontSize: 22,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginBottom: 14,
-    marginLeft: 4,
-  },
   statsCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 16,
@@ -238,34 +216,6 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     borderWidth: 1,
     borderColor: Colors.btnTeal,
-  },
-  statRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-  },
-  statIconBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  statLabel: {
-    flex: 1,
-    fontSize: 20,
-    fontFamily: Fonts.regular,
-    color: Colors.textPrimary,
-  },
-  statValue: {
-    fontSize: 22,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-  },
-  statValueHighlight: {
-    color: Colors.btnPrimary,
   },
   divider: {
     height: 1,
@@ -316,11 +266,5 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.danger,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: Fonts.regular,
-    color: Colors.textPrimary,
   },
 });

@@ -1,12 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NAV, NavRole } from "../constants/navigation";
-import { Colors, Type } from "../constants/theme";
-import { useAppFonts } from "../hooks/useAppFonts";
-import Icon from "./ui/Icon";
+import { NAV, NavRole } from "../../constants/navigation";
+import { Colors, Type } from "../../constants/theme";
+import { useAppFonts } from "../../hooks/useAppFonts";
+import Icon from "../ui/Icon";
 
 type Props = {
   role: NavRole;
@@ -38,7 +37,7 @@ export default function BottomNav({ role, active }: Props) {
               {typeof item.icon === "string" ? (
                 <Icon name={item.icon} size={26} color={color} />
               ) : (
-                <MaterialCommunityIcons name={item.icon.mdi} size={26} color={color} />
+                <Icon mdi={item.icon.mdi} size={26} color={color} />
               )}
             </View>
             <Text style={[Type.label, { color }]}>{item.label}</Text>

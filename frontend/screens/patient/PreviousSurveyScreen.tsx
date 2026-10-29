@@ -13,7 +13,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import SurveySlider from "../../components/SurveySlider";
+import SurveySlider from "../../components/survey/SurveySlider";
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createSession } from "../../services/sessionService";
 import { submitPreSurvey } from "../../services/surveyService";

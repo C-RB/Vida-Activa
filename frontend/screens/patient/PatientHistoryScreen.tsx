@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
+import SessionCard from "../../components/session/SessionCard";
+import SectionTitle from "../../components/ui/SectionTitle";
 
 export default function PatientHistoryScreen() {
   const [fontsLoaded] = useFonts({
@@ -47,7 +48,7 @@ export default function PatientHistoryScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Tus sesiones recientes</Text>
+        <SectionTitle>Tus sesiones recientes</SectionTitle>
 
         {loading ? (
           <ActivityIndicator size="large" color={Colors.btnTeal} style={{ marginTop: 40 }} />
@@ -56,62 +57,12 @@ export default function PatientHistoryScreen() {
             Aún no tienes sesiones registradas.
           </Text>
         ) : (
-          sessions.map((s) => <SessionCard key={s.id} session={s} />)
+          sessions.map((s) => <SessionCard key={s.id} session={s} expandable />)
         )}
       </ScrollView>
 
       <BottomNav role="patient" active="history" />
     </LinearGradient>
-  );
-}
-
-function SessionCard({ session }: { session: Session }) {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <View style={styles.cardWrapper}>
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => setExpanded((v) => !v)}
-        style={styles.card}
-      >
-        <View style={styles.iconWrap}>
-          <MaterialCommunityIcons name="run-fast" size={38} color={Colors.btnTeal} />
-        </View>
-
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle} numberOfLines={2}>
-            {session.name}
-          </Text>
-        </View>
-
-        {session.completed && (
-          <View style={styles.checkWrap}>
-            <MaterialCommunityIcons name="check-circle" size={34} color={Colors.btnPrimary} />
-          </View>
-        )}
-
-        <MaterialCommunityIcons
-          name={expanded ? "chevron-up" : "chevron-down"}
-          size={28}
-          color={Colors.textPrimary}
-          style={styles.chevron}
-        />
-      </TouchableOpacity>
-
-      {expanded && (
-        <View style={styles.details}>
-          <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="calendar" size={24} color={Colors.btnTeal} />
-            <Text style={styles.detailText}>{session.date}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="clock-outline" size={24} color={Colors.btnTeal} />
-            <Text style={styles.detailText}>Duración: {session.duration}</Text>
-          </View>
-        </View>
-      )}
-    </View>
   );
 }
 
@@ -132,68 +83,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  sectionTitle: {
-    fontSize: 22,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginBottom: 16,
-    marginLeft: 4,
-  },
 
-  cardWrapper: {
-    marginBottom: 14,
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.cardBg,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-  },
-  iconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  cardContent: { flex: 1, paddingRight: 8 },
-  cardTitle: {
-    fontSize: 22,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    flexShrink: 1,
-  },
-  checkWrap: {
-    marginRight: 6,
-  },
-  chevron: {
-    marginLeft: 2,
-  },
 
-  details: {
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 16,
-    marginTop: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-    gap: 12,
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  detailText: {
-    fontSize: 20,
-    fontFamily: Fonts.regular,
-    color: Colors.textPrimary,
-    flexShrink: 1,
-  },
 });
