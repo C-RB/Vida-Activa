@@ -2,7 +2,7 @@
 
 Aplicación móvil de **telerrehabilitación** que conecta a especialistas (kinesiólogos, fisioterapeutas) con sus pacientes. El especialista prescribe rutinas de ejercicios y hace seguimiento de la adherencia y el dolor; el paciente ejecuta sus ejercicios desde el celular, guiado por la cámara, y reporta cómo se siente antes y después de cada sesión.
 
-> **Estado:** en desarrollo. El proyecto se está migrando de GitLab a GitHub y el nombre cambió de *ActivaMente* a **Vida Activa**. El rediseño de la interfaz está pendiente. Por ahora la aplicación no se despliega.
+> **Estado:** en desarrollo. El rediseño de la interfaz (guía de estilo v2) está en curso: ya están el Login y el Inicio del paciente. Por ahora la aplicación no se despliega.
 
 ## Qué hace
 
@@ -98,7 +98,6 @@ pytest
 Los tests crean una base limpia `activamente_test`, cargan `init.sql` y `seed.sql`, y la eliminan al terminar. El mismo flujo corre en GitHub Actions ([ci.yml](.github/workflows/ci.yml)).
 
 ## Pendiente
-- Rediseño de la interfaz.
-- Renombrar carpetas, paquetes y textos de *ActivaMente* a *Vida Activa*.
+- Rediseño del resto de las pantallas (paciente, especialista y admin).
 - Migraciones de base de datos (hoy solo existen `init.sql` / `seed.sql`).
 - Despliegue (omitido por ahora).

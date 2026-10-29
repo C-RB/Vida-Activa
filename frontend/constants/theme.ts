@@ -1,4 +1,4 @@
-// Vida Activa · Guía de estilo v2 (Figma: "Rediseño App Activamente").
+// Vida Activa · Guía de estilo v2 (Figma: "Rediseño App").
 //
 // Reglas de la guía:
 //  - Azul saturado SOLO para acciones (se sigue viendo azul aunque el cristalino

@@ -1,5 +1,5 @@
 -- ------------------------------------------------------
--- ACTIVAMENTE - Database Init (PostgreSQL)
+-- VIDA ACTIVA - Database Init (PostgreSQL)
 -- ------------------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";

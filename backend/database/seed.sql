@@ -1,5 +1,5 @@
 -- ------------------------------------------------------
--- ACTIVAMENTE - Seed Data (fake data, safe to commit)
+-- VIDA ACTIVA - Seed Data (fake data, safe to commit)
 -- DO NOT use in production
 -- ------------------------------------------------------
 

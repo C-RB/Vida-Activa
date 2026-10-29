@@ -26,7 +26,7 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="activamentefront"/>
+        <data android:scheme="vidaactiva"/>
         <data android:scheme="exp+vida-activa"/>
       </intent-filter>
     </activity>
