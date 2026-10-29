@@ -1,0 +1,48 @@
+# Pipeline de CI (migrado desde .gitlab-ci.yml).
+#
+# Solo corre los tests del backend contra un Postgres real (service container).
+# El despliegue a la VPS está OMITIDO por ahora: la app no se va a desplegar.
+# La lógica original (rsync + docker compose por SSH) sigue en .gitlab-ci.yml
+# como referencia por si se retoma.
+
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16
+        env:
+          # Coinciden con los defaults de tests/conftest.py
+          POSTGRES_USER: activamente
+          POSTGRES_PASSWORD: change_me
+          POSTGRES_DB: activamente_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U activamente"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: activamente-back
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: activamente-back/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest

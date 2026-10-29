@@ -1,0 +1,73 @@
+# ── Secretos y credenciales (nunca commitear) ────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+!debug.keystore
+*.mobileprovision
+id_rsa*
+id_ed25519*
+credentials*.json
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+local.properties
+keystore.properties
+*.tfvars
+*.secret
+*.secrets
+secrets/
+
+# ── Dumps y datos locales de base de datos ───────────────────────────────────
+*.sql.bak
+*.dump
+*.backup
+*.sqlite
+*.sqlite3
+*.db
+postgres_data/
+
+# ── Notas internas y herramientas locales ────────────────────────────────────
+EXECUTE.md
+activamente-back/EXECUTE.md
+planning.md
+
+# ── Editores / SO ────────────────────────────────────────────────────────────
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# ── Python ───────────────────────────────────────────────────────────────────
+venv
+.venv
+__pycache__
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node / Expo / React Native ───────────────────────────────────────────────
+node_modules
+.expo
+dist/
+web-build/
+npm-debug.*
+yarn-error.log
+activamente-front/android/build/
+activamente-front/android/app/build/
+activamente-front/android/.gradle/
+activamente-front/ios/
+*.apk
+*.aab
+*.ipa
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log

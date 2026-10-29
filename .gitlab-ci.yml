@@ -1,0 +1,56 @@
+# Pipeline de despliegue del backend + base de datos a la VPS.
+#
+# Estrategia: se copia SOLO la carpeta activamente-back/ (con database/) y el
+# docker-compose.prod.yml a la VPS vía rsync sobre SSH. El build de las imágenes
+# ocurre EN la VPS. El job de CI no necesita Docker: solo ssh + rsync.
+#
+# Acceso a la VPS: por usuario + contraseña (sshpass). La contraseña viaja en la
+# variable SSHPASS y nunca aparece en los argumentos de los comandos.
+#
+# El .env se genera en el job desde variables protegidas de CI/CD y se envía a
+# la VPS; nunca se commitea al repo.
+
+stages:
+  - deploy
+
+deploy_backend:
+  stage: deploy
+  image: alpine:3.20
+  variables:
+    # Ruta de despliegue RELATIVA al HOME del usuario SSH. Así no se necesita
+    # sudo ni permisos sobre /opt (que pertenece a root). Queda en ~/activamente.
+    DEPLOY_DIR: "activamente"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+  before_script:
+    - apk add --no-cache openssh-client rsync sshpass
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+    # sshpass -e lee la contraseña desde la variable de entorno SSHPASS.
+    - export SSHPASS="$VPS_PASSWORD"
+  script:
+    # 1. Generar el .env en el runner desde las variables de CI/CD.
+    - |
+      cat > .env <<EOF
+      POSTGRES_USER=${POSTGRES_USER}
+      POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB=${POSTGRES_DB}
+      DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SECRET_KEY=${SECRET_KEY}
+      ALGORITHM=${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      EOF
+    # 2. Asegurar la carpeta destino en la VPS (en el home del usuario).
+    - sshpass -e ssh "$VPS_USER@$VPS_HOST" "mkdir -p $DEPLOY_DIR"
+    # 3. Copiar SOLO el backend (excluye venv/caches). --delete mantiene la VPS
+    #    en sync exacto con el repo.
+    - >
+      rsync -az --delete
+      --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc'
+      -e "sshpass -e ssh"
+      activamente-back
+      "$VPS_USER@$VPS_HOST:$DEPLOY_DIR/"
+    # 4. Copiar el compose de prod y el .env recién generado.
+    - rsync -az -e "sshpass -e ssh" docker-compose.yml .env "$VPS_USER@$VPS_HOST:$DEPLOY_DIR/"
+    # 5. Build + levantar en la VPS.
+    - sshpass -e ssh "$VPS_USER@$VPS_HOST" "cd $DEPLOY_DIR && docker compose -f docker-compose.yml up -d --build"
