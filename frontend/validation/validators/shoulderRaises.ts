@@ -1,15 +1,7 @@
 /**
- * Validador: Shoulder Raises (elevación lateral de brazos)
- *
- * Métrica principal: ángulo cadera→hombro→codo en cada lado.
- * Mide cuánto se ha elevado el brazo respecto al tronco.
- *
- *  - En reposo (brazos a los costados): ~20–40°
- *  - Nivel 1 — a la altura del hombro:  >= 85°
- *
- * Máquina de estados (misma lógica que toeTouch):
- *  standing → descending → hold → ascending → standing
- *  La rep se cuenta en la transición (hold | ascending) → standing.
+ * Shoulder raises (lateral arm raise). Main metric: hip→shoulder→elbow angle per side
+ * (~20–40° at rest, >= 85° at shoulder height). Same state machine as toeTouch:
+ * a rep counts on the (hold | ascending) → standing transition.
  */
 
 import {
@@ -20,7 +12,7 @@ import {
   ValidatorResult,
   ValidatorState,
 } from '../types';
-import { calcularAngulo, distanciaY } from '../geometry';
+import { calculateAngle, distanceY } from '../geometry';
 import {
   LEFT_ELBOW,
   LEFT_HIP,
@@ -40,16 +32,16 @@ const KEY_INDICES = [
   LEFT_HIP,      RIGHT_HIP,
 ];
 
-// Por debajo de este ángulo (cadera→hombro→codo) los brazos están en reposo
+// Below this hip→shoulder→elbow angle the arms are at rest
 const STANDING_ARM_ANGLE = 50;
 
-// Los codos deben estar casi rectos durante la elevación
+// Elbows must stay almost straight while lifting
 const ELBOW_STRAIGHT_ANGLE = 150;
 
-// Diferencia máxima permitida entre el ángulo del brazo izquierdo y derecho
+// Max angle difference allowed between the left and right arm
 const ARM_SYMMETRY_TOLERANCE = 25;
 
-// Diferencia vertical máxima entre hombros (detecta inclinación lateral del tronco)
+// Max vertical shoulder difference (detects sideways trunk lean)
 const SHOULDER_ALIGN_TOLERANCE = 0.05;
 
 type LevelTarget = {
@@ -96,9 +88,9 @@ function buildValidator(level: number): ValidatorFn {
       };
     }
 
-    // Ángulo principal: cadera→hombro→codo (qué tan elevado está cada brazo)
-    const armAngleL = calcularAngulo(lms[LEFT_HIP],  lms[LEFT_SHOULDER],  lms[LEFT_ELBOW]);
-    const armAngleR = calcularAngulo(lms[RIGHT_HIP], lms[RIGHT_SHOULDER], lms[RIGHT_ELBOW]);
+    // Main angle: hip→shoulder→elbow (how high each arm is)
+    const armAngleL = calculateAngle(lms[LEFT_HIP],  lms[LEFT_SHOULDER],  lms[LEFT_ELBOW]);
+    const armAngleR = calculateAngle(lms[RIGHT_HIP], lms[RIGHT_SHOULDER], lms[RIGHT_ELBOW]);
     const avgArmAngle = (armAngleL + armAngleR) / 2;
 
     const levelReached = avgArmAngle >= target.minAngle;
@@ -110,24 +102,23 @@ function buildValidator(level: number): ValidatorFn {
       return { ok: false, feedback, repCompleted: false, phase };
     };
 
-    // Las reglas de forma solo aplican cuando el brazo está en movimiento;
-    // en reposo (standing) los ángulos naturales del codo pueden ser menores a
-    // 150° y dispararían falsos positivos que además bloquean el conteo de reps.
+    // Form rules only apply while the arm moves: natural elbow angles at rest can be < 150° and would
+    // trigger false positives that block rep counting.
     if (phase !== 'standing') {
-      // Regla 1: codos extendidos (hombro→codo→muñeca > 150°)
-      const elbowAngleL = calcularAngulo(lms[LEFT_SHOULDER],  lms[LEFT_ELBOW],  lms[LEFT_WRIST]);
-      const elbowAngleR = calcularAngulo(lms[RIGHT_SHOULDER], lms[RIGHT_ELBOW], lms[RIGHT_WRIST]);
+      // Rule 1: straight elbows (shoulder→elbow→wrist > 150°)
+      const elbowAngleL = calculateAngle(lms[LEFT_SHOULDER],  lms[LEFT_ELBOW],  lms[LEFT_WRIST]);
+      const elbowAngleR = calculateAngle(lms[RIGHT_SHOULDER], lms[RIGHT_ELBOW], lms[RIGHT_WRIST]);
       if (elbowAngleL <= ELBOW_STRAIGHT_ANGLE || elbowAngleR <= ELBOW_STRAIGHT_ANGLE) {
         return formError('Estira los codos');
       }
 
-      // Regla 2: ambos brazos suben a la misma altura
+      // Rule 2: both arms rise to the same height
       if (Math.abs(armAngleL - armAngleR) > ARM_SYMMETRY_TOLERANCE) {
         return formError('Sube los dos brazos a la misma altura');
       }
     }
 
-    // Rep completa: transición a 'standing' desde hold/ascending
+    // The rep completes on the transition to standing from hold/ascending
     const repCompleted =
       phase === 'standing' &&
       (state.phase === 'hold' || state.phase === 'ascending');

@@ -1,29 +1,4 @@
-/**
- * ── Validador de referencia: Toe Touch ───────────────────────────────────────
- *
- * Este archivo sirve de PLANTILLA para los demás validadores. La estructura
- * recomendada es:
- *
- *  1. Importar tipos, helpers (`geometry`) e índices de landmarks.
- *  2. Declarar los landmarks clave del ejercicio en `KEY_INDICES`.
- *  3. Declarar TODOS los umbrales como constantes nombradas al tope (no
- *     dejar números mágicos dentro de la lógica).
- *  4. Definir los objetivos por nivel en un mapa `LEVEL_TARGETS`.
- *  5. Helpers locales: chequeo de visibilidad, máquina de estados.
- *  6. `buildValidator(level)` retorna la `ValidatorFn` para ese nivel:
- *       a. Si faltan landmarks visibles → feedback de visibilidad y salir.
- *       b. Calcular ángulos / métricas relevantes.
- *       c. Calcular la próxima fase con `nextPhase`.
- *       d. Chequear reglas de forma una por una; ante error, usar el helper
- *          `formError` para mantener el estado coherente sin contar la rep.
- *       e. Detectar rep completa SOLO en la transición correcta y
- *          actualizar `state.repCount`.
- *       f. Retornar `ValidatorResult` con feedback informativo si aplica.
- *  7. Exportar un `ExerciseValidator` con `id` único y un validador por nivel.
- *
- * El `id` exportado abajo (`'toe_touch'`) DEBE coincidir con la clave usada
- * en `exerciseRegistry.ts`.
- */
+/** Reference validator for the toe touch (template for new exercises, see exerciseRegistry.ts). */
 
 import {
   ExerciseValidator,
@@ -33,7 +8,7 @@ import {
   ValidatorResult,
   ValidatorState,
 } from '../types';
-import { calcularAngulo, distanciaY } from '../geometry';
+import { calculateAngle, distanceY } from '../geometry';
 import {
   LEFT_ANKLE,
   LEFT_ELBOW,
@@ -51,8 +26,7 @@ import {
   RIGHT_WRIST,
 } from '../landmarkIndices';
 
-// Log de observabilidad por frame. Dejar en `false` en producción; poner en
-// `true` manualmente para inspeccionar ángulos/fases en la consola de Metro.
+// Per-frame debug logging; keep false in production.
 const DEBUG_LOG = true;
 
 const KEY_INDICES = [
@@ -65,28 +39,16 @@ const KEY_INDICES = [
   LEFT_ANKLE, RIGHT_ANKLE,
 ];
 
-// Umbrales de tronco con HISTÉRESIS: entrar y salir de 'standing' usan valores
-// distintos para evitar flickering en el borde. Con un único umbral, un tronco
-// que oscila alrededor de 152° (ruido ±5-10°) saltaría standing↔descending en
-// frames alternos. Banda muerta de 7°: hay que SUBIR por encima de 155° para
-// volver a standing, y BAJAR por debajo de 148° para abandonarlo. Valores
-// calibrados con logs reales: de pie MediaPipe reporta hipAngle 153–167°, así
-// que un ENTER más bajo hace que más frames de pie califiquen como 'standing'
-// y la confirmación de 2 frames se complete antes.
+// Trunk thresholds use hysteresis (leave standing below 148°, re-enter above 155°) so noise around the
+// edge doesn't flip standing/descending. Calibrated with real logs: upright, MediaPipe reports hipAngle 153–167°.
 const STANDING_ENTER_HIP_ANGLE = 155;
 const STANDING_EXIT_HIP_ANGLE = 148;
 const HEAD_CHECK_HIP_ANGLE = 90;
 const BACK_ALIGN_TOLERANCE = 0.05;
 
-// ── Estabilización temporal ──────────────────────────────────────────────────
-// MediaPipe entrega ~30 fps con landmarks ruidosos (±5-10° en ángulos). Para
-// que las reglas no reaccionen a un único frame malo:
-//  - SMOOTH_WINDOW: tamaño del promedio móvil de ángulos antes de evaluar.
-//  - PHASE_CONFIRM_FRAMES: una transición de fase sólo se confirma si la fase
-//    candidata se repite este número de frames consecutivos.
-// El pipeline real corre a ~4 fps (detectForVideo ~190ms). Con ventanas grandes
-// la confirmación de fase y el suavizado usan frames muy espaciados y la rep se
-// siente tarde, así que se redujeron respecto a los valores pensados para 30fps.
+// Temporal smoothing. Landmarks are noisy (±5-10°) and the pipeline runs at ~4 fps, so the windows are short.
+//  - SMOOTH_WINDOW: moving-average size for angles.
+//  - PHASE_CONFIRM_FRAMES: consecutive frames needed to confirm a phase change.
 const SMOOTH_WINDOW = 3;
 const PHASE_CONFIRM_FRAMES = 2;
 
@@ -95,8 +57,7 @@ type LevelTarget = {
   successMsg: string;
 };
 
-// Solo existe el nivel 1: las muñecas deben alcanzar la altura de las rodillas
-// (Y crece hacia abajo en MediaPipe, por eso wristY >= kneeY).
+// Level 1 only: wrists must reach knee height (Y grows downward, so wristY >= kneeY).
 const LEVEL_TARGETS: Record<number, LevelTarget> = {
   1: {
     reached: (lms) => {
@@ -116,24 +77,18 @@ function allKeyLandmarksVisible(lms: Landmark[]): boolean {
   return true;
 }
 
-/**
- * Fase "cruda" (sin estabilizar) a partir del ángulo de tronco suavizado.
- * Aplica histéresis sobre el borde de 'standing' usando la fase previa
- * confirmada: si ya estábamos de pie, hace falta caer por debajo de
- * STANDING_EXIT para salir; si no, hace falta superar STANDING_ENTER para
- * volver a entrar. El resultado todavía pasa por la estabilización de N frames.
- */
+/** Raw (unsmoothed) phase from the smoothed trunk angle, with hysteresis on the standing edge. */
 function rawPhase(
   prev: ValidatorPhase,
   hipAngle: number,
   levelReached: boolean,
 ): ValidatorPhase {
   if (prev === 'standing') {
-    // Para SALIR de standing el tronco debe inclinarse por debajo de EXIT.
+    // Leaving standing needs the trunk below EXIT.
     if (hipAngle >= STANDING_EXIT_HIP_ANGLE) return 'standing';
     return levelReached ? 'hold' : 'descending';
   }
-  // Para ENTRAR a standing el tronco debe enderezarse por encima de ENTER.
+  // Entering standing needs the trunk above ENTER.
   if (hipAngle > STANDING_ENTER_HIP_ANGLE) return 'standing';
   if (levelReached) return 'hold';
   if (prev === 'hold' || prev === 'ascending') return 'ascending';
@@ -143,11 +98,9 @@ function rawPhase(
 function buildValidator(level: number): ValidatorFn {
   const target = LEVEL_TARGETS[level] ?? LEVEL_TARGETS[1];
 
-  // ── Estado extra del validador, persistente entre frames ───────────────────
-  // Vive en el closure (buildValidator se instancia una vez por nivel y
-  // persiste), no en ValidatorState, para no romper el contrato de tipos.
+  // Extra validator state lives in this closure (one per level), not in ValidatorState.
 
-  // Buffers circulares para el promedio móvil de cada métrica angular.
+  // Circular buffers for the moving average of each angle.
   const angleBuffers: Record<string, number[]> = {};
   const smooth = (key: string, value: number): number => {
     const buf = angleBuffers[key] ?? (angleBuffers[key] = []);
@@ -156,9 +109,7 @@ function buildValidator(level: number): ValidatorFn {
     return buf.reduce((sum, v) => sum + v, 0) / buf.length;
   };
 
-  // Buffer circular de fases crudas para estabilizar las transiciones: sólo se
-  // confirma una fase cuando los últimos PHASE_CONFIRM_FRAMES frames coinciden.
-  // Un frame ruidoso aislado rompe la racha y no llega a transicionar.
+  // Circular buffer of raw phases: a phase is confirmed only when the last PHASE_CONFIRM_FRAMES agree.
   const phaseHistory: ValidatorPhase[] = [];
   const stabilizePhase = (raw: ValidatorPhase, committed: ValidatorPhase): ValidatorPhase => {
     phaseHistory.push(raw);
@@ -166,9 +117,9 @@ function buildValidator(level: number): ValidatorFn {
     if (phaseHistory.length < PHASE_CONFIRM_FRAMES) return committed;
     const candidate = phaseHistory[0];
     for (const p of phaseHistory) {
-      if (p !== candidate) return committed; // racha rota ⇒ mantener fase actual
+      if (p !== candidate) return committed; // streak broken: keep the current phase
     }
-    return candidate; // N frames consecutivos de acuerdo ⇒ confirmar
+    return candidate; // N consecutive frames agree: confirm
   };
 
   return (lms: Landmark[], state: ValidatorState): ValidatorResult => {
@@ -181,21 +132,18 @@ function buildValidator(level: number): ValidatorFn {
       };
     }
 
-    // Ángulos de tronco: hombro→cadera→rodilla (promedio de ambos lados),
-    // suavizado con promedio móvil antes de evaluar fase y reglas de forma.
-    const hipAngleL = calcularAngulo(lms[LEFT_SHOULDER], lms[LEFT_HIP], lms[LEFT_KNEE]);
-    const hipAngleR = calcularAngulo(lms[RIGHT_SHOULDER], lms[RIGHT_HIP], lms[RIGHT_KNEE]);
+    // Trunk angle: shoulder→hip→knee (both sides averaged), smoothed.
+    const hipAngleL = calculateAngle(lms[LEFT_SHOULDER], lms[LEFT_HIP], lms[LEFT_KNEE]);
+    const hipAngleR = calculateAngle(lms[RIGHT_SHOULDER], lms[RIGHT_HIP], lms[RIGHT_KNEE]);
     const hipAngle = smooth('hip', (hipAngleL + hipAngleR) / 2);
 
     const levelReached = target.reached(lms);
 
-    // Fase cruda (con histéresis) → estabilizada por N frames consecutivos.
+    // Raw phase (with hysteresis), stabilized over N consecutive frames.
     const raw = rawPhase(state.phase, hipAngle, levelReached);
     const phase = stabilizePhase(raw, state.phase);
 
-    // Log de observabilidad: hipAngle suavizado, fase confirmada vs cruda, nivel
-    // y las coordenadas Y de muñecas/rodillas para diagnosticar levelReached
-    // (recordar: Y crece hacia abajo, levelReached requiere wristY >= kneeY).
+    // Debug log. Y grows downward: levelReached needs wristY >= kneeY.
     if (DEBUG_LOG) {
       const wristY = (lms[LEFT_WRIST].y + lms[RIGHT_WRIST].y) / 2;
       const kneeY = (lms[LEFT_KNEE].y + lms[RIGHT_KNEE].y) / 2;
@@ -209,47 +157,34 @@ function buildValidator(level: number): ValidatorFn {
       });
     }
 
-    // Helper para early-returns por errores de forma: mantiene state coherente
-    // sin contar la rep, y avanza phase normalmente.
+    // Early-return helper for form errors: keeps state coherent without counting the rep.
     const formError = (feedback: string): ValidatorResult => {
       state.prevAngle = hipAngle;
       state.phase = phase;
       return { ok: false, feedback, repCompleted: false, phase };
     };
 
-    // ── Reglas de forma ────────────────────────────────────────────────────────
-    // NINGUNA regla de forma se evalúa en 'standing': de pie el único feedback
-    // válido es 'Inclínate hacia adelante'. Además, no evaluamos forma hasta que
-    // el buffer de estabilización está LLENO (phaseHistory.length >=
-    // PHASE_CONFIRM_FRAMES): en los primeros frames la fase aún no es fiable
-    // (puede reportar 'descending' con el usuario de pie) y el promedio móvil de
-    // los ángulos todavía no refleja la posición real.
-    //
-    // NOTA: las reglas de "brazos extendidos" y "rodillas rectas" fueron
-    // ELIMINADAS por mediciones reales. Brazos: en posición natural el ángulo es
-    // ~115–125° y solo supera 150° si se estiran de forma activa; en un toque de
-    // punta de pies cuelgan libres. Rodillas: de perfil MediaPipe distorsiona el
-    // ángulo (kneeAngleL 97–115° con rodillas visualmente rectas), así que el
-    // umbral de 130° bloqueaba la bajada con falsos 'Dobla menos las rodillas'.
+    // Form rules are skipped while standing (the only valid feedback there is to lean forward) and until the
+    // stabilization buffer is full, when phase and smoothed angles are not reliable yet.
+    // "Straight arms" and "straight knees" rules were removed after real measurements: relaxed arms read
+    // ~115–125°, and side-on MediaPipe distorts the knee angle (97–115° with visibly straight knees).
     if (phase !== 'standing' && phaseHistory.length >= PHASE_CONFIRM_FRAMES) {
-      // Regla 2: espalda alineada (hombros a la misma altura, tolerancia normalizada)
-      if (distanciaY(lms[LEFT_SHOULDER], lms[RIGHT_SHOULDER]) > BACK_ALIGN_TOLERANCE) {
+      // Rule 2: aligned back (shoulders at the same height)
+      if (distanceY(lms[LEFT_SHOULDER], lms[RIGHT_SHOULDER]) > BACK_ALIGN_TOLERANCE) {
         return formError('Mantén la espalda alineada');
       }
 
-      // Regla 3: cabeza alineada (sólo durante la bajada profunda, hipAngle < 90)
+      // Rule 3: aligned head (only during the deep descent, hipAngle < 90)
       if (hipAngle < HEAD_CHECK_HIP_ANGLE) {
         const shoulderY = (lms[LEFT_SHOULDER].y + lms[RIGHT_SHOULDER].y) / 2;
-        // Y crece hacia abajo: nariz "por encima" de hombros ⇒ nose.y < shoulder.y
+        // Y grows downward: nose above the shoulders means nose.y < shoulder.y
         if (lms[NOSE].y < shoulderY) {
           return formError('No levantes la cabeza');
         }
       }
     }
 
-    // Rep completa: transición CONFIRMADA a 'standing' desde hold/ascending.
-    // Como `phase` ya está estabilizada por N frames, la rep no se cuenta por un
-    // frame suelto que pareció enderezar el tronco.
+    // The rep completes on the confirmed transition to standing from hold/ascending.
     const repCompleted =
       phase === 'standing' &&
       (state.phase === 'hold' || state.phase === 'ascending');
