@@ -1,4 +1,4 @@
-package com.activamente.app
+package com.vidaactiva.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

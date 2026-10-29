@@ -4,10 +4,10 @@ Credenciales de dev (mismas que documenta el header de seed.sql):
 """
 
 # Usuarios (email / password)
-ADMIN_EMAIL = "admin@activamente.cl"
+ADMIN_EMAIL = "admin@vidaactiva.cl"
 ADMIN_PASSWORD = "Admin1234!"
 
-SPECIALIST_EMAIL = "maria.gonzalez@activamente.cl"
+SPECIALIST_EMAIL = "maria.gonzalez@vidaactiva.cl"
 SPECIALIST_PASSWORD = "Specialist1234!"
 
 # Pedro Soto: paciente CON rutina/sesión de prueba asignadas.

@@ -95,7 +95,7 @@ cd backend
 pip install -r requirements-dev.txt
 pytest
 ```
-Los tests crean una base limpia `activamente_test`, cargan `init.sql` y `seed.sql`, y la eliminan al terminar. El mismo flujo corre en GitHub Actions ([ci.yml](.github/workflows/ci.yml)).
+Los tests crean una base limpia `vida_activa_test`, cargan `init.sql` y `seed.sql`, y la eliminan al terminar. El mismo flujo corre en GitHub Actions ([ci.yml](.github/workflows/ci.yml)).
 
 ## Pendiente
 - Rediseño del resto de las pantallas (paciente, especialista y admin).

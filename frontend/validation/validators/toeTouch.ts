@@ -227,7 +227,7 @@ function buildValidator(level: number): ValidatorFn {
     //
     // NOTA: las reglas de "brazos extendidos" y "rodillas rectas" fueron
     // ELIMINADAS por mediciones reales. Brazos: en posición natural el ángulo es
-    // ~115–125° y solo supera 150° si se estiran activamente; en un toque de
+    // ~115–125° y solo supera 150° si se estiran de forma activa; en un toque de
     // punta de pies cuelgan libres. Rodillas: de perfil MediaPipe distorsiona el
     // ángulo (kneeAngleL 97–115° con rodillas visualmente rectas), así que el
     // umbral de 130° bloqueaba la bajada con falsos 'Dobla menos las rodillas'.
