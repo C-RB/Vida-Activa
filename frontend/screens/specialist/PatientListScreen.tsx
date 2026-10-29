@@ -12,8 +12,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { router, useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import { useRouter } from "expo-router";
+import BottomNav from "../../components/BottomNav";
 import { getPatients, PatientListItem } from "../../services/patientService";
 import { routes } from "../../router/routes";
 
@@ -193,7 +193,7 @@ export default function PatientListScreen({
         )}
       </ScrollView>
 
-      <SpecialistNavbar active="patients" />
+      <BottomNav role="specialist" active="patients" />
     </LinearGradient>
   );
 }

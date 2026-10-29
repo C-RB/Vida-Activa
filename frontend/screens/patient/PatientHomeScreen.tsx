@@ -8,10 +8,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PatientNavbar from "../../components/PatientNavbar";
+import BottomNav from "../../components/BottomNav";
 import Icon from "../../components/ui/Icon";
 import Button from "../../components/ui/Button";
-import { Colors, Radius, Type } from "../../constants/theme";
+import Card from "../../components/ui/Card";
+import Avatar from "../../components/ui/Avatar";
+import { Colors, Type } from "../../constants/theme";
 import { useAppFonts } from "../../hooks/useAppFonts";
 import {
   getNextAppointment,
@@ -54,14 +56,6 @@ const startOfWeek = (d: Date): Date => {
 
 // "10:00:00" → "10:00"
 const shortTime = (t: string): string => t.slice(0, 5);
-
-const initialsOf = (fullName: string): string =>
-  fullName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
 
 export default function PatientHomeScreen() {
   const router = useRouter();
@@ -157,11 +151,7 @@ export default function PatientHomeScreen() {
         <View style={styles.topBar}>
           <Icon name="logo" size={40} />
           <Text style={[Type.title2, styles.brand]}>Vida Activa</Text>
-          <View style={styles.avatar}>
-            <Text style={[Type.bodyStrong, styles.avatarText]}>
-              {initialsOf(fullName)}
-            </Text>
-          </View>
+          <Avatar name={fullName} />
         </View>
 
         <View style={styles.greeting}>
@@ -173,7 +163,7 @@ export default function PatientHomeScreen() {
           </Text>
         </View>
 
-        <View style={styles.card}>
+        <Card>
           {loading ? (
             <ActivityIndicator color={Colors.primary} />
           ) : routine ? (
@@ -215,10 +205,10 @@ export default function PatientHomeScreen() {
               </View>
             </View>
           )}
-        </View>
+        </Card>
 
         {week.total > 0 && (
-          <View style={styles.card}>
+          <Card>
             <View style={styles.rowBetween}>
               <Text style={[Type.bodyStrong, styles.textPrimary]}>
                 Esta semana
@@ -255,11 +245,11 @@ export default function PatientHomeScreen() {
                 );
               })}
             </View>
-          </View>
+          </Card>
         )}
 
         {nextAppointment && (
-          <View style={[styles.card, styles.row]}>
+          <Card style={styles.row}>
             <View style={styles.infoBadge}>
               <Icon name="calendar" size={30} />
             </View>
@@ -272,11 +262,11 @@ export default function PatientHomeScreen() {
                 {nextAppointment.time}
               </Text>
             </View>
-          </View>
+          </Card>
         )}
       </ScrollView>
 
-      <PatientNavbar active="home" />
+      <BottomNav role="patient" active="home" />
     </View>
   );
 }
@@ -309,27 +299,8 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.textPrimary,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    color: Colors.primary,
-  },
   greeting: {
     gap: 4,
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.card,
-    padding: 20,
-    gap: 14,
   },
   row: {
     flexDirection: "row",

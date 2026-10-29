@@ -12,7 +12,7 @@ import {
   ValidatorResult,
   ValidatorState,
 } from '../types';
-import { calculateAngle, distanceY } from '../geometry';
+import { calculateAngle } from '../geometry';
 import {
   LEFT_ELBOW,
   LEFT_HIP,
@@ -41,8 +41,6 @@ const ELBOW_STRAIGHT_ANGLE = 150;
 // Max angle difference allowed between the left and right arm
 const ARM_SYMMETRY_TOLERANCE = 25;
 
-// Max vertical shoulder difference (detects sideways trunk lean)
-const SHOULDER_ALIGN_TOLERANCE = 0.05;
 
 type LevelTarget = {
   minAngle: number;

@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
-import AdminNavbar from "../../components/AdminNavbar";
+import BottomNav from "../../components/BottomNav";
 import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
@@ -207,7 +207,7 @@ export default function AdminMainScreen() {
 
       </ScrollView>
 
-      <AdminNavbar active="home" />
+      <BottomNav role="admin" active="home" />
 
       <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
         <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />

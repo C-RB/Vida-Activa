@@ -12,7 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import {
@@ -159,7 +159,7 @@ export default function RoutineListScreen() {
         <Text style={styles.primaryCtaText}>Crear rutina</Text>
       </TouchableOpacity>
 
-      <SpecialistNavbar active="patients" />
+      <BottomNav role="specialist" active="patients" />
     </LinearGradient>
   );
 }

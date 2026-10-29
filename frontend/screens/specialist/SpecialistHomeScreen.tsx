@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { getDashboard, DashboardResponse } from "../../services/specialistService";
 
 import { Colors, GradientColors } from "../../constants/theme";
@@ -152,7 +152,7 @@ export default function SpecialistHomeScreen() {
         </ScrollView>
       )}
 
-      <SpecialistNavbar active="home" />
+      <BottomNav role="specialist" active="home" />
 
       <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
         <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />

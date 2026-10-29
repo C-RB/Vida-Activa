@@ -13,8 +13,8 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
-import { useFocusEffect, useRouter } from "expo-router";
-import AdminNavbar from "../../components/AdminNavbar";
+import { useRouter } from "expo-router";
+import BottomNav from "../../components/BottomNav";
 import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
@@ -242,7 +242,7 @@ export default function AdminUsersScreen() {
         <MaterialCommunityIcons name="account-plus" size={24} color="#fff" />
       </TouchableOpacity>
 
-      <AdminNavbar active="users" />
+      <BottomNav role="admin" active="users" />
 
       <Modal
         visible={isEditModalVisible}

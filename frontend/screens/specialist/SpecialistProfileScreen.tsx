@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
@@ -84,7 +84,7 @@ export default function SpecialistProfileScreen() {
         </ScrollView>
       )}
 
-      <SpecialistNavbar active="profile" />
+      <BottomNav role="specialist" active="profile" />
     </LinearGradient>
   );
 }

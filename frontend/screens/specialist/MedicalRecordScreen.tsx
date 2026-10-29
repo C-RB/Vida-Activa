@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { routes } from "../../router/routes";
 import { Colors, GradientColors, BannerStyle } from "../../constants/theme";
 import {
@@ -240,7 +240,7 @@ export default function MedicalRecordScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      <SpecialistNavbar active="patients" />
+      <BottomNav role="specialist" active="patients" />
     </LinearGradient>
   );
 }

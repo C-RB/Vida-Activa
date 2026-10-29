@@ -15,7 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import AdminNavbar from "../../components/AdminNavbar";
+import BottomNav from "../../components/BottomNav";
 import { Colors, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import {
@@ -379,7 +379,7 @@ export default function AdminProfileScreen() {
         <Text style={styles.toastText}>{toastMessage}</Text>
       </Animated.View>
 
-      <AdminNavbar active="profile" />
+      <BottomNav role="admin" active="profile" />
     </LinearGradient>
   );
 }

@@ -19,7 +19,7 @@ import {
   TimeSlot,
   AppointmentPatient,
 } from "../../services/appointmentService";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { routes } from "../../router/routes";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 
@@ -349,7 +349,7 @@ export default function ScheduleAppointmentScreen() {
         </SectionCard>
       </ScrollView>
 
-      <SpecialistNavbar active="calendar" />
+      <BottomNav role="specialist" active="calendar" />
     </LinearGradient>
   );
 }

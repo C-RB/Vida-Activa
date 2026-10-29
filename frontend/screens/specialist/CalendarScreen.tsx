@@ -12,7 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useLocalSearchParams } from "expo-router";
 import { getAppointmentsByDate, Appointment } from "../../services/calendarService";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 
 import { Colors, GradientColors } from "../../constants/theme";
 
@@ -225,7 +225,7 @@ export default function CalendarScreen() {
 
         </ScrollView>
 
-        <SpecialistNavbar active="calendar" />
+        <BottomNav role="specialist" active="calendar" />
       </View>
     </LinearGradient>
   );

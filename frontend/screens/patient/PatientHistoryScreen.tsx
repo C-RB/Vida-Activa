@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import PatientNavbar from "../../components/PatientNavbar";
+import BottomNav from "../../components/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
@@ -60,7 +60,7 @@ export default function PatientHistoryScreen() {
         )}
       </ScrollView>
 
-      <PatientNavbar active="history" />
+      <BottomNav role="patient" active="history" />
     </LinearGradient>
   );
 }
