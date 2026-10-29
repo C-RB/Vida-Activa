@@ -23,8 +23,6 @@ import SpecialistNavbar from "../../components/SpecialistNavbar";
 import { routes } from "../../router/routes";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 
-// ─── Calendar helpers ─────────────────────────────────────────────────────────
-
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MONTHS_ES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -48,8 +46,6 @@ function buildCalendar(year: number, month: number): CalDay[][] {
   for (let i = 0; i < flat.length; i += 7) weeks.push(flat.slice(i, i + 7));
   return weeks;
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StepBadge({ step }: { step: number }) {
   return (
@@ -79,8 +75,6 @@ function SectionCard({
   );
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function ScheduleAppointmentScreen() {
   const { patientId } = useLocalSearchParams<{ patientId?: string }>();
   const router = useRouter();
@@ -100,7 +94,7 @@ export default function ScheduleAppointmentScreen() {
     InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
   });
 
-  // Ficha del paciente recibido por navegación (para el resumen).
+  // Patient record received through navigation (for the summary).
   useEffect(() => {
     if (!patientId) {
       setLoading(false);
@@ -112,7 +106,7 @@ export default function ScheduleAppointmentScreen() {
       .finally(() => setLoading(false));
   }, [patientId]);
 
-  // Cupos disponibles para el día seleccionado (se recargan al cambiar de día).
+  // Available slots for the selected day (reloaded when the day changes).
   useEffect(() => {
     if (!selectedDay) {
       setSlots([]);
@@ -154,7 +148,7 @@ export default function ScheduleAppointmentScreen() {
         date: new Date(year, month, selectedDay),
         timeSlot: selectedSlot,
       });
-      // Fecha agendada en formato YYYY-MM-DD para preseleccionarla en el calendario.
+      // Booked date (YYYY-MM-DD) to preselect it in the calendar.
       const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
         selectedDay
       ).padStart(2, "0")}`;
@@ -200,14 +194,12 @@ export default function ScheduleAppointmentScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
         <Text style={styles.bannerTitle}>Agendar Hora</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* ── Calendar card ── */}
         <View style={styles.calendarCard}>
           <View style={styles.monthNav}>
             <TouchableOpacity onPress={prevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -252,7 +244,6 @@ export default function ScheduleAppointmentScreen() {
           ))}
         </View>
 
-        {/* ── Available slots ── */}
         <SectionCard step={2} title={"Horarios Disponibles"}>
           {slotsLoading ? (
             <ActivityIndicator color={Colors.btnTeal} style={{ marginVertical: 12 }} />
@@ -299,7 +290,6 @@ export default function ScheduleAppointmentScreen() {
           )}
         </SectionCard>
 
-        {/* ── Summary ── */}
         <SectionCard step={3} title="Resumen">
           <Text style={styles.summaryLabel}>PACIENTE</Text>
           <View style={styles.summaryPatientRow}>
@@ -364,14 +354,11 @@ export default function ScheduleAppointmentScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerSubtitle: {
     fontSize: 14,
@@ -385,7 +372,6 @@ const styles = StyleSheet.create({
     color: Colors.bannerTitle,
   },
 
-  // ── Calendar ──
   calendarCard: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
     borderRadius: 16,
@@ -439,7 +425,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bold,
   },
 
-  // ── Section card ──
   sectionCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 16,
@@ -472,7 +457,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // ── Slots ──
   slotsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -518,7 +502,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 
-  // ── Summary ──
   summaryLabel: {
     fontSize: 10,
     fontFamily: Fonts.bold,

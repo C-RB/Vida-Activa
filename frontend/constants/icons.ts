@@ -1,5 +1,4 @@
-// Íconos e ilustraciones de la guía de estilo v2 (exportados del Figma).
-// Se renderizan con <Icon name="..." /> (components/ui/Icon.tsx).
+// Icons and illustrations from the v2 style guide (Figma export), rendered with <Icon /> (components/ui/Icon.tsx).
 
 export const ICONS = {
   logo: "<svg viewBox=\"0 0 67.5 67.5\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g id=\"S&#195;&#173;mbolo &#194;&#183; persona, movimiento y acompa&#195;&#177;amiento\">\n<path id=\"persona\" d=\"M33.1875 20.25C35.9834 20.25 38.25 17.9834 38.25 15.1875C38.25 12.3916 35.9834 10.125 33.1875 10.125C30.3916 10.125 28.125 12.3916 28.125 15.1875C28.125 17.9834 30.3916 20.25 33.1875 20.25Z\" fill=\"#1D5FD1\"/>\n<path id=\"movimiento\" d=\"M15.75 22.5C21.9375 25.875 26.4375 27.5625 32.0625 26.4375C38.8125 25.3125 44.4375 21.375 49.5 16.3125C52.3125 13.5 56.25 16.875 53.4375 20.25C48.375 26.4375 43.3125 30.9375 38.25 33.75V50.0625C38.25 53.4375 32.625 55.125 32.0625 51.1875L31.5 37.6875C31.5 34.3125 28.125 32.625 24.1875 30.9375C19.125 29.25 14.625 27 12.9375 24.75C11.25 22.5 13.5 20.8125 15.75 22.5Z\" fill=\"#1D5FD1\"/>\n<path id=\"acompanamiento\" d=\"M11.25 36C11.25 48.375 20.8125 57.9375 33.1875 57.9375C45.5625 57.9375 55.6875 48.375 55.6875 36\" stroke-width=\"5.0625\" stroke-linecap=\"round\" stroke=\"#1D5FD1\"/>\n</g>\n</svg>",

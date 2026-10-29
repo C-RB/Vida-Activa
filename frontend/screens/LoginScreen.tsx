@@ -19,7 +19,6 @@ import { useAppFonts } from "../hooks/useAppFonts";
 import Icon from "../components/ui/Icon";
 import Button from "../components/ui/Button";
 
-// Where each role lands after a successful login.
 const HOME_BY_ROLE: Record<UserRole, string> = {
   ADMIN: "/admin-main",
   SPECIALIST: "/specialist-home",
@@ -39,7 +38,6 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const fontsLoaded = useAppFonts();
 
-  // Email is always normalised to lowercase so logins are case-insensitive.
   const handleEmailChange = (text: string) => {
     setEmail(text.toLowerCase());
   };
@@ -56,7 +54,7 @@ export default function LoginScreen() {
     try {
       const { role } = await loginApi(normalizedEmail, password);
 
-      // Route by role. Use replace so "Atrás" no longer returns to login.
+      // Use replace so going back no longer returns to login.
       const destination = HOME_BY_ROLE[role] ?? "/";
       router.replace(destination as any);
     } catch (error) {
@@ -68,7 +66,7 @@ export default function LoginScreen() {
     }
   };
 
-  // La clave la entrega el especialista; no existe un flujo de recuperación.
+  // The specialist hands out the password; there is no recovery flow.
   const handleForgot = () => {
     Alert.alert(
       "¿Olvidó su clave?",

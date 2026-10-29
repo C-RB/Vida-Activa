@@ -44,7 +44,6 @@ export default function AdminUsersScreen() {
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // Edit Modal State
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
@@ -121,7 +120,6 @@ export default function AdminUsersScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logoText}>Vida Activa</Text>
         <TouchableOpacity style={styles.profileIconWrap}>
@@ -246,7 +244,6 @@ export default function AdminUsersScreen() {
 
       <AdminNavbar active="users" />
 
-      {/* Edit User Modal */}
       <Modal
         visible={isEditModalVisible}
         transparent={true}
@@ -553,7 +550,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   
-  /* Modal Styles */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',

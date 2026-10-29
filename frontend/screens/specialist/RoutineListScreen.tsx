@@ -21,9 +21,7 @@ import {
   RoutineWithExercises,
 } from "../../services/routineService";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-// day_of_week del backend: 1 → Lunes … 7 → Domingo.
+// Backend day_of_week: 1 = Monday … 7 = Sunday.
 const WEEKDAYS = [
   "Lunes",
   "Martes",
@@ -36,15 +34,12 @@ const WEEKDAYS = [
 
 const dayName = (d: number): string => WEEKDAYS[d - 1] ?? "—";
 
-// start_date / end_date llegan como "YYYY-MM-DD"; se formatea sin construir un
-// Date para evitar corrimientos por zona horaria.
+// start_date / end_date arrive as "YYYY-MM-DD"; formatted without building a Date to avoid time-zone shifts.
 const formatDate = (iso: string): string => {
   if (!iso) return "—";
   const [y, m, d] = iso.split("-");
   return d && m && y ? `${d}/${m}/${y}` : iso;
 };
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function RoutineListScreen() {
   const router = useRouter();
@@ -114,7 +109,6 @@ export default function RoutineListScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <View style={styles.bannerRow}>
           <View style={{ flex: 1 }}>
@@ -169,8 +163,6 @@ export default function RoutineListScreen() {
     </LinearGradient>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function RoutineCard({
   routine,
@@ -240,13 +232,10 @@ function RoutineCard({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerRow: { flexDirection: "row", alignItems: "center" },
   bannerSubtitle: {
@@ -261,7 +250,6 @@ const styles = StyleSheet.create({
     color: Colors.bannerTitle,
   },
 
-  // ── Card ──
   card: {
     backgroundColor: Colors.cardBg,
     borderRadius: 14,
@@ -324,7 +312,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
 
-  // ── Estados ──
   errorText: {
     marginTop: 40,
     textAlign: "center",
@@ -340,7 +327,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
 
-  // ── Primary CTA ──
   primaryCta: {
     flexDirection: "row",
     alignItems: "center",

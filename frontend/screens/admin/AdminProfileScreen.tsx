@@ -65,17 +65,13 @@ export default function AdminProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Modals state
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
 
-  // Edit form state
   const [editForm, setEditForm] = useState({ name: "", phone: "" });
 
-  // Password form state
   const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirmPass: "" });
 
-  // Custom Toast state
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [toastOpacity] = useState(new Animated.Value(0));
@@ -110,7 +106,6 @@ export default function AdminProfileScreen() {
 
   if (!fontsLoaded) return null;
 
-  // Show Toast Function
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToastMessage(message);
     setToastType(type);
@@ -121,7 +116,6 @@ export default function AdminProfileScreen() {
     ]).start();
   };
 
-  // Handlers for Edit Profile
   const openEditModal = () => {
     setEditForm({ name: adminData.name, phone: adminData.phone });
     setEditModalVisible(true);
@@ -133,7 +127,7 @@ export default function AdminProfileScreen() {
       showToast("El nombre no puede estar vacío.", "error");
       return;
     }
-    // "Nombre Completo" (un solo campo) → first_name = primer token, last_name = resto.
+    // Single "full name" field: first token → first_name, the rest → last_name.
     const parts = editForm.name.trim().split(/\s+/);
     const first_name = parts.shift() ?? "";
     const last_name = parts.join(" ");
@@ -158,7 +152,6 @@ export default function AdminProfileScreen() {
     }
   };
 
-  // Handlers for Password
   const handleSavePassword = async () => {
     if (saving) return;
     if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirmPass) {
@@ -191,12 +184,11 @@ export default function AdminProfileScreen() {
 
   const handleLogout = () => {
     clearAuth();
-    router.replace("/" as any); // Redirects to root (login)
+    router.replace("/" as any);
   };
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logoText}>Vida Activa</Text>
         <TouchableOpacity style={styles.profileIconWrap}>
@@ -217,7 +209,6 @@ export default function AdminProfileScreen() {
           </Text>
         </View>
 
-        {/* Profile Info Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={styles.avatarContainer}>
@@ -268,7 +259,6 @@ export default function AdminProfileScreen() {
           </View>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           <Text style={styles.sectionSubtitle}>Ajustes de cuenta</Text>
           
@@ -293,7 +283,6 @@ export default function AdminProfileScreen() {
       </ScrollView>
       )}
 
-      {/* Edit Profile Modal */}
       <Modal visible={isEditModalVisible} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -335,7 +324,6 @@ export default function AdminProfileScreen() {
         </View>
       </Modal>
 
-      {/* Change Password Modal */}
       <Modal visible={isPasswordModalVisible} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -380,7 +368,6 @@ export default function AdminProfileScreen() {
         </View>
       </Modal>
 
-      {/* Custom Toast Notification */}
       <Animated.View style={[
         styles.toastContainer, 
         { opacity: toastOpacity, backgroundColor: toastType === "success" ? Colors.info : Colors.danger }
@@ -570,7 +557,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(231, 87, 86, 0.1)',
   },
   
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -647,7 +633,6 @@ const styles = StyleSheet.create({
     color: Colors.onPrimary,
   },
 
-  // Toast Styles
   toastContainer: {
     position: 'absolute',
     bottom: 90, // Above navbar

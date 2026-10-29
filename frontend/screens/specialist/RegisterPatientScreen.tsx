@@ -18,26 +18,19 @@ import { useRouter } from "expo-router";
 import { getPatientByRut, assignPatientToSpecialist, Patient } from "../../services/patientService";
 
 import { Colors, GradientColors } from "../../constants/theme";
-// ─── Función para formatear el RUT automáticamente ─────────────────────────────
 const formatRut = (value: string) => {
-  // 1. Remover todo lo que no sea número o la letra K, y limitar a 9 caracteres
-  //    (8 del cuerpo + 1 dígito verificador). Limitar aquí evita que el RUT
-  //    formateado supere los 12 chars y que maxLength del input lo recorte a
-  //    mitad de formateo, lo que desincronizaba el valor nativo del controlado
-  //    (origen de los "números de la nada" o repetidos al escribir).
+  // Keep only digits and K, max 9 chars (8 body + check digit): a longer formatted RUT would be cut by the
+  // input's maxLength mid-format and desync the native and controlled values (repeated or phantom digits).
   const cleanValue = value.replace(/[^0-9kK]/g, "").toUpperCase().slice(0, 9);
 
   if (cleanValue.length === 0) return "";
   if (cleanValue.length === 1) return cleanValue;
 
-  // 2. Separar el dígito verificador del resto (cuerpo)
   const dv = cleanValue.slice(-1);
   let body = cleanValue.slice(0, -1);
 
-  // 3. Agregar los puntos cada 3 números
   body = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-  // 4. Retornar unido con el guion
   return `${body}-${dv}`;
 };
 
@@ -48,11 +41,9 @@ export default function AssignPatientScreen({
 }) {
   const router = useRouter();
   
-  // Estados para el flujo
   const [rutInput, setRutInput] = useState("");
   const [foundPatient, setFoundPatient] = useState<Patient | null>(null);
   
-  // Estados de carga
   const [isSearching, setIsSearching] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
 
@@ -119,7 +110,6 @@ export default function AssignPatientScreen({
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── Búsqueda por RUT ── */}
           <Text style={styles.fieldLabel}>INGRESE EL RUT DEL PACIENTE</Text>
           <View style={styles.searchRow}>
             <TextInput
@@ -133,8 +123,7 @@ export default function AssignPatientScreen({
               autoComplete="off"
               importantForAutofill="no" // Evita que el autofill de Android inyecte valores
               textContentType="none"
-              // visible-password en Android desactiva la barra de sugerencias/autocompletado
-              // (que insertaba números repetidos o "de la nada") y permite la 'K'.
+              // visible-password on Android disables the suggestion bar (which inserted repeated digits) and allows 'K'.
               keyboardType={Platform.OS === "android" ? "visible-password" : "default"}
               maxLength={12} // XX.XXX.XXX-X son 12 chars; el cuerpo ya se limita en formatRut
               editable={!isSearching}
@@ -152,11 +141,9 @@ export default function AssignPatientScreen({
             </TouchableOpacity>
           </View>
 
-          {/* ── Información del Paciente Encontrado ── */}
           {foundPatient && (
             <View style={styles.resultContainer}>
               
-              {/* Tarjeta de Perfil */}
               <View style={styles.card}>
                 <View style={styles.profileRow}>
                   <View style={styles.avatarCircle}>
@@ -180,10 +167,8 @@ export default function AssignPatientScreen({
                 </View>
               </View>
 
-              {/* Título de Sección de Contacto */}
               <Text style={styles.sectionTitle}>Información de Contacto</Text>
 
-              {/* Tarjeta de Contacto */}
               <View style={styles.card}>
                 <View style={styles.contactItem}>
                   <View style={styles.contactIconBg}>
@@ -207,7 +192,6 @@ export default function AssignPatientScreen({
                 </View>
               </View>
 
-              {/* ── Botón Confirmar ── */}
               <TouchableOpacity
                 style={styles.confirmBtn}
                 onPress={handleConfirmAssign}
@@ -228,7 +212,6 @@ export default function AssignPatientScreen({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -267,7 +250,6 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
 
-  // ── Búsqueda ──
   fieldLabel: {
     fontSize: 12,
     fontFamily: "InterSemiBold",
@@ -306,7 +288,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // ── Resultados y Tarjetas ──
   resultContainer: {
     marginTop: 10,
   },
@@ -317,7 +298,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   
-  // Perfil
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -367,7 +347,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
 
-  // Contacto
   sectionTitle: {
     fontSize: 16,
     fontFamily: "InterSemiBold",
@@ -396,7 +375,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // ── Botón Confirmar ──
   confirmBtn: {
     backgroundColor: Colors.primary,
     borderRadius: 12,

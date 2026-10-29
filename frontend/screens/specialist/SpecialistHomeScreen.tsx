@@ -50,7 +50,7 @@ function MetricRow({ label, value, progress, topMargin }: MetricRowProps) {
   );
 }
 
-// "—" cuando no hay dato real (cargando o error de red).
+// "—" when there is no real data (loading or network error).
 const fmt = (n: number | null | undefined) => (n != null ? `${n}` : "—");
 
 export default function SpecialistHomeScreen() {
@@ -75,7 +75,7 @@ export default function SpecialistHomeScreen() {
   const stats = dashboardData?.stats;
   const progress = dashboardData?.progress;
 
-  // Barras de progreso en [0,100] para el ancho del fill; "—" si no hay datos.
+  // Progress bars in [0,100] for the fill width; "—" when there is no data.
   const sessionsValue =
     progress != null
       ? `${progress.sessions_completed_today}/${progress.sessions_total_today}`
