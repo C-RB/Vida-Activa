@@ -1,5 +1,4 @@
-"""Smoke test del catálogo de ejercicios (GET /api/exercises), incluyendo que
-las instrucciones lleguen (respaldo del flujo de InstructionScreen)."""
+"""Smoke test of the exercise catalog (GET /api/exercises), including that the instructions are returned."""
 
 from tests import seed_data
 
@@ -17,7 +16,7 @@ def test_exercises_include_instructions(client, patient_headers):
     assert r.status_code == 200, r.text
     toe = next(e for e in r.json() if e["id"] == "toe_touch")
     assert toe["instructions"]
-    # Español neutro (tuteo), no voseo: verifica el fix de seed.sql.
+    # Neutral Spanish (tuteo, not voseo): checks the seed.sql fix.
     assert "Inclínate" in toe["instructions"]
     assert "Mantené" not in toe["instructions"]
 

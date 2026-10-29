@@ -34,7 +34,7 @@ INSERT INTO users (id, first_name, last_name, email, password_hash, role) VALUES
    '$2b$12$Bsb8aWAEkGxbfgSBEjr9SuTYRH/UWMu5krkqyvy7DfLKoyBxmddu2',
    'PATIENT'),
 
-  -- Patient 2 (sin asignar a ningún especialista) | password: Patient1234!
+  -- Patient 2 (not assigned to any specialist) | password: Patient1234!
   ('7c0f3d2a-1b44-4e58-9a31-2f6c8e0a9b12',
    'Ana', 'Pérez',
    'ana.perez@test.com',
@@ -61,14 +61,13 @@ INSERT INTO specialists (user_id, rut, specialty, phone) VALUES
 
 INSERT INTO patients (user_id, rut, age, gender, phone, address, is_active) VALUES
   ('90bcc710-3984-4f86-8570-772ac433d7cd', '98765432-1', 34, 'Masculino', '+56987654321', 'Av. Ficticia 123, Santiago', TRUE),
-  -- Paciente 2: sin asignar a ningún especialista, para probar el flujo de asignación.
+  -- Patient 2: not assigned to any specialist, to test the assignment flow.
   ('7c0f3d2a-1b44-4e58-9a31-2f6c8e0a9b12', '11111111-1', 28, 'Femenino', '+56911111111', 'Calle Falsa 456, Santiago', TRUE);
 
 -- =====================
 -- ROUTINES
 -- =====================
--- Rutina de prueba para testear los endpoints de sesiones.
--- id fijo para que sea predecible:
+-- Test routine for the sessions endpoints, with a fixed id so it is predictable:
 --   routine_id  → 12f7ce23-cac4-4987-a338-9b0e1175edd8
 --   patient_id  → 90bcc710-3984-4f86-8570-772ac433d7cd (Pedro Soto)
 
@@ -85,10 +84,8 @@ INSERT INTO routines (id, specialist_id, patient_id, name, start_date, end_date,
 -- =====================
 -- EXERCISES
 -- =====================
--- exercises.id es VARCHAR (slug), coincide con el exerciseId del frontend.
-
--- Los ids coinciden con las claves de exerciseRegistry.ts del frontend
--- (toe_touch, leg_raise, shoulder_raises, squat); no cambiarlos.
+-- exercises.id is a VARCHAR slug matching the frontend exerciseId and the exerciseRegistry.ts keys
+-- (toe_touch, leg_raise, shoulder_raises, squat); do not change them.
 INSERT INTO exercises (id, name, description, instructions, multimedia_url) VALUES
   ('squat', 'Sentadilla',
    'Ejercicio de fuerza para piernas y glúteos.',
@@ -110,10 +107,8 @@ INSERT INTO exercises (id, name, description, instructions, multimedia_url) VALU
 -- =====================
 -- ROUTINE_EXERCISES
 -- =====================
--- Ejercicios de la rutina de prueba (12f7ce23...), en orden order_index.
--- Necesarios para que POST /api/sessions genere los session_exercises reales:
--- crea una fila session_exercises por cada routine_exercise de la rutina.
--- Los ids coinciden con los slugs de exercises (toe_touch, leg_raise, ...).
+-- Exercises of the test routine (12f7ce23...), by order_index. POST /api/sessions needs them to create
+-- one session_exercises row per routine_exercise.
 INSERT INTO routine_exercises (id, routine_id, exercise_id, order_index, level, total_series, total_reps, rest_time_seconds, time_limit_seconds) VALUES
   ('1fab546d-7829-478a-98f5-bd42ed045a0d', '12f7ce23-cac4-4987-a338-9b0e1175edd8', 'toe_touch',       0, 1, 1, 10, 30, NULL),
   ('c3dc751c-72d2-421c-a7e5-d10fbe41d440', '12f7ce23-cac4-4987-a338-9b0e1175edd8', 'leg_raise',       1, 1, 1, 10, 30, NULL),
@@ -123,7 +118,7 @@ INSERT INTO routine_exercises (id, routine_id, exercise_id, order_index, level, 
 -- =====================
 -- SESSIONS
 -- =====================
--- Sesión de prueba con id fijo para testear el endpoint PUT de progreso.
+-- Test session with a fixed id for the progress PUT endpoint.
 --   session_id  → 90a1aeee-c904-439f-ba34-1a3c9dfc2a41
 --   patient_id  → 90bcc710-3984-4f86-8570-772ac433d7cd (Pedro Soto)
 --   routine_id  → 12f7ce23-cac4-4987-a338-9b0e1175edd8
@@ -138,8 +133,7 @@ INSERT INTO sessions (id, patient_id, routine_id, duration_minutes, is_completed
 -- =====================
 -- SESSION_EXERCISES
 -- =====================
--- Registro de ejercicio dentro de la sesión, con id fijo.
--- routine_exercise_id se deja NULL (es opcional).
+-- Exercise record inside the session, with a fixed id; routine_exercise_id is left NULL (optional).
 --   session_exercise_id → 6b75d303-0e53-442b-bd3a-330a30b5e366
 
 INSERT INTO session_exercises (id, session_id, exercise_id, routine_exercise_id, series_completed, reps_completed, accuracy_score, feedback) VALUES

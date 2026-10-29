@@ -1,6 +1,4 @@
-# Dependencias solo para desarrollo/tests (NO se instalan en la imagen de prod;
-# el Dockerfile instala requirements.txt). Instalar con:
-#   pip install -r requirements-dev.txt
+# Dev/test-only dependencies (not installed in the production image, which uses requirements.txt).
 -r requirements.txt
 pytest==8.3.4
 httpx==0.28.1

@@ -1,15 +1,9 @@
 """
-Fixtures de pytest (estrategia B1: Postgres real de test).
+Pytest fixtures using a real Postgres test database.
 
-Cómo correr los tests:
-  1. Levantá Postgres (basta el servicio db):  docker compose up -d db
-  2. Instalá las deps de test:                 pip install -r requirements-dev.txt
-  3. Corré desde backend/:            pytest
-
-La suite crea una base LIMPIA `vida_activa_test` (separada de la de desarrollo),
-le corre `database/init.sql` + `database/seed.sql`, y apunta la app a ella. Se
-borra al terminar. Podés overridear conexión con TEST_DB_HOST/PORT/USER/PASSWORD
-o directamente TEST_DATABASE_URL.
+Run `docker compose up -d db`, then `pip install -r requirements-dev.txt` and `pytest` from backend/.
+The suite creates a clean `vida_activa_test` database, loads database/init.sql + seed.sql, points the app at it
+and drops it at the end. Override the connection with TEST_DB_HOST/PORT/USER/PASSWORD or TEST_DATABASE_URL.
 """
 
 import os
@@ -18,8 +12,7 @@ from pathlib import Path
 import psycopg2
 import pytest
 
-# ── SECRET_KEY debe existir ANTES de importar la app (core/security.py falla
-#    al arrancar si no está). Igual pasa con DATABASE_URL para el engine default.
+# SECRET_KEY must exist before importing the app (core/security.py fails at startup without it).
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-prod")
 
 DB_DIR = Path(__file__).resolve().parent.parent / "database"
@@ -34,10 +27,10 @@ TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
     f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{TEST_DB_NAME}",
 )
-# La app lee DATABASE_URL al importar database.py; la apuntamos a la de test.
+# The app reads DATABASE_URL when database.py is imported, so point it at the test database first.
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 
-# Import DESPUÉS de fijar las env vars de arriba.
+# Imports must come after the env vars above.
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -49,7 +42,7 @@ from tests import seed_data  # noqa: E402
 
 
 def _admin_dsn() -> str:
-    # Conexión a la base 'postgres' para crear/borrar la base de test.
+    # Connect to the 'postgres' database to create and drop the test database.
     return f"dbname=postgres user={DB_USER} password={DB_PASSWORD} host={DB_HOST} port={DB_PORT}"
 
 
@@ -62,7 +55,7 @@ def _run_sql_file(conn, path: Path) -> None:
 
 @pytest.fixture(scope="session")
 def _setup_test_database():
-    # 1. (Re)crear la base de test desde cero.
+    # Recreate the test database from scratch
     admin_conn = psycopg2.connect(_admin_dsn())
     admin_conn.autocommit = True
     with admin_conn.cursor() as cur:
@@ -70,7 +63,7 @@ def _setup_test_database():
         cur.execute(f'CREATE DATABASE "{TEST_DB_NAME}"')
     admin_conn.close()
 
-    # 2. Cargar esquema (init.sql) + datos de prueba (seed.sql).
+    # Load the schema (init.sql) and the test data (seed.sql)
     conn = psycopg2.connect(
         f"dbname={TEST_DB_NAME} user={DB_USER} password={DB_PASSWORD} host={DB_HOST} port={DB_PORT}"
     )
@@ -81,7 +74,7 @@ def _setup_test_database():
 
     yield
 
-    # 3. Limpieza: borrar la base de test.
+    # Cleanup: drop the test database
     admin_conn = psycopg2.connect(_admin_dsn())
     admin_conn.autocommit = True
     with admin_conn.cursor() as cur:
@@ -108,7 +101,6 @@ def client(_setup_test_database):
     engine.dispose()
 
 
-# ── Helpers de autenticación ────────────────────────────────────────────────
 
 
 def _auth_headers(client, email: str, password: str) -> dict:

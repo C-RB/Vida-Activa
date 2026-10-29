@@ -25,7 +25,7 @@ class SpecialistDashboardResponse(BaseModel):
     progress: DashboardProgress
 
 
-# ─── Perfil propio del especialista (GET/PATCH /api/specialists/me) ────────────
+# Own profile (GET/PATCH /api/specialists/me)─────
 
 
 class SpecialistMeResponse(BaseModel):
@@ -39,7 +39,7 @@ class SpecialistMeResponse(BaseModel):
 
 
 class SpecialistMeUpdate(BaseModel):
-    # Todos opcionales: se aplican solo los campos presentes (PATCH parcial).
+    # All optional: only the fields present are applied (partial PATCH).
     first_name: str | None = None
     last_name: str | None = None
     specialty: str | None = None

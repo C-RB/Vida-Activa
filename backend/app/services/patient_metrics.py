@@ -1,12 +1,4 @@
-"""
-Lógica de dominio de pacientes compartida entre routers.
-
-`get_patient_alert` y `get_patient_metrics_and_sessions` viven acá (y no en
-`routers/patients.py`) para que `routers/specialists.py` las reutilice sin
-importar de otro router (que acoplaba dos routers e importaba una función
-"privada" con guion bajo). Ahora ambos routers dependen de este módulo de
-servicio, no uno del otro.
-"""
+"""Patient domain logic shared by routers (kept here so routers do not import from each other)."""
 
 from datetime import datetime, timedelta
 
@@ -20,10 +12,9 @@ from app.schemas.patient_schema import ComplianceMetrics, SessionItem
 
 def get_patient_alert(db: Session, patient_id):
     """
-    Calcula si un paciente tiene una alerta activa y su mensaje. Criterios
-    (en orden): última sesión hace más de 5 días -> inactivo; encuesta
-    PRE de la última sesión con pain_level > 7 -> dolor alto; sin sesiones
-    -> sin registros. Devuelve (has_alert, alert_message).
+    Whether a patient has an active alert, and its message. Criteria, in order: last session over 5 days ago →
+    inactive; PRE survey of the last session with pain_level > 7 → high pain; no sessions → no records.
+    Returns (has_alert, alert_message).
     """
     has_alert = False
     alert_message = None

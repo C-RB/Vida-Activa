@@ -29,13 +29,8 @@ _TEMP_PASSWORD_SYMBOLS = "!#$"
 
 
 def _generate_temp_password(name: str) -> str:
-    """Contraseña temporal memorable: Nombre + 3 dígitos + 1 símbolo.
-
-    Ej.: "Juan704#" — reconocible para el usuario, pero con la parte
-    aleatoria (dígitos + símbolo) distinta cada vez, así no se deduce de
-    ver otra. El nombre se normaliza (sin tildes/espacios, solo letras).
-    """
-    # Normaliza: primer token, sin tildes, solo letras ASCII, capitalizado.
+    """Memorable temporary password: Name + 3 digits + 1 symbol (e.g. "Juan704#"); the random part differs each time."""
+    # Normalize: first token, no accents, ASCII letters only, capitalized.
     first_token = name.strip().split(" ")[0] if name and name.strip() else ""
     normalized = unicodedata.normalize("NFKD", first_token)
     ascii_only = "".join(c for c in normalized if c.isascii() and c.isalpha())
@@ -146,7 +141,7 @@ def create_user(
             phone=body.phone,
         ))
     elif role == UserRole.ADMIN:
-        # Sin fila admin, GET /api/admins/me no tendría job_title/phone que editar.
+        # Without an admin row, GET /api/admins/me would have no job_title/phone to edit.
         db.add(Admin(user_id=user.id))
 
     db.commit()

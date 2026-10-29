@@ -28,7 +28,7 @@ def get_my_profile(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """Perfil propio del especialista logueado (datos de users + specialists)."""
+    """Own profile of the logged-in specialist (users + specialists data)."""
     row = db.query(Specialist).filter(Specialist.user_id == specialist.id).first()
     return SpecialistMeResponse(
         first_name=specialist.first_name,
@@ -47,11 +47,10 @@ def update_my_profile(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """Actualiza el perfil propio (solo los campos presentes en el body)."""
+    """Updates the own profile (only the fields present in the body)."""
     row = db.query(Specialist).filter(Specialist.user_id == specialist.id).first()
     if row is None:
-        # Un especialista siempre debería tener su fila, pero la creamos por las
-        # dudas para no romper si falta (mismo criterio tolerante del dashboard).
+        # A specialist should always have a row; create it defensively, like the dashboard does.
         row = Specialist(user_id=specialist.id)
         db.add(row)
 
@@ -86,26 +85,16 @@ def get_dashboard(
     specialist: User = Depends(require_specialist),
 ):
     """
-    Métricas del especialista logueado para su pantalla de inicio.
-
-    El token devuelve un User cuyo .id == specialists.user_id == el
-    specialist_id usado en specialist_patient (misma convención que
-    patients.py). Todas las métricas se restringen a los pacientes ASIGNADOS
-    al especialista vía specialist_patient.
-
-    Reutiliza get_patient_alert y get_patient_metrics_and_sessions de
-    app/services/patient_metrics.py para no duplicar la lógica de alertas ni
-    de adherencia (módulo compartido, ya no importa de otro router).
+    Dashboard metrics for the logged-in specialist, restricted to their assigned patients (specialist_patient).
+    Reuses the shared logic in app/services/patient_metrics.py.
     """
     today = date.today()
 
-    # Datos del especialista (specialty vive en la tabla specialists).
     specialist_row = (
         db.query(Specialist).filter(Specialist.user_id == specialist.id).first()
     )
     full_name = f"{specialist.first_name or ''} {specialist.last_name or ''}".strip()
 
-    # Ids de los pacientes asignados a este especialista.
     assigned_ids = [
         row.patient_id
         for row in db.query(SpecialistPatient.patient_id)
@@ -114,7 +103,7 @@ def get_dashboard(
     ]
     total_patients = len(assigned_ids)
 
-    # Sin pacientes asignados -> todo en cero (evita divisiones por cero).
+    # No assigned patients: everything is zero (avoids division by zero).
     if not assigned_ids:
         return SpecialistDashboardResponse(
             specialist=DashboardSpecialist(
@@ -131,7 +120,6 @@ def get_dashboard(
             ),
         )
 
-    # Activos hoy: pacientes asignados con al menos una sesión completada hoy.
     active_today = (
         db.query(func.count(func.distinct(SessionModel.patient_id)))
         .filter(
@@ -142,19 +130,16 @@ def get_dashboard(
         .scalar()
     ) or 0
 
-    # Alertas: pacientes asignados con alerta activa (lógica de patients.py).
     alerts = sum(
         1 for pid in assigned_ids if get_patient_alert(db, pid)[0]
     )
 
-    # Adherencia promedio: media de adherencePercent de los pacientes asignados.
     adherences = [
         get_patient_metrics_and_sessions(db, str(pid))[0].adherencePercent
         for pid in assigned_ids
     ]
     avg_adherence = round(sum(adherences) / len(adherences)) if adherences else 0
 
-    # Sesiones de hoy de los pacientes asignados (completadas y totales).
     sessions_total_today = (
         db.query(func.count(SessionModel.id))
         .filter(

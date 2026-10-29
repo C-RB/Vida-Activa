@@ -23,8 +23,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             detail="Invalid email or password",
         )
 
-    # Cuenta desactivada por un admin (PATCH /api/users/{id}/status): credenciales
-    # válidas pero sin acceso. 403 para que el front lo distinga del 401 de login.
+        # Account disabled by an admin: valid credentials but no access. 403 so the front can tell it from the login 401.
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -63,11 +62,7 @@ def change_password(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Cambia la contraseña del usuario logueado (cualquier rol). Reverifica la
-    contraseña actual antes de guardar el nuevo hash (operación sensible, por eso
-    vive en auth.py y no dentro del PATCH de perfil).
-    """
+    """Changes the logged-in user's password (any role), re-verifying the current one first."""
     if not verify_password(body.current_password, current_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

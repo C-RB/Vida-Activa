@@ -27,8 +27,8 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
-    # Cuenta desactivada tras emitir el token: mata la sesión viva en el próximo
-    # request (get_current_user releé is_active de la DB en cada llamada).
+    # Account disabled after the token was issued: ends the live session on the next request
+    # (get_current_user re-reads is_active from the DB on every call).
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

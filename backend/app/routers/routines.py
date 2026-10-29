@@ -34,7 +34,7 @@ def create_routine(
         scheduled_time=body.scheduled_time,
     )
     db.add(routine)
-    db.flush()  # asigna routine.id sin cerrar la transaccion
+    db.flush()  # assigns routine.id without ending the transaction
 
     for exercise in body.exercises:
         db.add(
@@ -62,17 +62,11 @@ def get_active_routine(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Devuelve la rutina vigente del paciente para HOY: aquella cuyo rango
-    [start_date, end_date] incluye la fecha actual y cuyo day_of_week coincide
-    con el dia de hoy. day_of_week es INT 1 (lunes) a 7 (domingo) segun init.sql,
-    que coincide con datetime.isoweekday(). Si varias cumplen, gana la de
-    start_date mas reciente y, ante igual start_date, la creada mas
-    recientemente (created_at) -> la ultima que asigno el especialista. La
-    serializacion con ejercicios anidados es la misma que GET /api/routines
-    (mismo response_model + joinedload).
+    Returns today's routine for the patient: the latest one (start_date, then created_at) whose date range
+    includes today and whose day_of_week matches (1 = Monday … 7 = Sunday, like isoweekday()).
     """
     today = date.today()
-    weekday = today.isoweekday()  # 1 (lunes) .. 7 (domingo)
+    weekday = today.isoweekday()  # 1 (Monday) .. 7 (Sunday)
 
     routine = (
         db.query(Routine)
@@ -102,10 +96,7 @@ def delete_routine(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """
-    Hard delete de una rutina. routine_exercises tiene ON DELETE CASCADE
-    (ver init.sql), asi que sus filas hijas se borran solas. Devuelve 204.
-    """
+    """Hard-deletes a routine; routine_exercises go away through ON DELETE CASCADE. Returns 204."""
     routine = db.query(Routine).filter(Routine.id == routine_id).first()
     if not routine:
         raise HTTPException(
@@ -113,13 +104,8 @@ def delete_routine(
             detail="Rutina no encontrada",
         )
 
-    # session_exercises.routine_exercise_id no tiene ON DELETE CASCADE en el
-    # volumen de DB actual (init.sql ya lo corrige con SET NULL, pero requiere
-    # reinicializar el volumen). Para que el borrado funcione con los datos
-    # existentes, liberamos manualmente la FK borrando las metricas de sesion
-    # que apuntan a los routine_exercises de esta rutina. Las filas de
-    # `sessions` se conservan (solo se borran las de session_exercises), por lo
-    # que el historial del paciente queda intacto.
+    # session_exercises.routine_exercise_id has no ON DELETE rule in existing volumes (init.sql now uses SET NULL
+    # but needs a re-init), so its metrics are deleted manually. The sessions rows stay, keeping the patient history.
     db.execute(
         text(
             """
@@ -132,10 +118,8 @@ def delete_routine(
         {"routine_id": str(routine_id)},
     )
 
-    # sessions.routine_id tampoco tiene ON DELETE en el volumen actual
-    # (init.sql ya lo corrige con SET NULL). Conservamos las filas de
-    # `sessions` (historial del paciente) desligandolas de la rutina antes de
-    # borrarla: la sesion sigue existiendo con routine_id = NULL.
+    # sessions.routine_id has the same problem in existing volumes: detach the sessions (routine_id = NULL)
+    # instead of deleting them, to keep the history.
     db.execute(
         text("UPDATE sessions SET routine_id = NULL WHERE routine_id = :routine_id"),
         {"routine_id": str(routine_id)},
