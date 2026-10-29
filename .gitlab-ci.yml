@@ -1,6 +1,6 @@
 # Pipeline de despliegue del backend + base de datos a la VPS.
 #
-# Estrategia: se copia SOLO la carpeta activamente-back/ (con database/) y el
+# Estrategia: se copia SOLO la carpeta backend/ (con database/) y el
 # docker-compose.prod.yml a la VPS vía rsync sobre SSH. El build de las imágenes
 # ocurre EN la VPS. El job de CI no necesita Docker: solo ssh + rsync.
 #
@@ -48,7 +48,7 @@ deploy_backend:
       rsync -az --delete
       --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc'
       -e "sshpass -e ssh"
-      activamente-back
+      backend
       "$VPS_USER@$VPS_HOST:$DEPLOY_DIR/"
     # 4. Copiar el compose de prod y el .env recién generado.
     - rsync -az -e "sshpass -e ssh" docker-compose.yml .env "$VPS_USER@$VPS_HOST:$DEPLOY_DIR/"

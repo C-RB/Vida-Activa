@@ -27,16 +27,14 @@ La app tiene tres roles, cada uno con su propia experiencia:
 
 ```
 .
-├── activamente-back/    API REST (FastAPI + SQLAlchemy + PostgreSQL)
+├── backend/    API REST (FastAPI + SQLAlchemy + PostgreSQL)
 │   ├── app/             routers, modelos, schemas, servicios, seguridad (JWT)
 │   ├── database/        init.sql (esquema) y seed.sql (datos de prueba)
 │   └── tests/           pytest contra un Postgres real
-├── activamente-front/   App móvil (React Native + Expo Router + TypeScript)
+├── frontend/   App móvil (React Native + Expo Router + TypeScript)
 ├── docker-compose.yml   Postgres + backend
 └── .github/workflows/   CI (tests)
 ```
-
-> Las carpetas aún conservan el nombre `activamente-*`; se renombrarán más adelante.
 
 | Capa | Tecnología |
 |------|-----------|
@@ -81,7 +79,7 @@ La primera vez, la base se crea con `init.sql` y se llena con `seed.sql` (usuari
 
 ### 3. App móvil
 ```bash
-cd activamente-front
+cd frontend
 npm install
 npx expo start
 ```
@@ -93,7 +91,7 @@ EXPO_PUBLIC_API_URL=http://192.168.x.x:8000 npx expo start
 ### 4. Tests del backend
 ```bash
 docker compose up -d db
-cd activamente-back
+cd backend
 pip install -r requirements-dev.txt
 pytest
 ```
