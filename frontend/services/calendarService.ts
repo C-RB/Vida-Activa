@@ -1,11 +1,3 @@
-// services/calendarService.ts
-//
-// Cliente del listado de citas del especialista:
-//   GET /api/appointments?date=YYYY-MM-DD → citas del especialista en esa fecha
-//
-// El backend filtra por el especialista del token y ya devuelve las citas
-// ordenadas por hora. Aquí solo damos formato para la vista del calendario.
-
 import { apiFetch } from "./apiClient";
 
 export interface Appointment {
@@ -50,7 +42,7 @@ const formatTime = (timeSlot: string): string => {
 };
 
 const toAppointment = (raw: RawAppointment): Appointment => {
-  // Parse local (sin TZ) para que el día no se corra.
+  // Parse as local time so the day does not shift.
   const d = new Date(`${raw.date}T00:00:00`);
   return {
     id: raw.id,
@@ -63,7 +55,6 @@ const toAppointment = (raw: RawAppointment): Appointment => {
   };
 };
 
-// GET /api/appointments?date= → citas del especialista para la fecha dada.
 export const getAppointmentsByDate = async (
   date: string
 ): Promise<Appointment[]> => {

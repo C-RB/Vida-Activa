@@ -1,5 +1,3 @@
-// services/userService.ts
-// Admin-only user management: list/search users and activate/deactivate them.
 import { apiFetch } from "./apiClient";
 import type { UserRole } from "./authStore";
 
@@ -14,7 +12,6 @@ export const ROLE_LABEL: Record<UserRoleKey, string> = {
 const toRoleKey = (role: UserRole): UserRoleKey =>
   role.toLowerCase() as UserRoleKey;
 
-// Raw shape returned by GET /api/users.
 interface UserListItemDto {
   id: string;
   first_name: string;
@@ -25,7 +22,6 @@ interface UserListItemDto {
   created_at: string | null;
 }
 
-// Normalised shape the admin screens consume.
 export interface AdminUser {
   id: string;
   fullName: string;
@@ -47,7 +43,6 @@ const toAdminUser = (dto: UserListItemDto): AdminUser => ({
 export interface ListUsersParams {
   search?: string;
   role?: UserRoleKey;
-  // Paginación (opcional). El backend usa limit=50 / offset=0 por defecto.
   limit?: number;
   offset?: number;
 }
@@ -79,15 +74,12 @@ export const setUserStatus = async (
   return toAdminUser(data);
 };
 
-// ─── Alta de usuarios (POST /api/users, admin-only) ─────────────────────────────
-// El backend genera una contraseña temporal y la devuelve una sola vez para que
-// el admin se la entregue al nuevo usuario.
+// The backend generates a temporary password and returns it once, so the admin can hand it to the new user.
 
 export interface CreateUserPayload {
   fullName: string;
   email: string;
   role: "patient" | "specialist";
-  // Campos opcionales por rol (se guardan en patients / specialists).
   rut?: string;
   phone?: string;
   age?: number;

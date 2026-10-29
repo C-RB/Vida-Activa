@@ -1,26 +1,11 @@
-// services/patientService.ts
-//
-// Cliente de los endpoints de pacientes del backend (todos protegidos con auth):
-//   GET   /api/patients/                  → lista de pacientes
-//   GET   /api/patients/by-rut/{rut}      → ficha de un paciente por RUT
-//   GET   /api/patients/{id}              → ficha básica por id
-//   POST  /api/patients/assign            → asigna un paciente al especialista
-//   PATCH /api/patients/{id}/status       → habilita/deshabilita un paciente
-//
-// Sigue el patrón de los demás services: usa apiFetch (auth: true por defecto),
-// que adjunta el Bearer token desde authStore. El especialista se obtiene del
-// token en el backend, por eso no se envía en ninguna petición.
-
 import { apiFetch } from "./apiClient";
-
-// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 export interface Session {
   id: string;
   name: string;
   duration: string;
   date: string;
-  dateIso?: string | null; // ISO 8601, para agrupar por día
+  dateIso?: string | null; // ISO 8601, used to group by day
   completed: boolean;
 }
 
@@ -48,12 +33,10 @@ export interface PatientListItem {
   id: string;
   fullName: string;
   age?: number;
-  lastActivity?: string; // p.ej. "Hoy, 10:00" | "Hace 5 días"
+  lastActivity?: string; // e.g. "Hoy, 10:00"
   hasAlert: boolean;
   alertMessage?: string;
 }
-
-// ─── Formas crudas del backend ─────────────────────────────────────────────────
 
 interface RawPatientListItem {
   id: string;
@@ -79,8 +62,7 @@ interface RawPatientResponse {
   sessions?: Session[];
 }
 
-// Métricas/sesiones aún no existen en el backend → valores por defecto seguros
-// para que las pantallas rendericen sin romperse.
+// Metrics and sessions may be missing from the response: default to safe empty values.
 const EMPTY_METRICS: ComplianceMetrics = {
   sessionsCompleted: 0,
   sessionsTotal: 0,
@@ -104,10 +86,6 @@ const toPatient = (raw: RawPatientResponse): Patient => ({
   active: raw.active,
 });
 
-// ─── Funciones ────────────────────────────────────────────────────────────────
-
-// GET /api/patients/ → lista de pacientes del sistema.
-// Paginación opcional (el backend usa limit=50 / offset=0 por defecto).
 export const getPatients = async (
   params: { limit?: number; offset?: number } = {}
 ): Promise<PatientListItem[]> => {
@@ -131,7 +109,6 @@ export const getPatients = async (
   }));
 };
 
-// GET /api/patients/by-rut/{rut} → ficha completa por RUT.
 export const getPatientByRut = async (rut: string): Promise<Patient> => {
   const raw = await apiFetch<RawPatientResponse>(
     `/api/patients/by-rut/${encodeURIComponent(rut)}`,
@@ -140,7 +117,6 @@ export const getPatientByRut = async (rut: string): Promise<Patient> => {
   return toPatient(raw);
 };
 
-// GET /api/patients/{id} → ficha básica por id (identidad + contacto mínimo).
 export const getPatientById = async (id: string): Promise<Patient> => {
   const raw = await apiFetch<RawPatientResponse>(
     `/api/patients/${encodeURIComponent(id)}`,
@@ -149,7 +125,6 @@ export const getPatientById = async (id: string): Promise<Patient> => {
   return toPatient(raw);
 };
 
-// PATCH /api/patients/{id}/status → habilita/deshabilita al paciente.
 export const togglePatientStatus = async (
   id: string,
   active: boolean
@@ -161,8 +136,6 @@ export const togglePatientStatus = async (
   return toPatient(raw);
 };
 
-// POST /api/patients/assign → vincula un paciente (por RUT) al especialista
-// autenticado.
 export const assignPatientToSpecialist = async (rut: string): Promise<void> => {
   await apiFetch<{ message: string }>("/api/patients/assign", {
     method: "POST",
