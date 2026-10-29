@@ -9,12 +9,11 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFonts } from "expo-font";
 import { useLocalSearchParams } from "expo-router";
 import { getAppointmentsByDate, Appointment } from "../../services/calendarService";
 import BottomNav from "../../components/layout/BottomNav";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import StateMessage from "../../components/ui/StateMessage";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
@@ -71,11 +70,6 @@ export default function CalendarScreen() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     if (!selectedDay) return;
 
@@ -109,8 +103,6 @@ export default function CalendarScreen() {
     else setMonth(m => m + 1);
     setSelectedDay(null);
   };
-
-  if (!fontsLoaded) return null;
 
   const weeks = buildCalendar(year, month);
 
@@ -253,8 +245,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: 'InterSemiBold',
+    ...Type.title2,
     color: Colors.onPrimary,
   },
 
@@ -271,8 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   monthLabel: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
   },
   calRow: {
@@ -281,10 +271,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   dayHeader: {
+    ...Type.labelStrong,
     flex: 1,
     textAlign: "center",
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
     color: "rgba(23, 32, 51, 0.5)",
     paddingBottom: 6,
   },
@@ -299,21 +288,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   calCellText: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textPrimary,
   },
   calCellGray: {
     color: "rgba(23, 32, 51, 0.25)",
   },
   calCellTextSelected: {
+    ...Type.labelStrong,
     color: Colors.onPrimary,
-    fontFamily: "InterSemiBold",
   },
 
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
     marginBottom: 16,
     marginLeft: 4,
@@ -341,8 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   appointmentPatient: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   statusBadge: {
@@ -351,9 +337,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusBadgeText: {
-    fontSize: 10,
-    fontFamily: "InterSemiBold",
-    letterSpacing: 0.5,
+    ...Type.labelStrong,
   },
   appointmentDetails: {
     flexDirection: "row",
@@ -365,8 +349,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   detailText: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textPrimary,
   },
 });

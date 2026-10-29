@@ -13,11 +13,10 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { createUserApi, CreateUserPayload } from "../services/userService";
 
-import { Colors, GradientColors } from "../constants/theme";
+import { Colors, GradientColors, Type } from "../constants/theme";
 import Chip from "../components/ui/Chip";
 const GENDERS = ["Masculino", "Femenino", "Otro"] as const;
 
@@ -48,11 +47,6 @@ export default function CreateUserScreen() {
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   // The optional fields start collapsed (progressive disclosure).
   const [showMore, setShowMore] = useState(false);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   const handleSave = async () => {
     if (!fullName.trim() || !email.trim()) {
@@ -111,8 +105,6 @@ export default function CreateUserScreen() {
       setLoading(false);
     }
   };
-
-  if (!fontsLoaded) return null;
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
@@ -373,13 +365,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.onPrimary,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.onPrimary,
     marginTop: 4,
   },
@@ -396,11 +386,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   fieldLabel: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 6,
-    letterSpacing: 0.3,
   },
   inputRow: {
     flexDirection: "row",
@@ -416,10 +404,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   fieldInput: {
+    ...Type.label,
     flex: 1,
     paddingVertical: 11,
-    fontSize: 14,
-    fontFamily: "InterRegular",
     color: Colors.textPrimary,
   },
   pillRow: {
@@ -440,10 +427,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   accordionTitle: {
-    fontSize: 13,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
-    letterSpacing: 0.3,
   },
   submitBtn: {
     backgroundColor: Colors.primary,
@@ -452,8 +437,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitBtnText: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.onPrimary,
   },
   toastContainer: {
@@ -468,7 +452,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.primary,
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -485,13 +469,11 @@ const styles = StyleSheet.create({
   },
   toastTextContainer: { flex: 1 },
   toastTitle: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   toastMessage: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
     marginTop: 2,
   },

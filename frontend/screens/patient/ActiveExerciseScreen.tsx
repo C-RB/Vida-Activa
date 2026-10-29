@@ -6,7 +6,6 @@ import {
   ActivityIndicator, LayoutChangeEvent,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
@@ -24,7 +23,7 @@ import type { Landmark } from '../../validation/types';
 import PoseSkeleton, { PoseSkeletonHandle } from '../../components/exercise/PoseSkeleton';
 import { updateExerciseProgress } from '../../services/sessionService';
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 
 const FRAME_INTERVAL = 4; // process 1 of every 4 frames (~7 fps from a 30 fps camera)
 
@@ -45,11 +44,6 @@ export default function ActiveExerciseScreen() {
     typeof seIds === 'string' && seIds.length > 0
       ? seIds.split(',')[Number(index ?? 0)]
       : undefined;
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require('../../assets/fonts/Inter_400Regular.ttf'),
-    InterSemiBold:    require('../../assets/fonts/Inter_600SemiBold.ttf'),
-  });
 
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('front');
@@ -161,8 +155,6 @@ export default function ActiveExerciseScreen() {
     const { width, height } = e.nativeEvent.layout;
     setCameraSize({ width, height });
   }, []);
-
-  if (!fontsLoaded) return null;
 
   if (!hasPermission) {
     return (
@@ -316,18 +308,18 @@ const styles = StyleSheet.create({
   container:           { flex: 1 },
   permissionContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   permissionText: {
-    fontSize: 22, textAlign: 'center', marginBottom: 24,
-    fontFamily: 'InterSemiBold', color: Colors.textPrimary, lineHeight: 30,
+    ...Type.title2,
   },
   button: { backgroundColor: Colors.primary, paddingVertical: 18, paddingHorizontal: 28, borderRadius: 16 },
-  buttonText: { color: Colors.onPrimary, fontFamily: 'InterSemiBold', fontSize: 22 },
+  buttonText: { ...Type.title2, color: Colors.onPrimary },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingTop: 54, paddingHorizontal: 20, paddingBottom: 18,
     backgroundColor: Colors.primary, borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
   },
   headerTitle: {
-    flex: 1, textAlign: 'center', color: Colors.onPrimary, fontSize: 24, fontFamily: 'InterSemiBold',
+    ...Type.title2,
+    flex: 1, textAlign: 'center', color: Colors.onPrimary,
   },
   content: { flex: 1, position: 'relative', backgroundColor: Colors.primaryPressed },
   controlsOverlay: {
@@ -341,9 +333,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12,
     width: '92%', justifyContent: 'center', marginBottom: 12,
   },
-  feedbackText:   { color: Colors.onPrimary, fontFamily: 'InterSemiBold', fontSize: 20, flexShrink: 1 },
+  feedbackText: { ...Type.button, color: Colors.onPrimary, flexShrink: 1 },
   progressSection: { width: '100%', marginBottom: 16 },
-  seriesText:      { fontSize: 20, color: Colors.onPrimary, fontFamily: 'InterSemiBold', marginBottom: 8 },
+  seriesText: { ...Type.button, color: Colors.onPrimary, marginBottom: 8 },
   progressBarBackground: { height: 14, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 8, overflow: 'hidden' },
   progressBarFill:       { height: '100%', backgroundColor: Colors.primary, borderRadius: 8 },
   repsBadge: {
@@ -351,13 +343,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: Colors.border,
     borderRadius: 30, paddingVertical: 12, paddingHorizontal: 28, marginBottom: 18,
   },
-  repsNumbers:    { fontSize: 36, fontFamily: 'InterSemiBold', color: Colors.onPrimary, marginRight: 12 },
-  repsLabel:      { fontSize: 22, color: Colors.onPrimary, fontFamily: 'InterSemiBold' },
+  repsNumbers: { ...Type.display, color: Colors.onPrimary, marginRight: 12 },
+  repsLabel: { ...Type.title2, color: Colors.onPrimary },
   pauseButton: {
     width: '85%', backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: Colors.border,
     paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginBottom: 12,
   },
-  pauseButtonText: { color: Colors.onPrimary, fontSize: 24, fontFamily: 'InterSemiBold' },
+  pauseButtonText: { ...Type.title2, color: Colors.onPrimary },
   endButton:       { width: '85%', backgroundColor: Colors.danger, paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
-  endButtonText:   { color: Colors.onPrimary, fontSize: 24, fontFamily: 'InterSemiBold' },
+  endButtonText: { ...Type.title2, color: Colors.onPrimary },
 });

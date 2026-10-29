@@ -9,12 +9,11 @@ import {
   Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
-import { Colors, GradientColors, BannerStyle } from "../../constants/theme";
+import { Colors, GradientColors, BannerStyle, Type } from "../../constants/theme";
 import {
   getPatientById,
   togglePatientStatus,
@@ -30,11 +29,6 @@ export default function MedicalRecordScreen() {
   const { patientId } = useLocalSearchParams<{ patientId?: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     if (!patientId) {
@@ -65,7 +59,7 @@ export default function MedicalRecordScreen() {
     ]);
   };
 
-  if (!fontsLoaded || loading) {
+  if (loading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -196,8 +190,7 @@ const styles = StyleSheet.create({
     ...BannerStyle,
   },
   bannerTitle: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.bannerTitle,
     paddingHorizontal: 16,
   },
@@ -228,13 +221,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   patientName: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   patientRut: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -245,13 +236,11 @@ const styles = StyleSheet.create({
   },
   metaItem: {},
   metaKey: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textMuted,
   },
   metaVal: {
-    fontSize: 13,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   agendarBtn: {
@@ -263,8 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   agendarText: {
-    fontSize: 15,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.bannerTitle,
   },
   metricsHeader: {
@@ -274,25 +262,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   metricsTitle: {
-    fontSize: 15,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   bigNumber: {
-    fontSize: 48,
-    fontFamily: "InterSemiBold",
+    ...Type.display,
     color: Colors.textPrimary,
-    lineHeight: 54,
   },
   bigNumberSub: {
-    fontSize: 18,
-    fontFamily: "InterRegular",
+    ...Type.body,
     color: Colors.textMuted,
     marginTop: -4,
   },
   metricsSubLabel: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 4,
   },
@@ -312,8 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.btnTeal,
   },
   disableBtnText: {
-    fontSize: 15,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.bannerTitle,
   },
 });

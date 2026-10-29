@@ -10,12 +10,11 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { routes } from "../../router/routes";
 import { getExercises, Exercise } from "../../services/exerciseService";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import ExerciseCard from "../../components/specialist/ExerciseCard";
 import StateMessage from "../../components/ui/StateMessage";
 export default function ExercisesLibraryScreen() {
@@ -26,11 +25,6 @@ export default function ExercisesLibraryScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     let active = true;
@@ -69,8 +63,6 @@ export default function ExercisesLibraryScreen() {
   const handleCancel = () => {
     router.push(routes.patientList as any);
   };
-
-  if (!fontsLoaded) return null;
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
@@ -147,14 +139,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.onPrimary,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.textPrimary,
   },
   headerRow: {
@@ -163,8 +153,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   assignText: {
+    ...Type.label,
     marginBottom: 10,
-    fontFamily: "InterRegular",
     color: Colors.textPrimary,
   },
   searchWrap: {
@@ -179,9 +169,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchInput: {
+    ...Type.label,
     flex: 1,
-    fontSize: 14,
-    fontFamily: "InterRegular",
     color: Colors.textPrimary,
     padding: 0,
   },
@@ -193,5 +182,5 @@ const styles = StyleSheet.create({
     margin: 19,
     marginBottom: 129,
   },
-  cancelText: { fontSize: 16, fontFamily: "InterSemiBold", color: Colors.onPrimary },
+  cancelText: { ...Type.secondaryStrong, color: Colors.onPrimary },
 });

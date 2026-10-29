@@ -14,7 +14,6 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Avatar from "../../components/ui/Avatar";
 import { Colors, Type } from "../../constants/theme";
-import { useAppFonts } from "../../hooks/useAppFonts";
 import {
   getNextAppointment,
   NextAppointment,
@@ -60,7 +59,6 @@ const shortTime = (t: string): string => t.slice(0, 5);
 export default function PatientHomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const fontsLoaded = useAppFonts();
 
   const patient = getSession()?.patient;
   const patientId = patient?.id;
@@ -136,8 +134,6 @@ export default function PatientHomeScreen() {
       todayIdx: mondayIndex(today),
     };
   }, [sessions, routines, today]);
-
-  if (!fontsLoaded) return null;
 
   return (
     <View style={styles.container}>

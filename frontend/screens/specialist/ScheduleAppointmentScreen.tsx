@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   getAvailableSlots,
@@ -21,7 +20,7 @@ import {
 } from "../../services/appointmentService";
 import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import SectionCard from "../../components/ui/SectionCard";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
@@ -61,11 +60,6 @@ export default function ScheduleAppointmentScreen() {
   const [loading, setLoading] = useState(true);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   // Patient record received through navigation (for the summary).
   useEffect(() => {
@@ -157,7 +151,7 @@ export default function ScheduleAppointmentScreen() {
     return `${day} ${mon}, ${d.getFullYear()}`;
   };
 
-  if (!fontsLoaded || loading) {
+  if (loading) {
     return (
       <LinearGradient colors={GradientColors as any} style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.btnTeal} />
@@ -334,14 +328,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -358,8 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   monthLabel: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   calRow: {
@@ -368,10 +359,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   dayHeader: {
+    ...Type.labelStrong,
     flex: 1,
     textAlign: "center",
-    fontSize: 12,
-    fontFamily: Fonts.bold,
     color: "rgba(23, 32, 51, 0.5)",
     paddingBottom: 6,
   },
@@ -386,16 +376,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   calCellText: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
   calCellGray: {
     color: "rgba(23, 32, 51, 0.25)",
   },
   calCellTextSelected: {
+    ...Type.labelStrong,
     color: Colors.textOnDark,
-    fontFamily: Fonts.bold,
   },
 
 
@@ -425,8 +414,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(23, 32, 51, 0.15)",
   },
   slotText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   slotTextActive: {
@@ -437,18 +425,15 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
   },
   slotsEmpty: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
     textAlign: "center",
     paddingVertical: 12,
   },
 
   summaryLabel: {
-    fontSize: 10,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.45)",
-    letterSpacing: 0.8,
     marginBottom: 6,
     marginTop: 4,
   },
@@ -467,8 +452,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   summaryPatientName: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   summaryDateTimeRow: {
@@ -483,8 +467,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   summaryDateText: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
   infoBox: {
@@ -496,11 +479,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   infoText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
     flex: 1,
-    lineHeight: 17,
   },
   confirmBtn: {
     backgroundColor: Colors.textPrimary,
@@ -510,15 +491,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   confirmBtnText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
   confirmNote: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.5)",
     textAlign: "center",
-    lineHeight: 16,
   },
 });

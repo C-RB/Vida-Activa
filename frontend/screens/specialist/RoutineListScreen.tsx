@@ -10,10 +10,9 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import {
   deleteRoutine,
@@ -32,11 +31,6 @@ export default function RoutineListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   const loadRoutines = useCallback(async () => {
     if (!patientId) {
@@ -59,8 +53,6 @@ export default function RoutineListScreen() {
   useEffect(() => {
     loadRoutines();
   }, [loadRoutines]);
-
-  if (!fontsLoaded) return null;
 
   const handleCreate = () => {
     router.push({ pathname: routes.createRoutine as any, params: { patientId } });
@@ -156,14 +148,12 @@ const styles = StyleSheet.create({
   banner: { ...BannerStyle },
   bannerRow: { flexDirection: "row", alignItems: "center" },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -181,8 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryCtaText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

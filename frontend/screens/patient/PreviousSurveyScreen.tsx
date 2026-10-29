@@ -12,14 +12,13 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import SurveySlider from "../../components/survey/SurveySlider";
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createSession } from "../../services/sessionService";
 import { submitPreSurvey } from "../../services/surveyService";
 import { getSession } from "../../services/authStore";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import Icon from "../../components/ui/Icon";
 export default function PreviousSurveyScreen() {
   const router = useRouter();
@@ -32,11 +31,6 @@ export default function PreviousSurveyScreen() {
   const [stress, setStress] = useState(4);
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   const handleSubmit = async () => {
     if (!patientId || !routineId) {
@@ -66,8 +60,6 @@ export default function PreviousSurveyScreen() {
       setLoading(false);
     }
   };
-
-  if (!fontsLoaded) return null;
 
   return (
     <KeyboardAvoidingView
@@ -134,19 +126,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   name: {
-    fontSize: 30,
-    fontFamily: "InterSemiBold",
+    ...Type.title1,
     color: Colors.textPrimary,
     marginTop: 12,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 18,
-    fontFamily: 'InterRegular',
+    ...Type.body,
     color: Colors.textPrimary,
     textAlign: 'center',
     marginTop: 8,
-    lineHeight: 26,
   },
   slider: {
     flex: 1,
@@ -154,12 +143,12 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   label: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.textPrimary,
     marginBottom: 10,
   },
   input: {
+    ...Type.body,
     borderWidth: 1,
     borderColor: Colors.primary,
     borderRadius: 14,
@@ -169,8 +158,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     textAlign: "left",
     textAlignVertical: "top",
-    fontFamily: "InterRegular",
-    fontSize: 18,
     color: Colors.textPrimary,
   },
   button: {
@@ -184,9 +171,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   buttonText: {
+    ...Type.title1,
     color: Colors.onPrimary,
-    fontFamily: "InterSemiBold",
-    fontSize: 28,
   },
   backBtn: {
     marginTop: 50,

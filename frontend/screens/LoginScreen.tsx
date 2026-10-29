@@ -14,7 +14,6 @@ import { loginApi } from "../services/authService";
 import type { UserRole } from "../services/authStore";
 import { routes } from "../router/routes";
 import { Colors, Type } from "../constants/theme";
-import { useAppFonts } from "../hooks/useAppFonts";
 import Icon from "../components/ui/Icon";
 import Button from "../components/ui/Button";
 import TextField from "../components/ui/TextField";
@@ -33,7 +32,6 @@ export default function LoginScreen() {
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const fontsLoaded = useAppFonts();
 
   const handleLogin = async () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -65,8 +63,6 @@ export default function LoginScreen() {
       "Pídale a su especialista que le entregue una clave nueva."
     );
   };
-
-  if (!fontsLoaded) return null;
 
   return (
     <KeyboardAvoidingView

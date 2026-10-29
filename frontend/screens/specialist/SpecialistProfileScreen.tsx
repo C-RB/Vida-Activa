@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
 import InfoRow from "../../components/ui/InfoRow";
@@ -20,11 +19,6 @@ export default function SpecialistProfileScreen() {
   const [profile, setProfile] = useState<SpecialistProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     let mounted = true;
     getSpecialistProfile()
@@ -35,8 +29,6 @@ export default function SpecialistProfileScreen() {
       mounted = false;
     };
   }, []);
-
-  if (!fontsLoaded) return null;
 
   const handleLogout = () => {
     clearAuth();
@@ -100,14 +92,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -131,13 +121,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   profileName: {
-    fontSize: 20,
-    fontFamily: Fonts.bold,
+    ...Type.button,
     color: Colors.textPrimary,
   },
   profileMeta: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -152,8 +140,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   specialtyText: {
-    fontSize: 12,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -179,8 +166,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   logoutText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

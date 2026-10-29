@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
 import { getDashboard, DashboardResponse } from "../../services/specialistService";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import StatCard from "../../components/ui/StatCard";
 import ProgressRow from "../../components/ui/ProgressRow";
 // "—" when there is no real data (loading or network error).
@@ -18,19 +17,12 @@ export default function SpecialistHomeScreen() {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     getDashboard()
       .then(setDashboardData)
       .catch((e) => console.error("Error cargando dashboard:", e))
       .finally(() => setLoading(false));
   }, []);
-
-  if (!fontsLoaded) return null;
 
   const stats = dashboardData?.stats;
   const progress = dashboardData?.progress;
@@ -143,13 +135,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.onPrimary,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.onPrimary,
     marginTop: 4,
   },
@@ -186,8 +176,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   metricsTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
   },
 });

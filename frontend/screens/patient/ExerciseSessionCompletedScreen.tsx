@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import { completeSession, getSessionById } from "../../services/sessionService";
 import InfoRow from "../../components/ui/InfoRow";
@@ -24,11 +23,6 @@ export default function ExerciseSessionCompletedScreen() {
   const [seriesCount, setSeriesCount] = useState<number | null>(null);
   const [durationMin, setDurationMin] = useState<number | null>(null);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     if (!sessionId) {
       setLoadingStats(false);
@@ -45,8 +39,6 @@ export default function ExerciseSessionCompletedScreen() {
       .catch((e) => console.error("Error cargando resumen de sesión:", e))
       .finally(() => setLoadingStats(false));
   }, [sessionId]);
-
-  if (!fontsLoaded) return null;
 
   // "—" when there is no real data (no sessionId or the load failed).
   const fmt = (n: number | null) => (n != null ? `${n}` : "—");
@@ -164,13 +156,11 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerTitle: {
-    fontSize: 28,
-    fontFamily: Fonts.bold,
+    ...Type.title1,
     color: Colors.bannerTitle,
   },
   bannerSubtitle: {
-    fontSize: 18,
-    fontFamily: Fonts.regular,
+    ...Type.body,
     color: Colors.bannerSubtitle,
     marginTop: 6,
   },
@@ -195,18 +185,15 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   heroTitle: {
-    fontSize: 30,
-    fontFamily: Fonts.bold,
+    ...Type.title1,
     color: Colors.textPrimary,
     textAlign: "center",
   },
   heroSubtitle: {
-    fontSize: 20,
-    fontFamily: Fonts.regular,
+    ...Type.body,
     color: Colors.textPrimary,
     textAlign: "center",
     marginTop: 10,
-    lineHeight: 28,
   },
 
   statsCard: {
@@ -234,11 +221,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.btnTeal,
   },
   quoteText: {
+    ...Type.body,
     flex: 1,
-    fontSize: 20,
-    fontFamily: Fonts.regular,
     color: Colors.textPrimary,
-    lineHeight: 28,
   },
 
   cta: {
@@ -248,8 +233,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ctaText: {
-    fontSize: 26,
-    fontFamily: Fonts.bold,
+    ...Type.title1,
     color: Colors.textOnDark,
   },
   ctaDisabled: {

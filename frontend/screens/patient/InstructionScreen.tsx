@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { EXERCISES } from "../../constants/exercises";
@@ -17,7 +16,7 @@ import { getActiveRoutine, RoutineExercise } from "../../services/routineService
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { getSession } from "../../services/authStore";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 const VIDEO_MAP: Record<string, any> = {
   toe_touch: require("../../assets/videos/toe_touch.mp4"),
   leg_raise: require("../../assets/videos/leg_raise.mp4"),
@@ -54,11 +53,6 @@ export default function InstructionScreen() {
   const [totalExercises, setTotalExercises] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     const patientId = getSession()?.patient?.id;
     if (!patientId) {
@@ -81,8 +75,6 @@ export default function InstructionScreen() {
       .catch((e) => console.error("Error cargando ejercicio:", e))
       .finally(() => setLoading(false));
   }, [currentIndex]);
-
-  if (!fontsLoaded) return null;
 
   // Real exerciseId for the video; falls back to EXERCISES by index while the routine loads.
   const exerciseId = routineExercise?.exercise_id ?? EXERCISES[currentIndex]?.exerciseId;
@@ -198,8 +190,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   headerPillText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 20,
+    ...Type.button,
     color: Colors.textPrimary,
   },
   videoCard: {
@@ -222,19 +213,16 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   videoCardText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 22,
+    ...Type.title2,
     color: Colors.textPrimary,
     marginTop: 10,
   },
   exerciseName: {
-    fontFamily: "InterSemiBold",
-    fontSize: 32,
+    ...Type.title1,
     color: Colors.textPrimary,
     marginTop: 24,
     marginHorizontal: 16,
     textAlign: "center",
-    lineHeight: 40,
   },
   pillsRow: {
     flexDirection: "row",
@@ -252,8 +240,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   seriePillText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 22,
+    ...Type.title2,
     color: Colors.textPrimary,
   },
   repsPill: {
@@ -265,8 +252,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   repsPillText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 22,
+    ...Type.title2,
     color: Colors.textPrimary,
   },
   instructionsList: {
@@ -287,17 +273,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   instructionNumberText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 22,
+    ...Type.title2,
     color: Colors.onPrimary,
   },
   instructionText: {
-    fontFamily: "InterRegular",
-    fontSize: 22,
+    ...Type.title2,
     color: Colors.textPrimary,
     flex: 1,
     marginLeft: 14,
-    lineHeight: 30,
   },
   startButton: {
     backgroundColor: Colors.primary,
@@ -310,8 +293,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   startButtonText: {
-    fontFamily: "InterSemiBold",
-    fontSize: 30,
+    ...Type.title1,
     color: Colors.onPrimary,
   },
 });

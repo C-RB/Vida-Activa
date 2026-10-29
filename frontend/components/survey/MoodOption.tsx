@@ -1,9 +1,8 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 
-import { Colors } from "../../constants/theme";
+import { Colors, Type } from "../../constants/theme";
 interface MoodOptionProps {
     label: string;
     icon: keyof typeof FontAwesome.glyphMap;
@@ -13,12 +12,6 @@ interface MoodOptionProps {
 }
 
 export default function MoodOption({ label, icon, color, onPress, selected }: MoodOptionProps) {
-    const [fontsLoaded] = useFonts({
-        InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-        InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-    });
-    if (!fontsLoaded) return null;
-
     return (
         <TouchableOpacity
             activeOpacity={0.85}
@@ -58,9 +51,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     label: {
+      ...Type.bodyStrong,
         color: Colors.textPrimary,
-        fontSize: 18,
-        fontFamily: "InterSemiBold",
         textAlign: "center",
     },
 });

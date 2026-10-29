@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFonts } from "expo-font";
 import BottomNav from "../../components/layout/BottomNav";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
 import SessionCard from "../../components/session/SessionCard";
 import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 
 export default function PatientHistoryScreen() {
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,8 +31,6 @@ export default function PatientHistoryScreen() {
     }
   }, []);
 
-  if (!fontsLoaded) return null;
-
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
       <View style={styles.banner}>
@@ -51,11 +44,9 @@ export default function PatientHistoryScreen() {
         <SectionTitle>Tus sesiones recientes</SectionTitle>
 
         {loading ? (
-          <ActivityIndicator size="large" color={Colors.btnTeal} style={{ marginTop: 40 }} />
+          <StateMessage loading />
         ) : sessions.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 40, fontFamily: Fonts.regular, color: Colors.textSecondary }}>
-            Aún no tienes sesiones registradas.
-          </Text>
+          <StateMessage empty="Aún no tienes sesiones registradas." />
         ) : (
           sessions.map((s) => <SessionCard key={s.id} session={s} expandable />)
         )}
@@ -72,13 +63,11 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerTitle: {
-    fontSize: 28,
-    fontFamily: Fonts.bold,
+    ...Type.title1,
     color: Colors.bannerTitle,
   },
   bannerSubtitle: {
-    fontSize: 18,
-    fontFamily: Fonts.regular,
+    ...Type.body,
     color: Colors.bannerSubtitle,
     marginTop: 6,
   },

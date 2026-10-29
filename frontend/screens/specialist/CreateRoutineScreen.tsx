@@ -15,9 +15,8 @@ import DateTimePicker, {
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useFonts } from "expo-font";
 import { routes } from "../../router/routes";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { createRoutine, RoutineCreate } from "../../services/routineService";
 import Stepper from "../../components/ui/Stepper";
@@ -72,11 +71,6 @@ export default function CreateRoutineScreen() {
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     let active = true;
@@ -173,14 +167,6 @@ export default function CreateRoutineScreen() {
   };
 
   const handleCancel = () => router.push(routes.patientList as any);
-
-  if (!fontsLoaded) {
-    return (
-      <LinearGradient colors={GradientColors as any} style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.btnTeal} />
-      </LinearGradient>
-    );
-  }
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
@@ -447,14 +433,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -467,26 +451,22 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
 
   label: {
-    fontSize: 12,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 6,
-    letterSpacing: 0.3,
   },
   input: {
+    ...Type.label,
     backgroundColor: Colors.cardBgAlt,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: Fonts.regular,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
@@ -502,8 +482,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   timeInputText: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
   timeInputPlaceholder: {
@@ -524,11 +503,10 @@ const styles = StyleSheet.create({
   },
   dayBtnActive: { backgroundColor: Colors.btnPrimary },
   dayText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
-  dayTextActive: { fontFamily: Fonts.bold, color: Colors.textOnDark },
+  dayTextActive: { ...Type.labelStrong, color: Colors.textOnDark },
 
   libraryRow: {
     flexDirection: "row",
@@ -538,13 +516,11 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.cardBgAlt,
   },
   libraryName: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   libraryDesc: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -560,8 +536,7 @@ const styles = StyleSheet.create({
   },
   addBtnDisabled: { opacity: 0.5 },
   addText: {
-    fontSize: 13,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -578,8 +553,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   exerciseName: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -608,8 +582,7 @@ const styles = StyleSheet.create({
   },
   levelBtnActive: { backgroundColor: Colors.btnPrimary, borderColor: Colors.btnPrimary },
   levelText: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   levelTextActive: { color: Colors.textOnDark },
@@ -618,8 +591,7 @@ const styles = StyleSheet.create({
   fieldHalf: { flex: 1 },
 
   mutedText: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
   },
 
@@ -632,8 +604,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
   saveBtn: {
@@ -646,8 +617,7 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: { opacity: 0.6 },
   saveText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

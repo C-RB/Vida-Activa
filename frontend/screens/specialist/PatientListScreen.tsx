@@ -11,13 +11,12 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
 import { getPatients, PatientListItem } from "../../services/patientService";
 import { routes } from "../../router/routes";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import PatientCard from "../../components/specialist/PatientCard";
 import StateMessage from "../../components/ui/StateMessage";
 
@@ -30,11 +29,6 @@ export default function PatientListScreen({
   const [patients, setPatients] = useState<PatientListItem[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     getPatients()
@@ -59,7 +53,7 @@ export default function PatientListScreen({
     router.push(routes.registerPatient as any);
   };
 
-  if (!fontsLoaded || loading) {
+  if (loading) {
     return (
       <LinearGradient colors={GradientColors as any} style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -145,14 +139,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.onPrimary,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.onPrimary,
   },
   headerRow: {
@@ -181,9 +173,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchInput: {
+    ...Type.label,
     flex: 1,
-    fontSize: 14,
-    fontFamily: "InterRegular",
     color: Colors.textPrimary,
     padding: 0,
   },

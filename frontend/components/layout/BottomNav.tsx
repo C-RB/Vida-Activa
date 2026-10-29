@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NAV, NavRole } from "../../constants/navigation";
 import { Colors, Type } from "../../constants/theme";
-import { useAppFonts } from "../../hooks/useAppFonts";
 import Icon from "../ui/Icon";
 
 type Props = {
@@ -15,9 +14,6 @@ type Props = {
 export default function BottomNav({ role, active }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const fontsLoaded = useAppFonts();
-
-  if (!fontsLoaded) return null;
 
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 18) }]}>
