@@ -36,7 +36,7 @@ postgres_data/
 
 # ── Notas internas y herramientas locales ────────────────────────────────────
 EXECUTE.md
-activamente-back/EXECUTE.md
+backend/EXECUTE.md
 planning.md
 
 # ── Editores / SO ────────────────────────────────────────────────────────────
@@ -61,10 +61,10 @@ dist/
 web-build/
 npm-debug.*
 yarn-error.log
-activamente-front/android/build/
-activamente-front/android/app/build/
-activamente-front/android/.gradle/
-activamente-front/ios/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/ios/
 *.apk
 *.aab
 *.ipa
