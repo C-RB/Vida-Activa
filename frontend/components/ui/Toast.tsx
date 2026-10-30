@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text } from "react-native";
-import { Colors, Radius, Type } from "../../constants/theme";
+import { Colors, Radius } from "../../constants/theme";
 import Icon from "./Icon";
+import { useDensity } from "../../hooks/useDensity";
 
 export type ToastMessage = { text: string; tone: "success" | "danger" };
 
@@ -14,6 +15,7 @@ const VISIBLE_MS = 2500;
 
 // Fades in at the bottom of the screen, stays briefly and calls `onHide`.
 export default function Toast({ message, onHide }: Props) {
+  const { type } = useDensity();
   const opacity = useRef(new Animated.Value(0)).current;
   // Kept in a ref so an inline `onHide` does not restart the animation on every render.
   const onHideRef = useRef(onHide);
@@ -43,7 +45,7 @@ export default function Toast({ message, onHide }: Props) {
         size={22}
         color={Colors.onPrimary}
       />
-      <Text style={[Type.secondaryStrong, styles.text]}>{message.text}</Text>
+      <Text style={[type.secondaryStrong, styles.text]}>{message.text}</Text>
     </Animated.View>
   );
 }

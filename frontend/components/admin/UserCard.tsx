@@ -1,9 +1,10 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import Avatar from "../ui/Avatar";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   name: string;
@@ -14,15 +15,16 @@ type Props = {
 };
 
 export default function UserCard({ name, detail, active, children }: Props) {
+  const { type } = useDensity();
   return (
     <Card style={styles.card}>
       <View style={styles.row}>
         <Avatar name={name} size={48} />
         <View style={styles.info}>
-          <Text style={[Type.bodyStrong, styles.name]} numberOfLines={1}>
+          <Text style={[type.bodyStrong, styles.name]} numberOfLines={1}>
             {name}
           </Text>
-          <Text style={[Type.secondary, styles.detail]} numberOfLines={1}>
+          <Text style={[type.secondary, styles.detail]} numberOfLines={1}>
             {detail}
           </Text>
         </View>

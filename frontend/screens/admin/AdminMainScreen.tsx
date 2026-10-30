@@ -54,6 +54,7 @@ export default function AdminMainScreen() {
 
   return (
     <Screen
+      density="compact"
       brand
       title="Panel principal"
       subtitle="Resumen de actividad y gestión del sistema."

@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import Card from "./Card";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   title: string;
@@ -11,15 +12,16 @@ type Props = {
 };
 
 export default function SectionCard({ title, children, step }: Props) {
+  const { type } = useDensity();
   return (
     <Card>
       <View style={styles.header}>
         {step !== undefined && (
           <View style={styles.badge}>
-            <Text style={[Type.label, { color: Colors.onPrimary }]}>{step}</Text>
+            <Text style={[type.label, { color: Colors.onPrimary }]}>{step}</Text>
           </View>
         )}
-        <Text style={[Type.bodyStrong, styles.title]}>{title}</Text>
+        <Text style={[type.bodyStrong, styles.title]}>{title}</Text>
       </View>
       {children}
     </Card>

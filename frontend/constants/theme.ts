@@ -89,4 +89,19 @@ export const Type = {
   labelStrong: { fontFamily: Fonts.bold, fontSize: 14, lineHeight: 18 },
 } as const;
 
+// Denser scale for the admin panel: its users are not elderly, so more fits on screen. Patient and
+// specialist views keep `Type`.
+export const AdminType = {
+  display: { fontFamily: Fonts.heavy, fontSize: 32, lineHeight: 40 },
+  title1: { fontFamily: Fonts.heavy, fontSize: 24, lineHeight: 32 },
+  title2: { fontFamily: Fonts.bold, fontSize: 18, lineHeight: 26 },
+  body: { fontFamily: Fonts.regular, fontSize: 15, lineHeight: 22 },
+  bodyStrong: { fontFamily: Fonts.bold, fontSize: 15, lineHeight: 22 },
+  secondary: { fontFamily: Fonts.regular, fontSize: 14, lineHeight: 20 },
+  secondaryStrong: { fontFamily: Fonts.bold, fontSize: 14, lineHeight: 20 },
+  button: { fontFamily: Fonts.bold, fontSize: 16, lineHeight: 22 },
+  label: { fontFamily: Fonts.medium, fontSize: 13, lineHeight: 18 },
+  labelStrong: { fontFamily: Fonts.bold, fontSize: 13, lineHeight: 18 },
+} as const;
+
 export const Radius = { input: 14, button: 16, card: 20 } as const;

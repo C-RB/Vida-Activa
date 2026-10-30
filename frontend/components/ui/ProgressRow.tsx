@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   label: string;
@@ -10,11 +11,12 @@ type Props = {
 };
 
 export default function ProgressRow({ label, progress, value }: Props) {
+  const { type } = useDensity();
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>
-        <Text style={[Type.secondary, styles.label]}>{label}</Text>
-        {value !== undefined && <Text style={Type.bodyStrong}>{value}</Text>}
+        <Text style={[type.secondary, styles.label]}>{label}</Text>
+        {value !== undefined && <Text style={type.bodyStrong}>{value}</Text>}
       </View>
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${Math.min(100, Math.max(0, progress))}%` }]} />

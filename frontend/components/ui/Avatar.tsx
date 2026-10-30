@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   name: string;
@@ -16,11 +17,12 @@ const initialsOf = (name: string): string =>
     .join("");
 
 export default function Avatar({ name, size = 48 }: Props) {
+  const { type } = useDensity();
   return (
     <View
       style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}
     >
-      <Text style={[Type.bodyStrong, styles.text]}>{initialsOf(name)}</Text>
+      <Text style={[type.bodyStrong, styles.text]}>{initialsOf(name)}</Text>
     </View>
   );
 }

@@ -1,7 +1,8 @@
 import React from "react";
 import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Colors, Radius, Type } from "../../constants/theme";
+import { Colors, Radius } from "../../constants/theme";
 import Button from "./Button";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   visible: boolean;
@@ -22,11 +23,12 @@ export default function FormDialog({
   loading = false,
   children,
 }: Props) {
+  const { type } = useDensity();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <View style={styles.dialog}>
-          <Text style={[Type.title2, styles.title]}>{title}</Text>
+          <Text style={[type.title2, styles.title]}>{title}</Text>
           <ScrollView
             contentContainerStyle={styles.body}
             keyboardShouldPersistTaps="handled"

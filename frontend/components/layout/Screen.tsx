@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NavRole } from "../../constants/navigation";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import Icon from "../ui/Icon";
 import IconButton from "../ui/IconButton";
 import BottomNav from "./BottomNav";
+import { DensityName, DensityProvider, useDensity } from "../../hooks/useDensity";
 
 type Props = {
   title: string;
@@ -23,10 +24,13 @@ type Props = {
   nav?: { role: NavRole; active: string };
   // Rendered over the content, above the bottom bar (toast, floating button).
   floating?: React.ReactNode;
+  // `compact` is for the admin panel.
+  density?: DensityName;
   children: React.ReactNode;
 };
 
-export default function Screen({ title, subtitle, brand, onBack, nav, floating, children }: Props) {
+function Layout({ title, subtitle, brand, onBack, nav, floating, children }: Omit<Props, "density">) {
+  const { type } = useDensity();
   const insets = useSafeAreaInsets();
 
   return (
@@ -44,12 +48,12 @@ export default function Screen({ title, subtitle, brand, onBack, nav, floating, 
           {brand && (
             <View style={styles.brand}>
               <Icon name="logo" size={40} />
-              <Text style={[Type.title2, styles.textPrimary]}>Vida Activa</Text>
+              <Text style={[type.title2, styles.textPrimary]}>Vida Activa</Text>
             </View>
           )}
           <View style={styles.heading}>
-            <Text style={[Type.title1, styles.textPrimary]}>{title}</Text>
-            {subtitle && <Text style={[Type.body, styles.textSecondary]}>{subtitle}</Text>}
+            <Text style={[type.title1, styles.textPrimary]}>{title}</Text>
+            {subtitle && <Text style={[type.body, styles.textSecondary]}>{subtitle}</Text>}
           </View>
           {children}
         </ScrollView>
@@ -57,6 +61,14 @@ export default function Screen({ title, subtitle, brand, onBack, nav, floating, 
       </KeyboardAvoidingView>
       {nav && <BottomNav role={nav.role} active={nav.active} />}
     </View>
+  );
+}
+
+export default function Screen({ density = "comfortable", ...props }: Props) {
+  return (
+    <DensityProvider density={density}>
+      <Layout {...props} />
+    </DensityProvider>
   );
 }
 

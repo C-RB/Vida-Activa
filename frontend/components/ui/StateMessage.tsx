@@ -1,6 +1,7 @@
 import React from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   loading?: boolean;
@@ -10,6 +11,7 @@ type Props = {
 
 // One place for the loading, error and empty states of a list or section.
 export default function StateMessage({ loading, error, empty }: Props) {
+  const { type } = useDensity();
   if (loading) {
     return (
       <View style={styles.box}>
@@ -21,7 +23,7 @@ export default function StateMessage({ loading, error, empty }: Props) {
   if (!text) return null;
   return (
     <View style={styles.box}>
-      <Text style={[Type.body, { color: error ? Colors.danger : Colors.textSecondary }]}>
+      <Text style={[type.body, { color: error ? Colors.danger : Colors.textSecondary }]}>
         {text}
       </Text>
     </View>
