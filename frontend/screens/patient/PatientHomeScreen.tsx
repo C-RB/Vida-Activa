@@ -129,6 +129,7 @@ export default function PatientHomeScreen() {
     });
 
     return {
+      start,
       done,
       total: Math.max(planned.size, done.size),
       todayIdx: mondayIndex(today),
@@ -227,7 +228,22 @@ export default function PatientHomeScreen() {
                         isToday && !isDone && styles.dayCircleToday,
                       ]}
                     >
-                      {isDone && <Icon name="check" size={20} />}
+                      {isDone ? (
+                        <Icon name="check" size={20} />
+                      ) : (
+                        <Text
+                          style={[
+                            Type.labelStrong,
+                            { color: isToday ? Colors.primary : Colors.textPrimary },
+                          ]}
+                        >
+                          {new Date(
+                            week.start.getFullYear(),
+                            week.start.getMonth(),
+                            week.start.getDate() + i
+                          ).getDate()}
+                        </Text>
+                      )}
                     </View>
                     <Text
                       style={[
