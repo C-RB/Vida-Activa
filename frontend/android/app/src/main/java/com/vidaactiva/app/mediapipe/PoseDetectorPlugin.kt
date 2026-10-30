@@ -1,4 +1,4 @@
-package com.activamente.app.mediapipe
+package com.vidaactiva.app.mediapipe
 
 import android.graphics.Bitmap
 import android.media.Image

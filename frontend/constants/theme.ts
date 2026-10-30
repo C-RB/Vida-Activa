@@ -1,4 +1,4 @@
-// Vida Activa · Guía de estilo v2 (Figma: "Rediseño App Activamente").
+// Vida Activa · Guía de estilo v2 (Figma: "Rediseño App").
 //
 // Reglas de la guía:
 //  - Azul saturado SOLO para acciones (se sigue viendo azul aunque el cristalino
@@ -79,3 +79,17 @@ export const Fonts = {
   bold: "InterSemiBold",
   heavy: "InterBold",
 } as const;
+
+// Estilos de texto de la guía v2 (Inter). Tamaños pensados para adultos mayores.
+export const Type = {
+  display: { fontFamily: Fonts.heavy, fontSize: 40, lineHeight: 48 },
+  title1: { fontFamily: Fonts.heavy, fontSize: 28, lineHeight: 36 },
+  title2: { fontFamily: Fonts.bold, fontSize: 22, lineHeight: 30 },
+  body: { fontFamily: Fonts.regular, fontSize: 18, lineHeight: 27 },
+  bodyStrong: { fontFamily: Fonts.bold, fontSize: 18, lineHeight: 27 },
+  secondary: { fontFamily: Fonts.regular, fontSize: 16, lineHeight: 24 },
+  button: { fontFamily: Fonts.bold, fontSize: 20, lineHeight: 24 },
+  label: { fontFamily: Fonts.medium, fontSize: 14, lineHeight: 18 },
+} as const;
+
+export const Radius = { input: 14, button: 16, card: 20 } as const;

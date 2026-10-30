@@ -76,7 +76,7 @@ export default function AdminMainScreen() {
     <LinearGradient colors={GradientColors as any} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.logoText}>ActivaMente</Text>
+        <Text style={styles.logoText}>Vida Activa</Text>
         <TouchableOpacity style={styles.profileIconWrap}>
           <MaterialCommunityIcons name="account-circle" size={32} color={Colors.onPrimary} />
         </TouchableOpacity>

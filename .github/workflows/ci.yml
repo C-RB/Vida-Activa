@@ -24,13 +24,13 @@ jobs:
         image: postgres:16
         env:
           # Coinciden con los defaults de tests/conftest.py
-          POSTGRES_USER: activamente
+          POSTGRES_USER: vida_activa
           POSTGRES_PASSWORD: change_me
-          POSTGRES_DB: activamente_db
+          POSTGRES_DB: vida_activa_db
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U activamente"
+          --health-cmd "pg_isready -U vida_activa"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10

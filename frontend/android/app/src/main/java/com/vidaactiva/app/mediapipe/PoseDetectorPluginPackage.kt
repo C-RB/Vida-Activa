@@ -1,4 +1,4 @@
-package com.activamente.app.mediapipe
+package com.vidaactiva.app.mediapipe
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

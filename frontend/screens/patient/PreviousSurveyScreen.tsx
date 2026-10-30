@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
@@ -21,6 +20,7 @@ import { submitPreSurvey } from "../../services/surveyService";
 import { getSession } from "../../services/authStore";
 
 import { Colors, GradientColors } from "../../constants/theme";
+import Icon from "../../components/ui/Icon";
 export default function PreviousSurveyScreen() {
   const router = useRouter();
   // routineId llega como query param desde PatientHome; patientId del paciente
@@ -85,11 +85,7 @@ export default function PreviousSurveyScreen() {
           </TouchableOpacity>
 
           <View style={styles.title}>
-            <Image
-              style={styles.logo}
-              source={require("../../assets/images/logoActivaMente.png")}
-              resizeMode="contain"
-            />
+            <Icon name="logo" size={96} />
             <Text style={styles.name}>¿Cómo te sientes?</Text>
             <Text style={styles.subtitle}>
               Antes de empezar, cuentanos como estas hoy
@@ -160,12 +156,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "transparent",
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginTop: 40,
-    borderRadius: 100,
   },
   label: {
     fontSize: 22,

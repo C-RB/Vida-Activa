@@ -1,5 +1,5 @@
 -- ------------------------------------------------------
--- ACTIVAMENTE - Seed Data (fake data, safe to commit)
+-- VIDA ACTIVA - Seed Data (fake data, safe to commit)
 -- DO NOT use in production
 -- ------------------------------------------------------
 
@@ -7,7 +7,7 @@
 -- USERS
 -- =====================
 -- All users share the same password for dev convenience:
---   admin@activamente.cl    → Admin1234!
+--   admin@vidaactiva.cl    → Admin1234!
 --   maria.gonzalez@...      → Specialist1234!
 --   pedro.soto@test.com     → Patient1234!
 -- (hashes generated with bcrypt, cost=12)
@@ -16,14 +16,14 @@ INSERT INTO users (id, first_name, last_name, email, password_hash, role) VALUES
   -- Admin | password: Admin1234!
   ('e2b1cc5c-ab6f-47de-86d3-f4eba9db6b93',
    'Carlos', 'Mendoza',
-   'admin@activamente.cl',
+   'admin@vidaactiva.cl',
    '$2b$12$deumaN7zMt.r//7SDytC3eSBsvxHdiKU2m/E1PfHM1owar96fywoG',
    'ADMIN'),
 
   -- Specialist | password: Specialist1234!
   ('ba80b312-b4e8-4800-bf46-8c8d84f5052a',
    'María', 'González',
-   'maria.gonzalez@activamente.cl',
+   'maria.gonzalez@vidaactiva.cl',
    '$2b$12$l2WzsN7pm8YE4JWHWjpWEOqWmzBUr./vOb7xnbJ9uDE28hgJAODUG',
    'SPECIALIST'),
 

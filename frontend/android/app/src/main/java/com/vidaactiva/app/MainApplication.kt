@@ -1,9 +1,9 @@
-package com.activamente.app
+package com.vidaactiva.app
 
 import android.app.Application
 import android.content.res.Configuration
 
-import com.activamente.app.mediapipe.PoseDetectorPlugin
+import com.vidaactiva.app.mediapipe.PoseDetectorPlugin
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative

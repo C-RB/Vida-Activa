@@ -6,7 +6,7 @@ Cómo correr los tests:
   2. Instalá las deps de test:                 pip install -r requirements-dev.txt
   3. Corré desde backend/:            pytest
 
-La suite crea una base LIMPIA `activamente_test` (separada de la de desarrollo),
+La suite crea una base LIMPIA `vida_activa_test` (separada de la de desarrollo),
 le corre `database/init.sql` + `database/seed.sql`, y apunta la app a ella. Se
 borra al terminar. Podés overridear conexión con TEST_DB_HOST/PORT/USER/PASSWORD
 o directamente TEST_DATABASE_URL.
@@ -24,8 +24,8 @@ os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-prod")
 
 DB_DIR = Path(__file__).resolve().parent.parent / "database"
 
-TEST_DB_NAME = os.getenv("TEST_DB_NAME", "activamente_test")
-DB_USER = os.getenv("TEST_DB_USER", "activamente")
+TEST_DB_NAME = os.getenv("TEST_DB_NAME", "vida_activa_test")
+DB_USER = os.getenv("TEST_DB_USER", "vida_activa")
 DB_PASSWORD = os.getenv("TEST_DB_PASSWORD", "change_me")
 DB_HOST = os.getenv("TEST_DB_HOST", "localhost")
 DB_PORT = os.getenv("TEST_DB_PORT", "5432")

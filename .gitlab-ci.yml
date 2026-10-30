@@ -18,8 +18,8 @@ deploy_backend:
   image: alpine:3.20
   variables:
     # Ruta de despliegue RELATIVA al HOME del usuario SSH. Así no se necesita
-    # sudo ni permisos sobre /opt (que pertenece a root). Queda en ~/activamente.
-    DEPLOY_DIR: "activamente"
+    # sudo ni permisos sobre /opt (que pertenece a root). Queda en ~/vida-activa.
+    DEPLOY_DIR: "vida-activa"
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   before_script:
