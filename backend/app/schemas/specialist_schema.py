@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -19,10 +21,19 @@ class DashboardProgress(BaseModel):
     daily_compliance: int
 
 
+class DashboardAttention(BaseModel):
+    # A patient that needs the specialist's attention, and why.
+    patient_id: str
+    full_name: str
+    reason: str
+    kind: Literal["pain", "inactive", "no_sessions"]
+
+
 class SpecialistDashboardResponse(BaseModel):
     specialist: DashboardSpecialist
     stats: DashboardStats
     progress: DashboardProgress
+    attention: list[DashboardAttention] = []
 
 
 # Own profile (GET/PATCH /api/specialists/me)─────

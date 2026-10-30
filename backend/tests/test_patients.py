@@ -46,3 +46,13 @@ def test_specialist_assigns_patient(client, specialist_headers):
         headers=specialist_headers,
     )
     assert r.status_code == 409
+
+
+def test_dashboard_lists_patients_needing_attention(client, specialist_headers):
+    r = client.get("/api/specialists/dashboard", headers=specialist_headers)
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["attention"]) == body["stats"]["alerts"]
+    for item in body["attention"]:
+        assert item["full_name"]
+        assert item["kind"] in {"pain", "inactive", "no_sessions"}

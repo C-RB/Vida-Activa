@@ -10,12 +10,13 @@ from app.models.user_model import User
 from app.models.specialist_model import Specialist
 from app.models.specialist_patient_model import SpecialistPatient
 from app.models.session import Session as SessionModel
-from app.services.patient_metrics import get_patient_alert, get_patient_metrics_and_sessions
+from app.services.patient_metrics import ALERT_KINDS, get_patient_alert, get_patient_metrics_and_sessions
 from app.schemas.specialist_schema import (
     SpecialistDashboardResponse,
     DashboardSpecialist,
     DashboardStats,
     DashboardProgress,
+    DashboardAttention,
     SpecialistMeResponse,
     SpecialistMeUpdate,
 )
@@ -130,9 +131,23 @@ def get_dashboard(
         .scalar()
     ) or 0
 
-    alerts = sum(
-        1 for pid in assigned_ids if get_patient_alert(db, pid)[0]
-    )
+    names = {
+        u.id: f"{u.first_name or ''} {u.last_name or ''}".strip()
+        for u in db.query(User).filter(User.id.in_(assigned_ids)).all()
+    }
+    attention = []
+    for pid in assigned_ids:
+        has_alert, message = get_patient_alert(db, pid)
+        if has_alert:
+            attention.append(
+                DashboardAttention(
+                    patient_id=str(pid),
+                    full_name=names.get(pid, ""),
+                    reason=message,
+                    kind=ALERT_KINDS[message],
+                )
+            )
+    alerts = len(attention)
 
     adherences = [
         get_patient_metrics_and_sessions(db, str(pid))[0].adherencePercent
@@ -179,4 +194,5 @@ def get_dashboard(
             sessions_total_today=sessions_total_today,
             daily_compliance=daily_compliance,
         ),
+        attention=attention,
     )
