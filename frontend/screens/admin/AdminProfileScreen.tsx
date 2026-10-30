@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../components/layout/Screen";
+import ActionRow from "../../components/ui/ActionRow";
 import Avatar from "../../components/ui/Avatar";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -166,13 +167,16 @@ export default function AdminProfileScreen() {
           </Card>
 
           <SectionTitle>Ajustes de cuenta</SectionTitle>
-          <Button title="Editar perfil" variant="soft" onPress={openEdit} />
-          <Button
-            title="Cambiar clave"
-            variant="soft"
-            onPress={() => setPasswordOpen(true)}
-          />
-          <Button title="Cerrar sesión" variant="text" onPress={handleLogout} />
+          <Card style={styles.list}>
+            <ActionRow mdi="pencil-outline" label="Editar perfil" onPress={openEdit} />
+            <View style={styles.divider} />
+            <ActionRow
+              mdi="lock-outline"
+              label="Cambiar clave"
+              onPress={() => setPasswordOpen(true)}
+            />
+          </Card>
+          <Button title="Cerrar sesión" variant="danger" onPress={handleLogout} />
         </>
       )}
 
@@ -245,6 +249,15 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  list: {
+    gap: 0,
+    padding: 8,
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: 12,
+    backgroundColor: Colors.border,
   },
   textPrimary: {
     color: Colors.textPrimary,
