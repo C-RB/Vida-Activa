@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { AdminType, Colors } from "../../constants/theme";
 import type { RoutineWithExercises } from "../../services/routineService";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -22,8 +22,8 @@ export default function RoutineCard({ routine, dayLabel, rangeLabel, deleting, o
       <View style={styles.top}>
         <IconBadge mdi="clipboard-list-outline" size={44} />
         <View style={styles.info}>
-          <Text style={Type.bodyStrong}>{routine.name}</Text>
-          <Text style={[Type.secondary, styles.meta]}>{routine.exercises.length} ejercicios</Text>
+          <Text style={AdminType.bodyStrong}>{routine.name}</Text>
+          <Text style={[AdminType.secondary, styles.meta]}>{routine.exercises.length} ejercicios</Text>
         </View>
         <IconButton
           danger

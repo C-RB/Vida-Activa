@@ -13,7 +13,7 @@ import { useLocalSearchParams } from "expo-router";
 import { getAppointmentsByDate, Appointment } from "../../services/calendarService";
 import BottomNav from "../../components/layout/BottomNav";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, Colors, GradientColors } from "../../constants/theme";
 import StateMessage from "../../components/ui/StateMessage";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.onPrimary,
   },
 
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   monthLabel: {
-    ...Type.bodyStrong,
+    ...AdminType.bodyStrong,
     color: Colors.textPrimary,
   },
   calRow: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   dayHeader: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     flex: 1,
     textAlign: "center",
     color: "rgba(23, 32, 51, 0.5)",
@@ -288,19 +288,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   calCellText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
   calCellGray: {
     color: "rgba(23, 32, 51, 0.25)",
   },
   calCellTextSelected: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.onPrimary,
   },
 
   sectionTitle: {
-    ...Type.bodyStrong,
+    ...AdminType.bodyStrong,
     color: Colors.textPrimary,
     marginBottom: 16,
     marginLeft: 4,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   appointmentPatient: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   statusBadge: {
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusBadgeText: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
   },
   appointmentDetails: {
     flexDirection: "row",
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   detailText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
 });

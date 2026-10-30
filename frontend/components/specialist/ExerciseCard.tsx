@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { AdminType, Colors } from "../../constants/theme";
 import type { Exercise } from "../../services/exerciseService";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -18,9 +18,9 @@ export default function ExerciseCard({ exercise, onAdd }: Props) {
       <View style={styles.top}>
         <IconBadge mdi="run" size={44} />
         <View style={styles.info}>
-          <Text style={Type.bodyStrong}>{exercise.name}</Text>
+          <Text style={AdminType.bodyStrong}>{exercise.name}</Text>
           {exercise.description ? (
-            <Text style={[Type.secondary, styles.description]}>{exercise.description}</Text>
+            <Text style={[AdminType.secondary, styles.description]}>{exercise.description}</Text>
           ) : null}
         </View>
         <IconButton mdi="plus" label={`Añadir ${exercise.name}`} onPress={() => onAdd(exercise)} />

@@ -86,7 +86,6 @@ export default function AdminUsersScreen() {
 
   return (
     <Screen
-      density="compact"
       title="Gestión de usuarios"
       subtitle="Administre los usuarios del sistema, sus roles y estados."
       nav={{ role: "admin", active: "users" }}

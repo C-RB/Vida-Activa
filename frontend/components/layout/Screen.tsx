@@ -27,7 +27,7 @@ type Props = {
   nav?: { role: NavRole; active: string };
   // Rendered over the content, above the bottom bar (toast, floating button).
   floating?: React.ReactNode;
-  // `compact` is for the admin panel.
+  // Overrides the density chosen for the user's role (see RoleDensity).
   density?: DensityName;
   children: React.ReactNode;
 };
@@ -68,12 +68,9 @@ function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, chi
   );
 }
 
-export default function Screen({ density = "comfortable", ...props }: Props) {
-  return (
-    <DensityProvider density={density}>
-      <Layout {...props} />
-    </DensityProvider>
-  );
+export default function Screen({ density, ...props }: Props) {
+  const layout = <Layout {...props} />;
+  return density ? <DensityProvider density={density}>{layout}</DensityProvider> : layout;
 }
 
 const styles = StyleSheet.create({

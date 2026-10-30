@@ -16,7 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { getPatientByRut, assignPatientToSpecialist, Patient } from "../../services/patientService";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, Colors, GradientColors } from "../../constants/theme";
 import SectionTitle from "../../components/ui/SectionTitle";
 const formatRut = (value: string) => {
   // Keep only digits and K, max 9 chars (8 body + check digit): a longer formatted RUT would be cut by the
@@ -226,11 +226,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.onPrimary,
   },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.onPrimary,
     marginTop: 4,
   },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
 
   fieldLabel: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 5,
   },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   fieldInput: {
-    ...Type.label,
+    ...AdminType.label,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     borderRadius: 10,
@@ -305,12 +305,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    ...Type.bodyStrong,
+    ...AdminType.bodyStrong,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   profileRut: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.primary,
     marginBottom: 8,
   },
@@ -322,12 +322,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   statLabel: {
-    ...Type.label,
+    ...AdminType.label,
     color: "rgba(23, 32, 51, 0.6)",
     marginBottom: 2,
   },
   statValue: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
   },
 
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   contactText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   confirmBtnText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.onPrimary,
   },
 });

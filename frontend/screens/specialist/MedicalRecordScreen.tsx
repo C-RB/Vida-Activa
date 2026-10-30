@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
-import { Colors, GradientColors, BannerStyle, Type } from "../../constants/theme";
+import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
 import {
   getPatientById,
   togglePatientStatus,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     ...BannerStyle,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.bannerTitle,
     paddingHorizontal: 16,
   },
@@ -221,11 +221,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   patientName: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   patientRut: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -236,11 +236,11 @@ const styles = StyleSheet.create({
   },
   metaItem: {},
   metaKey: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textMuted,
   },
   metaVal: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
   },
   agendarBtn: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   agendarText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.bannerTitle,
   },
   metricsHeader: {
@@ -262,20 +262,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   metricsTitle: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   bigNumber: {
-    ...Type.display,
+    ...AdminType.display,
     color: Colors.textPrimary,
   },
   bigNumberSub: {
-    ...Type.body,
+    ...AdminType.body,
     color: Colors.textMuted,
     marginTop: -4,
   },
   metricsSubLabel: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textSecondary,
     marginTop: 4,
   },
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.btnTeal,
   },
   disableBtnText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.bannerTitle,
   },
 });

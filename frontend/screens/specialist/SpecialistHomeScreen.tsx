@@ -44,7 +44,6 @@ export default function SpecialistHomeScreen() {
 
   return (
     <Screen
-      density="compact"
       brand
       avatarName={fullName}
       title={firstName ? `Hola, ${firstName}` : "Hola"}

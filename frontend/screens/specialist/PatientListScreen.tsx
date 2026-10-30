@@ -16,7 +16,7 @@ import BottomNav from "../../components/layout/BottomNav";
 import { getPatients, PatientListItem } from "../../services/patientService";
 import { routes } from "../../router/routes";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, Colors, GradientColors } from "../../constants/theme";
 import PatientCard from "../../components/specialist/PatientCard";
 import StateMessage from "../../components/ui/StateMessage";
 
@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.onPrimary,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.onPrimary,
   },
   headerRow: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchInput: {
-    ...Type.label,
+    ...AdminType.label,
     flex: 1,
     color: Colors.textPrimary,
     padding: 0,

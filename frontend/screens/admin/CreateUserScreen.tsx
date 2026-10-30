@@ -98,7 +98,6 @@ export default function CreateUserScreen() {
 
   return (
     <Screen
-      density="compact"
       title="Crear usuario"
       subtitle="Registre un nuevo perfil en el sistema."
       onBack={() => router.back()}
