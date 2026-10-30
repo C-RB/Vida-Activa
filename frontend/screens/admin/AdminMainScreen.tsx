@@ -3,7 +3,6 @@ import { StyleSheet, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import UserCard from "../../components/admin/UserCard";
 import Screen from "../../components/layout/Screen";
-import Button from "../../components/ui/Button";
 import ChipGroup from "../../components/ui/ChipGroup";
 import ProgressRow from "../../components/ui/ProgressRow";
 import SectionTitle from "../../components/ui/SectionTitle";
@@ -72,14 +71,6 @@ export default function AdminMainScreen() {
         />
       </View>
       <ProgressRow label="Usuarios activos" progress={activePct} value={`${activePct}%`} />
-
-      <SectionTitle>Acciones rápidas</SectionTitle>
-      <Button title="Crear usuario" onPress={() => router.push(routes.createUser as any)} />
-      <Button
-        title="Gestionar usuarios"
-        variant="soft"
-        onPress={() => router.push(routes.adminUsers as any)}
-      />
 
       <SectionTitle>Resumen de usuarios</SectionTitle>
       <ChipGroup options={FILTERS} value={filter} onChange={setFilter} />
