@@ -13,10 +13,9 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
-import { Colors, GradientColors } from "../../constants/theme";
+import BottomNav from "../../components/layout/BottomNav";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import {
   getAdminProfile,
@@ -76,11 +75,6 @@ export default function AdminProfileScreen() {
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [toastOpacity] = useState(new Animated.Value(0));
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   useEffect(() => {
     let mounted = true;
     getAdminProfile()
@@ -103,8 +97,6 @@ export default function AdminProfileScreen() {
       mounted = false;
     };
   }, []);
-
-  if (!fontsLoaded) return null;
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToastMessage(message);
@@ -407,8 +399,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   logoText: {
-    fontSize: 20,
-    fontFamily: "InterSemiBold",
+    ...Type.button,
     color: Colors.onPrimary,
   },
   profileIconWrap: {
@@ -426,13 +417,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   pageTitle: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.textPrimary,
   },
   pageSubtitle: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.8)",
     marginTop: 4,
   },
@@ -464,21 +453,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarInitials: {
-    fontSize: 20,
-    fontFamily: "InterSemiBold",
+    ...Type.button,
     color: Colors.textPrimary,
   },
   headerTextInfo: {
     flex: 1,
   },
   adminName: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
   },
   adminRole: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
   },
   statusPill: {
@@ -499,8 +485,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
   },
   statusText: {
-    fontSize: 10,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   divider: {
@@ -518,13 +503,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoLabel: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
   },
   infoValue: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginTop: 2,
   },
@@ -532,8 +515,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sectionSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.8)",
     marginBottom: 12,
     marginLeft: 4,
@@ -547,8 +529,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   actionButtonText: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginLeft: 12,
   },
@@ -569,35 +550,32 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 24,
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
     marginBottom: 16,
     textAlign: 'center',
   },
   inputLabel: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.8)",
     marginBottom: 6,
     marginTop: 12,
   },
   modalInput: {
+    ...Type.label,
     backgroundColor: Colors.background,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontFamily: "InterRegular",
-    fontSize: 14,
     color: Colors.textPrimary,
   },
   modalInputDisabled: {
@@ -625,11 +603,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
   },
   modalButtonTextCancel: {
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.7)",
   },
   modalButtonTextSave: {
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.onPrimary,
   },
 
@@ -642,16 +620,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 4,
   },
   toastText: {
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.onPrimary,
-    fontSize: 13,
     marginLeft: 8,
   }
 });

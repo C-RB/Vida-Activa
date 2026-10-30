@@ -2,26 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFonts } from 'expo-font';
-import BottomNav from '../../components/BottomNav';
+import BottomNav from '../../components/layout/BottomNav';
 import { getSession } from '../../services/authStore';
 
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 export default function PatientProfileScreen() {
-    const [fontsLoaded] = useFonts({
-        InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-        InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-    });
-
-    if (!fontsLoaded) {
-        return null;
-    }
-
     const session = getSession();
     const patient = session?.patient;
-
-    console.log("Paciente en sesión:", patient);
 
     return (
         <LinearGradient colors={GradientColors as any} style={styles.container}>
@@ -96,8 +84,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 0,
     },
     bannerTitle: {
-        fontSize: 24,
-        fontFamily: 'InterSemiBold',
+      ...Type.title2,
         color: Colors.onPrimary,
     },
     scroll: {
@@ -108,8 +95,7 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     sectionLabel: {
-        fontSize: 18,
-        fontFamily: 'InterSemiBold',
+      ...Type.bodyStrong,
         color: Colors.textPrimary,
         paddingHorizontal: 20,
         paddingTop: 8,
@@ -147,15 +133,13 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.surface,
     },
     name_contact: {
-        fontSize: 16,
+      ...Type.secondary,
         marginLeft: 10,
-        fontFamily: 'InterRegular',
         color: Colors.textPrimary,
     },
     name: {
-        fontSize: 20,
+      ...Type.body,
         marginLeft: 10,
-        fontFamily: 'InterRegular',
         color: Colors.textPrimary,
     },
 });

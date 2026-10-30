@@ -1,16 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
-import { useFonts } from "expo-font";
 
-import { Colors } from "../constants/theme";
+import { Colors, Type } from "../../constants/theme";
 export default function SurveySlider({ label, value, onChange }: { label: string, value: number, onChange: (val: number) => void }) {
-    const [fontsLoaded] = useFonts({
-        InterRegular: require("../assets/fonts/Inter_400Regular.ttf"),
-        InterSemiBold: require("../assets/fonts/Inter_600SemiBold.ttf"),
-    });
-    if (!fontsLoaded) return null;
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -60,8 +53,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     label: {
-        fontSize: 20,
-        fontFamily: "InterSemiBold",
+      ...Type.button,
         color: Colors.textPrimary,
         flex: 1,
     },
@@ -75,8 +67,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     valueBadgeText: {
-        fontSize: 20,
-        fontFamily: 'InterSemiBold',
+      ...Type.button,
         color: Colors.onPrimary,
     },
     scale: {
@@ -85,13 +76,11 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     number: {
-        fontSize: 16,
-        fontFamily: "InterRegular",
+      ...Type.secondary,
         color: 'rgba(23, 32, 51, 0.55)',
     },
     activeNumber: {
-        fontSize: 20,
-        fontFamily: "InterSemiBold",
+      ...Type.button,
         color: Colors.textPrimary,
     },
 });

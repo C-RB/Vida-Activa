@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import BottomNav from "../../components/layout/BottomNav";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
+import InfoRow from "../../components/ui/InfoRow";
+import SectionTitle from "../../components/ui/SectionTitle";
 
 
 const PLACEHOLDER = "No establecido";
@@ -17,11 +18,6 @@ export default function SpecialistProfileScreen() {
 
   const [profile, setProfile] = useState<SpecialistProfile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     let mounted = true;
@@ -33,8 +29,6 @@ export default function SpecialistProfileScreen() {
       mounted = false;
     };
   }, []);
-
-  if (!fontsLoaded) return null;
 
   const handleLogout = () => {
     clearAuth();
@@ -68,13 +62,13 @@ export default function SpecialistProfileScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Información personal</Text>
+          <SectionTitle>Información personal</SectionTitle>
           <View style={styles.infoCard}>
-            <InfoRow icon="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
+            <InfoRow mdi="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
             <View style={styles.divider} />
-            <InfoRow icon="phone-outline" label="Teléfono" value={profile?.phone || PLACEHOLDER} />
+            <InfoRow mdi="phone-outline" label="Teléfono" value={profile?.phone || PLACEHOLDER} />
             <View style={styles.divider} />
-            <InfoRow icon="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
+            <InfoRow mdi="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
           </View>
 
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
@@ -90,28 +84,6 @@ export default function SpecialistProfileScreen() {
 }
 
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <View style={styles.infoIconBg}>
-        <MaterialCommunityIcons name={icon} size={20} color={Colors.btnTeal} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue}>{value}</Text>
-      </View>
-    </View>
-  );
-}
-
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -120,14 +92,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -151,13 +121,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   profileName: {
-    fontSize: 20,
-    fontFamily: Fonts.bold,
+    ...Type.button,
     color: Colors.textPrimary,
   },
   profileMeta: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -172,48 +140,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   specialtyText: {
-    fontSize: 12,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textOnDark,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
   infoCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  infoIconBg: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  infoLabel: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: Colors.textSecondary,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-    marginTop: 2,
   },
   divider: {
     height: 1,
@@ -231,8 +166,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   logoutText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

@@ -12,18 +12,18 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
+import Chip from "../../components/ui/Chip";
 const ROLES: UserRoleKey[] = ["admin", "specialist", "patient"];
 
 // Left-border accent: grey when inactive, red for admins, teal otherwise.
 const borderColorFor = (role: UserRoleKey, isActive: boolean) => {
-  if (!isActive) return "#A9A9A9";
+  if (!isActive) return Colors.border;
   return role === "admin" ? Colors.warning : Colors.primary;
 };
 
@@ -47,11 +47,6 @@ export default function AdminUsersScreen() {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   // Fetch users from the backend, debounced on the search box.
   const loadUsers = useCallback(async (search: string) => {
     setLoading(true);
@@ -70,8 +65,6 @@ export default function AdminUsersScreen() {
     const handle = setTimeout(() => loadUsers(searchQuery), 350);
     return () => clearTimeout(handle);
   }, [searchQuery, loadUsers]);
-
-  if (!fontsLoaded) return null;
 
   // Toggle user status against the backend, then update the row in place.
   const handleToggleStatus = (user: AdminUser) => {
@@ -239,7 +232,7 @@ export default function AdminUsersScreen() {
         style={styles.fab}
         onPress={() => router.push(routes.createUser as any)}
       >
-        <MaterialCommunityIcons name="account-plus" size={24} color="#fff" />
+        <MaterialCommunityIcons name="account-plus" size={24} color={Colors.onPrimary} />
       </TouchableOpacity>
 
       <BottomNav role="admin" active="users" />
@@ -276,19 +269,12 @@ export default function AdminUsersScreen() {
                 <Text style={styles.inputLabel}>Rol del Usuario</Text>
                 <View style={styles.rolesContainer}>
                   {ROLES.map((role) => (
-                    <TouchableOpacity
+                    <Chip
                       key={role}
-                      style={[
-                        styles.rolePill,
-                        editingUser.role === role && styles.rolePillActive
-                      ]}
-                      onPress={() => setEditingUser({...editingUser, role})}
-                    >
-                      <Text style={[
-                        styles.rolePillText,
-                        editingUser.role === role && styles.rolePillTextActive
-                      ]}>{ROLE_LABEL[role]}</Text>
-                    </TouchableOpacity>
+                      label={ROLE_LABEL[role]}
+                      selected={editingUser.role === role}
+                      onPress={() => setEditingUser({ ...editingUser, role })}
+                    />
                   ))}
                 </View>
 
@@ -338,8 +324,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   logoText: {
-    fontSize: 20,
-    fontFamily: "InterSemiBold",
+    ...Type.button,
     color: Colors.onPrimary,
   },
   profileIconWrap: {
@@ -357,13 +342,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   pageTitle: {
-    fontSize: 22,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.textPrimary,
   },
   pageSubtitle: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.8)",
     marginTop: 4,
   },
@@ -377,10 +360,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   searchInput: {
+    ...Type.label,
     flex: 1,
     marginLeft: 10,
-    fontFamily: "InterRegular",
-    fontSize: 14,
     color: Colors.textPrimary,
   },
   listContainer: {
@@ -417,8 +399,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   userInitialsText: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   userDetails: {
@@ -426,13 +407,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 15,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
   },
   userEmail: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
     marginTop: 2,
   },
@@ -455,15 +434,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
   },
   statusDotInactive: {
-    backgroundColor: '#666',
+    backgroundColor: Colors.textSecondary,
   },
   statusText: {
-    fontSize: 9,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   statusTextInactive: {
-    color: '#666',
+    color: Colors.textSecondary,
   },
   cardBottomRow: {
     flexDirection: 'row',
@@ -476,8 +454,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   roleText: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
   },
   actionsContainer: {
@@ -498,8 +475,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   loadMoreText: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.7)",
   },
   emptyState: {
@@ -509,8 +485,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyStateText: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.8)",
     textAlign: 'center',
   },
@@ -522,16 +497,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
   },
   retryButtonText: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.onPrimary,
   },
   editHint: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
     marginTop: 14,
-    lineHeight: 16,
   },
   fab: {
     position: 'absolute',
@@ -543,7 +515,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
@@ -562,35 +534,32 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 24,
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
-    fontFamily: "InterSemiBold",
+    ...Type.button,
     color: Colors.textPrimary,
     marginBottom: 20,
     textAlign: 'center',
   },
   inputLabel: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.8)",
     marginBottom: 6,
     marginTop: 12,
   },
   modalInput: {
+    ...Type.label,
     backgroundColor: Colors.background,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontFamily: "InterRegular",
-    fontSize: 14,
     color: Colors.textPrimary,
   },
   rolesContainer: {
@@ -599,27 +568,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
     marginBottom: 10,
-  },
-  rolePill: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  rolePillActive: {
-    backgroundColor: Colors.primaryPressed,
-    borderColor: Colors.primary,
-  },
-  rolePillText: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: Colors.textPrimary,
-  },
-  rolePillTextActive: {
-    color: Colors.onPrimary,
-    fontFamily: "InterSemiBold",
   },
   modalActions: {
     flexDirection: 'row',
@@ -642,11 +590,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPressed,
   },
   modalButtonTextCancel: {
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: "rgba(23, 32, 51, 0.7)",
   },
   modalButtonTextSave: {
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.onPrimary,
   }
 });

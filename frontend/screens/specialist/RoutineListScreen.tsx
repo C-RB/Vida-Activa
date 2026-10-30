@@ -10,36 +10,18 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import BottomNav from "../../components/layout/BottomNav";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import {
   deleteRoutine,
   getRoutinesByPatient,
   RoutineWithExercises,
 } from "../../services/routineService";
-
-// Backend day_of_week: 1 = Monday … 7 = Sunday.
-const WEEKDAYS = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-];
-
-const dayName = (d: number): string => WEEKDAYS[d - 1] ?? "—";
-
-// start_date / end_date arrive as "YYYY-MM-DD"; formatted without building a Date to avoid time-zone shifts.
-const formatDate = (iso: string): string => {
-  if (!iso) return "—";
-  const [y, m, d] = iso.split("-");
-  return d && m && y ? `${d}/${m}/${y}` : iso;
-};
+import RoutineCard from "../../components/specialist/RoutineCard";
+import { formatIsoDate, weekdayName } from "../../utils/dates";
+import StateMessage from "../../components/ui/StateMessage";
 
 export default function RoutineListScreen() {
   const router = useRouter();
@@ -49,11 +31,6 @@ export default function RoutineListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   const loadRoutines = useCallback(async () => {
     if (!patientId) {
@@ -76,8 +53,6 @@ export default function RoutineListScreen() {
   useEffect(() => {
     loadRoutines();
   }, [loadRoutines]);
-
-  if (!fontsLoaded) return null;
 
   const handleCreate = () => {
     router.push({ pathname: routes.createRoutine as any, params: { patientId } });
@@ -129,16 +104,18 @@ export default function RoutineListScreen() {
             style={{ marginTop: 40 }}
           />
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <StateMessage error={error} />
         ) : routines.length === 0 ? (
-          <Text style={styles.emptyText}>
+          <StateMessage empty="
             Este paciente aún no tiene rutinas asignadas.
-          </Text>
+          " />
         ) : (
           routines.map((r) => (
             <RoutineCard
               key={r.id}
               routine={r}
+              dayLabel={weekdayName(r.day_of_week)}
+              rangeLabel={`${formatIsoDate(r.start_date)} – ${formatIsoDate(r.end_date)}`}
               deleting={deletingId === r.id}
               onDelete={() => handleDelete(r)}
             />
@@ -164,74 +141,6 @@ export default function RoutineListScreen() {
   );
 }
 
-function RoutineCard({
-  routine,
-  deleting,
-  onDelete,
-}: {
-  routine: RoutineWithExercises;
-  deleting: boolean;
-  onDelete: () => void;
-}) {
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.cardIconWrap}>
-          <MaterialCommunityIcons
-            name="clipboard-list-outline"
-            size={22}
-            color={Colors.btnTeal}
-          />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.cardTitle}>{routine.name}</Text>
-          <Text style={styles.cardMeta}>
-            {routine.exercises.length} ejercicios
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={styles.deleteBtn}
-          onPress={onDelete}
-          disabled={deleting}
-          activeOpacity={0.8}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          {deleting ? (
-            <ActivityIndicator size="small" color={Colors.textOnDark} />
-          ) : (
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={18}
-              color={Colors.textOnDark}
-            />
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.cardInfoRow}>
-        <View style={styles.infoChip}>
-          <MaterialCommunityIcons
-            name="calendar-week-outline"
-            size={14}
-            color={Colors.btnTeal}
-          />
-          <Text style={styles.infoChipText}>{dayName(routine.day_of_week)}</Text>
-        </View>
-        <View style={styles.infoChip}>
-          <MaterialCommunityIcons
-            name="calendar-range"
-            size={14}
-            color={Colors.btnTeal}
-          />
-          <Text style={styles.infoChipText}>
-            {formatDate(routine.start_date)} – {formatDate(routine.end_date)}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
@@ -239,93 +148,16 @@ const styles = StyleSheet.create({
   banner: { ...BannerStyle },
   bannerRow: { flexDirection: "row", alignItems: "center" },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
-  card: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-    padding: 14,
-    marginBottom: 12,
-  },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  cardIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  deleteBtn: {
-    backgroundColor: Colors.btnDanger,
-    borderRadius: 8,
-    width: 34,
-    height: 34,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
-    color: Colors.textPrimary,
-  },
-  cardMeta: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  cardInfoRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  infoChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  infoChipText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: Colors.textPrimary,
-  },
 
-  errorText: {
-    marginTop: 40,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.btnDanger,
-  },
-  emptyText: {
-    marginTop: 40,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.textSecondary,
-  },
 
   primaryCta: {
     flexDirection: "row",
@@ -339,8 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryCtaText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

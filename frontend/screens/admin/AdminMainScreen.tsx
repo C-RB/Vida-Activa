@@ -2,13 +2,15 @@ import React, { useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
-import BottomNav from "../../components/BottomNav";
+import BottomNav from "../../components/layout/BottomNav";
 import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
+import Chip from "../../components/ui/Chip";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 // Role filter pills.
 const FILTERS: { label: string; role?: UserRoleKey }[] = [
   { label: "Todos" },
@@ -31,11 +33,6 @@ export default function AdminMainScreen() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
-
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -53,8 +50,6 @@ export default function AdminMainScreen() {
       loadUsers();
     }, [loadUsers])
   );
-
-  if (!fontsLoaded) return null;
 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.isActive).length;
@@ -77,7 +72,7 @@ export default function AdminMainScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Panel Principal</Text>
+          <SectionTitle>Panel Principal</SectionTitle>
           <Text style={styles.sectionSubtitle}>Resumen de actividad y gestión del sistema.</Text>
         </View>
 
@@ -117,14 +112,14 @@ export default function AdminMainScreen() {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+          <SectionTitle>Acciones Rápidas</SectionTitle>
         </View>
         <View style={styles.actionsContainer}>
           <TouchableOpacity 
             style={[styles.actionButton, { backgroundColor: Colors.primaryPressed }]}
             onPress={() => router.push(routes.createUser as any)}
           >
-            <MaterialCommunityIcons name="account-plus" size={20} color="#fff" style={styles.actionIcon} />
+            <MaterialCommunityIcons name="account-plus" size={20} color={Colors.onPrimary} style={styles.actionIcon} />
             <Text style={styles.actionButtonText}>Crear usuario</Text>
           </TouchableOpacity>
           
@@ -138,32 +133,25 @@ export default function AdminMainScreen() {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Resumen de Usuarios</Text>
+          <SectionTitle>Resumen de Usuarios</SectionTitle>
         </View>
         
         <View style={styles.filtersContainer}>
           {FILTERS.map(({ label }) => (
-            <TouchableOpacity
+            <Chip
               key={label}
-              style={[
-                styles.filterPill,
-                activeFilter === label && styles.filterPillActive
-              ]}
+              label={label}
+              mdi={label === "Todos" ? "filter-variant" : undefined}
+              selected={activeFilter === label}
               onPress={() => setActiveFilter(label)}
-            >
-              {label === 'Todos' && <MaterialCommunityIcons name="filter-variant" size={14} color={Colors.textPrimary} style={{marginRight: 4}} />}
-              <Text style={[
-                styles.filterPillText,
-                activeFilter === label && styles.filterPillTextActive
-              ]}>{label}</Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
 
         {loading ? (
           <ActivityIndicator color={Colors.textPrimary} size="large" style={{ marginTop: 30 }} />
         ) : visibleUsers.length === 0 ? (
-          <Text style={styles.emptyText}>No hay usuarios para mostrar.</Text>
+          <StateMessage empty="No hay usuarios para mostrar." />
         ) : (
           <View style={styles.userListContainer}>
             {visibleUsers.map((user) => (
@@ -234,8 +222,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   logoText: {
-    fontSize: 20,
-    fontFamily: "InterSemiBold",
+    ...Type.button,
     color: Colors.onPrimary,
   },
   backToSplash: {
@@ -263,14 +250,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 10,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-  },
   sectionSubtitle: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
     marginTop: 4,
   },
@@ -292,16 +273,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   statLabel: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
   },
   statValue: {
-    fontSize: 32,
-    fontFamily: "InterSemiBold",
+    ...Type.title1,
     color: Colors.textPrimary,
     marginTop: 4,
-    lineHeight: 38,
   },
   statTrendRow: {
     flexDirection: 'row',
@@ -309,12 +287,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   statTrendText: {
-    fontSize: 11,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   statTrendSubtext: {
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
   },
   progressTrack: {
@@ -344,8 +321,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   actionButtonText: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.onPrimary,
   },
 
@@ -353,26 +329,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
     gap: 8,
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  filterPillActive: {
-    backgroundColor: Colors.surface,
-  },
-  filterPillText: {
-    fontSize: 12,
-    fontFamily: "InterRegular",
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  filterPillTextActive: {
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
   },
   userListContainer: {
     gap: 12,
@@ -403,21 +359,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   userInitialsText: {
-    fontSize: 14,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   userDetails: {
     marginLeft: 12,
   },
   userName: {
-    fontSize: 13,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   userRole: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
   },
   userInfoRight: {
@@ -452,8 +405,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.danger,
   },
   statusText: {
-    fontSize: 10,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   statusTextInactive: {
@@ -466,13 +418,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   viewAllText: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   emptyText: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.7)",
     textAlign: "center",
     marginTop: 24,

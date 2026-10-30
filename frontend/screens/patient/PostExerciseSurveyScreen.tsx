@@ -1,29 +1,21 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from "expo-linear-gradient";
-import MoodOption from "../../components/MoodOption";
+import MoodOption from "../../components/survey/MoodOption";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useFonts } from "expo-font";
 import { routes } from "../../router/routes";
 import { submitPostSurvey } from "../../services/surveyService";
 import { completeSession } from "../../services/sessionService";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
 export default function PostExerciseSurveyScreen() {
     const router = useRouter();
     // session_id comes from ActiveExercise and is forwarded to the final screen.
     const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
     const [selected, setSelected] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-
-    const [fontsLoaded] = useFonts({
-        InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-        InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-    });
-
-    if (!fontsLoaded) return null;
 
     const options: { label: string; icon: keyof typeof FontAwesome.glyphMap; color: string; value: number }[] = [
         { label: "Muy mal", icon: "frown-o", color: Colors.danger, value: 1 },
@@ -135,13 +127,11 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 0,
     },
     title: {
-        fontSize: 28,
-        fontFamily: 'InterSemiBold',
+      ...Type.title1,
         color: Colors.onPrimary,
     },
     subtitle: {
-        fontSize: 18,
-        fontFamily: 'InterRegular',
+      ...Type.body,
         color: Colors.onPrimary,
         marginTop: 6,
     },
@@ -151,20 +141,16 @@ const styles = StyleSheet.create({
         paddingBottom: 32,
     },
     question: {
-        fontSize: 26,
-        fontFamily: "InterSemiBold",
+      ...Type.title1,
         textAlign: "center",
         color: Colors.textPrimary,
-        lineHeight: 34,
     },
     helper: {
-        fontSize: 18,
-        fontFamily: 'InterRegular',
+      ...Type.body,
         textAlign: 'center',
         marginTop: 14,
         marginBottom: 24,
         color: Colors.textPrimary,
-        lineHeight: 26,
     },
     moodGrid: {
         flexDirection: 'row',
@@ -185,13 +171,12 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     selectedText: {
+      ...Type.body,
         flex: 1,
-        fontSize: 20,
-        fontFamily: 'InterRegular',
         color: Colors.textPrimary,
     },
     selectedTextBold: {
-        fontFamily: 'InterSemiBold',
+      ...Type.labelStrong,
     },
     button: {
         backgroundColor: Colors.primary,
@@ -205,8 +190,7 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
     buttonText: {
+      ...Type.title1,
         color: Colors.onPrimary,
-        fontFamily: "InterSemiBold",
-        fontSize: 28,
     },
 });

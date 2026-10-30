@@ -11,6 +11,7 @@ export const Palette = {
   textPrimary: "#172033",
   textSecondary: "#4A5568",
   onPrimary: "#FFFFFF",
+  shadow: "#172033",
 
   // Action
   primary: "#1D5FD1",
@@ -73,7 +74,7 @@ export const Fonts = {
   heavy: "InterBold",
 } as const;
 
-// v2 text styles; sizes are meant for older adults.
+// v2 text scale: the only text styles in the app. Sizes are meant for older adults (nothing under 14 px).
 export const Type = {
   display: { fontFamily: Fonts.heavy, fontSize: 40, lineHeight: 48 },
   title1: { fontFamily: Fonts.heavy, fontSize: 28, lineHeight: 36 },
@@ -81,8 +82,10 @@ export const Type = {
   body: { fontFamily: Fonts.regular, fontSize: 18, lineHeight: 27 },
   bodyStrong: { fontFamily: Fonts.bold, fontSize: 18, lineHeight: 27 },
   secondary: { fontFamily: Fonts.regular, fontSize: 16, lineHeight: 24 },
+  secondaryStrong: { fontFamily: Fonts.bold, fontSize: 16, lineHeight: 24 },
   button: { fontFamily: Fonts.bold, fontSize: 20, lineHeight: 24 },
   label: { fontFamily: Fonts.medium, fontSize: 14, lineHeight: 18 },
+  labelStrong: { fontFamily: Fonts.bold, fontSize: 14, lineHeight: 18 },
 } as const;
 
 export const Radius = { input: 14, button: 16, card: 20 } as const;

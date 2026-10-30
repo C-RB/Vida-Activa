@@ -13,11 +13,11 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { getPatientByRut, assignPatientToSpecialist, Patient } from "../../services/patientService";
 
-import { Colors, GradientColors } from "../../constants/theme";
+import { Colors, GradientColors, Type } from "../../constants/theme";
+import SectionTitle from "../../components/ui/SectionTitle";
 const formatRut = (value: string) => {
   // Keep only digits and K, max 9 chars (8 body + check digit): a longer formatted RUT would be cut by the
   // input's maxLength mid-format and desync the native and controlled values (repeated or phantom digits).
@@ -46,11 +46,6 @@ export default function AssignPatientScreen({
   
   const [isSearching, setIsSearching] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   const handleRutChange = (text: string) => {
     setRutInput(formatRut(text));
@@ -89,8 +84,6 @@ export default function AssignPatientScreen({
       setIsAssigning(false);
     }
   };
-
-  if (!fontsLoaded) return null;
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
@@ -167,7 +160,7 @@ export default function AssignPatientScreen({
                 </View>
               </View>
 
-              <Text style={styles.sectionTitle}>Información de Contacto</Text>
+              <SectionTitle>Información de Contacto</SectionTitle>
 
               <View style={styles.card}>
                 <View style={styles.contactItem}>
@@ -233,13 +226,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: "InterSemiBold",
+    ...Type.title2,
     color: Colors.onPrimary,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.onPrimary,
     marginTop: 4,
   },
@@ -251,11 +242,9 @@ const styles = StyleSheet.create({
   },
 
   fieldLabel: {
-    fontSize: 12,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 5,
-    letterSpacing: 0.3,
   },
   searchRow: {
     flexDirection: "row",
@@ -264,13 +253,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   fieldInput: {
+    ...Type.label,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 11,
-    fontSize: 14,
-    fontFamily: "InterRegular",
     color: Colors.textPrimary,
     backgroundColor: Colors.background,
   },
@@ -317,14 +305,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
+    ...Type.bodyStrong,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   profileRut: {
-    fontSize: 13,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.primary,
     marginBottom: 8,
   },
@@ -336,24 +322,15 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   statLabel: {
-    fontSize: 11,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: "rgba(23, 32, 51, 0.6)",
     marginBottom: 2,
   },
   statValue: {
-    fontSize: 13,
-    fontFamily: "InterSemiBold",
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
-    color: Colors.textPrimary,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
   contactItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -369,8 +346,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   contactText: {
-    fontSize: 14,
-    fontFamily: "InterRegular",
+    ...Type.label,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -383,8 +359,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   confirmBtnText: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
+    ...Type.secondaryStrong,
     color: Colors.onPrimary,
   },
 });

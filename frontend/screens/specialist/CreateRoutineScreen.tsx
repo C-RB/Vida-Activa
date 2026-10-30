@@ -15,11 +15,13 @@ import DateTimePicker, {
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useFonts } from "expo-font";
 import { routes } from "../../router/routes";
-import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
+import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { createRoutine, RoutineCreate } from "../../services/routineService";
+import Stepper from "../../components/ui/Stepper";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
 
 // Exercise inside the routine being built (editable by the specialist).
 type BuilderItem = {
@@ -69,11 +71,6 @@ export default function CreateRoutineScreen() {
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  const [fontsLoaded] = useFonts({
-    InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
-    InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
-  });
 
   useEffect(() => {
     let active = true;
@@ -171,14 +168,6 @@ export default function CreateRoutineScreen() {
 
   const handleCancel = () => router.push(routes.patientList as any);
 
-  if (!fontsLoaded) {
-    return (
-      <LinearGradient colors={GradientColors as any} style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.btnTeal} />
-      </LinearGradient>
-    );
-  }
-
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
       <View style={styles.banner}>
@@ -192,7 +181,7 @@ export default function CreateRoutineScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Datos de la rutina</Text>
+          <SectionTitle>Datos de la rutina</SectionTitle>
 
           <Text style={styles.label}>Nombre</Text>
           <TextInput
@@ -283,7 +272,7 @@ export default function CreateRoutineScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ejercicios disponibles</Text>
+          <SectionTitle>Ejercicios disponibles</SectionTitle>
 
           {loadingExercises ? (
             <ActivityIndicator
@@ -292,7 +281,7 @@ export default function CreateRoutineScreen() {
               style={{ marginTop: 16 }}
             />
           ) : exercisesError ? (
-            <Text style={styles.errorText}>{exercisesError}</Text>
+            <StateMessage error={exercisesError} />
           ) : available.length === 0 ? (
             <Text style={styles.mutedText}>No hay ejercicios en la biblioteca.</Text>
           ) : (
@@ -379,14 +368,14 @@ export default function CreateRoutineScreen() {
                 </View>
 
                 <View style={styles.rowBlock}>
-                  <Counter
+                  <Stepper
                     label="Series"
                     value={item.total_series}
                     onChange={(v) =>
                       updateItem(item.exercise_id, "total_series", v)
                     }
                   />
-                  <Counter
+                  <Stepper
                     label="Repeticiones"
                     value={item.total_reps}
                     onChange={(v) =>
@@ -395,7 +384,7 @@ export default function CreateRoutineScreen() {
                   />
                 </View>
 
-                <Counter
+                <Stepper
                   label="Descanso (seg)"
                   value={item.rest_time_seconds}
                   step={5}
@@ -408,7 +397,7 @@ export default function CreateRoutineScreen() {
           )}
         </View>
 
-        {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+        {saveError ? <StateMessage error={saveError} /> : null}
 
         <View style={styles.actionsRow}>
           <TouchableOpacity
@@ -437,39 +426,6 @@ export default function CreateRoutineScreen() {
   );
 }
 
-function Counter({
-  label,
-  value,
-  onChange,
-  step = 1,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  step?: number;
-}) {
-  return (
-    <View style={styles.fieldHalf}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.counterBox}>
-        <TouchableOpacity
-          onPress={() => onChange(Math.max(0, value - step))}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MaterialCommunityIcons name="minus" size={20} color={Colors.textOnDark} />
-        </TouchableOpacity>
-        <Text style={styles.counterValue}>{value}</Text>
-        <TouchableOpacity
-          onPress={() => onChange(value + step)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MaterialCommunityIcons name="plus" size={20} color={Colors.textOnDark} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -477,14 +433,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
+    ...Type.title2,
     color: Colors.bannerTitle,
   },
 
@@ -497,26 +451,22 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
 
   label: {
-    fontSize: 12,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 6,
-    letterSpacing: 0.3,
   },
   input: {
+    ...Type.label,
     backgroundColor: Colors.cardBgAlt,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: Fonts.regular,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
@@ -532,8 +482,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   timeInputText: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
   timeInputPlaceholder: {
@@ -554,11 +503,10 @@ const styles = StyleSheet.create({
   },
   dayBtnActive: { backgroundColor: Colors.btnPrimary },
   dayText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textPrimary,
   },
-  dayTextActive: { fontFamily: Fonts.bold, color: Colors.textOnDark },
+  dayTextActive: { ...Type.labelStrong, color: Colors.textOnDark },
 
   libraryRow: {
     flexDirection: "row",
@@ -568,13 +516,11 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.cardBgAlt,
   },
   libraryName: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   libraryDesc: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -590,8 +536,7 @@ const styles = StyleSheet.create({
   },
   addBtnDisabled: { opacity: 0.5 },
   addText: {
-    fontSize: 13,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -608,8 +553,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   exerciseName: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -638,41 +582,16 @@ const styles = StyleSheet.create({
   },
   levelBtnActive: { backgroundColor: Colors.btnPrimary, borderColor: Colors.btnPrimary },
   levelText: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
+    ...Type.labelStrong,
     color: Colors.textPrimary,
   },
   levelTextActive: { color: Colors.textOnDark },
 
   rowBlock: { flexDirection: "row", gap: 12, marginBottom: 12 },
   fieldHalf: { flex: 1 },
-  counterBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.btnTeal,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  counterValue: {
-    fontSize: 16,
-    fontFamily: Fonts.bold,
-    color: Colors.textOnDark,
-    minWidth: 24,
-    textAlign: "center",
-  },
 
-  errorText: {
-    marginTop: 16,
-    textAlign: "center",
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.btnDanger,
-  },
   mutedText: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
+    ...Type.label,
     color: Colors.textSecondary,
   },
 
@@ -685,8 +604,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
   saveBtn: {
@@ -699,8 +617,7 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: { opacity: 0.6 },
   saveText: {
-    fontSize: 15,
-    fontFamily: Fonts.bold,
+    ...Type.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

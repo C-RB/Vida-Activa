@@ -5,13 +5,9 @@ import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Button from "../../components/ui/Button";
 import { Colors, Radius, Type } from "../../constants/theme";
-import { useAppFonts } from "../../hooks/useAppFonts";
 
 export default function ActiveExerciseScreenWeb() {
   const router = useRouter();
-  const fontsLoaded = useAppFonts();
-
-  if (!fontsLoaded) return null;
 
   return (
     <View style={styles.container}>
