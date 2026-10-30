@@ -4,7 +4,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import UserCard from "../../components/admin/UserCard";
 import Screen from "../../components/layout/Screen";
 import ChipGroup from "../../components/ui/ChipGroup";
-import ProgressRow from "../../components/ui/ProgressRow";
 import SectionTitle from "../../components/ui/SectionTitle";
 import StatCard from "../../components/ui/StatCard";
 import StateMessage from "../../components/ui/StateMessage";
@@ -12,12 +11,14 @@ import TextButton from "../../components/ui/TextButton";
 import { routes } from "../../router/routes";
 import { AdminUser, listUsers, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 
-type Filter = "all" | Exclude<UserRoleKey, "admin">;
+// Role filters list active users, matching the cards; "inactive" lists every deactivated user.
+type Filter = "all" | "patient" | "specialist" | "inactive";
 
 const FILTERS = [
   { value: "all", label: "Todos", mdi: "filter-variant" },
   { value: "patient", label: "Paciente" },
   { value: "specialist", label: "Especialista" },
+  { value: "inactive", label: "Inactivos" },
 ] as const;
 
 export default function AdminMainScreen() {
@@ -44,12 +45,14 @@ export default function AdminMainScreen() {
     }, [loadUsers])
   );
 
-  const total = users.length;
-  const active = users.filter((u) => u.isActive).length;
-  const inactive = total - active;
-  const activePct = total > 0 ? Math.round((active / total) * 100) : 0;
+  const activeOf = (role: UserRoleKey) => users.filter((u) => u.role === role && u.isActive).length;
+  const inactive = users.filter((u) => !u.isActive).length;
 
-  const visibleUsers = filter === "all" ? users : users.filter((u) => u.role === filter);
+  const visibleUsers = users.filter((u) => {
+    if (filter === "all") return true;
+    if (filter === "inactive") return !u.isActive;
+    return u.role === filter && u.isActive;
+  });
 
   return (
     <Screen
@@ -60,8 +63,19 @@ export default function AdminMainScreen() {
       nav={{ role: "admin", active: "home" }}
     >
       <View style={styles.stats}>
-        <StatCard mdi="account-group" value={String(total)} label="Usuarios" />
-        <StatCard mdi="account-check" value={String(active)} label="Activos" tone="info" />
+        <StatCard mdi="account-outline" value={String(activeOf("patient"))} label="Pacientes" />
+        <StatCard
+          mdi="medical-bag"
+          value={String(activeOf("specialist"))}
+          label="Especialistas"
+          tone="info"
+        />
+        <StatCard
+          mdi="shield-account-outline"
+          value={String(activeOf("admin"))}
+          label="Administradores"
+          tone="warning"
+        />
         <StatCard
           mdi="account-cancel"
           value={String(inactive)}
@@ -70,7 +84,6 @@ export default function AdminMainScreen() {
           alert={inactive > 0}
         />
       </View>
-      <ProgressRow label="Usuarios activos" progress={activePct} value={`${activePct}%`} />
 
       <SectionTitle>Resumen de usuarios</SectionTitle>
       <ChipGroup options={FILTERS} value={filter} onChange={setFilter} />
