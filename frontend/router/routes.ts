@@ -8,9 +8,9 @@ export const routes = {
   exerciseSessionCompleted: "/exercise-session-completed",
   patientHistory: "/patient-history",
   specialistHome: "/specialist-home",
-  specialistCalendar: "/spetialis-calendar",
+  specialistCalendar: "/specialist-calendar",
   specialistProfile: "/specialist-profile",
-  scheduleAppointment: "/schedule-appointmen",
+  scheduleAppointment: "/schedule-appointment",
   patientList: "/patient-list",
   routineList: "/routine-list",
   medicalRecord: "/medical-record",
@@ -20,5 +20,5 @@ export const routes = {
   adminProfile: "/admin-profile",
   createUser: "/create-user",
   exercisesLibrary: "/exercises-library",
-  createRutine: "/create-rutine",
+  createRoutine: "/create-routine",
 };

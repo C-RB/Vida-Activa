@@ -5,22 +5,16 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
 import AdminNavbar from "../../components/AdminNavbar";
-import { listUsers, AdminUser, RoleEs } from "../../services/userService";
+import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
 // Maps the role filter pills to the backend role labels.
-const FILTERS: { label: string; role?: RoleEs }[] = [
+const FILTERS: { label: string; role?: UserRoleKey }[] = [
   { label: "Todos" },
-  { label: "Paciente", role: "paciente" },
-  { label: "Especialista", role: "especialista" },
+  { label: "Paciente", role: "patient" },
+  { label: "Especialista", role: "specialist" },
 ];
-
-const ROLE_LABEL: Record<RoleEs, string> = {
-  admin: "Administrador",
-  especialista: "Especialista",
-  paciente: "Paciente",
-};
 
 const initialsFor = (fullName: string) => {
   const parts = fullName.trim().split(/\s+/);

@@ -55,7 +55,7 @@ const formatBackendTime = (d: Date) =>
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function CreateRutineScreen() {
+export default function CreateRoutineScreen() {
   const router = useRouter();
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
 

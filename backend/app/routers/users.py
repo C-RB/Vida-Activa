@@ -49,7 +49,7 @@ def _generate_temp_password(name: str) -> str:
 @router.get("", response_model=list[UserListItem])
 def list_users(
     search: Optional[str] = Query(None, description="Filter by name or email"),
-    role: Optional[str] = Query(None, description="Filter by role (admin/especialista/paciente)"),
+    role: Optional[str] = Query(None, description="Filter by role (admin/specialist/patient)"),
     limit: int = Query(50, ge=1, le=100, description="Max rows to return (paginación)"),
     offset: int = Query(0, ge=0, description="Rows to skip (paginación)"),
     db: Session = Depends(get_db),

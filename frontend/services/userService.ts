@@ -3,14 +3,16 @@
 import { apiFetch } from "./apiClient";
 import type { UserRole } from "./authStore";
 
-// Spanish labels used across the admin UI, derived from the backend role enum.
-export type RoleEs = "admin" | "especialista" | "paciente";
+export type UserRoleKey = "admin" | "specialist" | "patient";
 
-const ROLE_TO_ES: Record<UserRole, RoleEs> = {
-  ADMIN: "admin",
-  SPECIALIST: "especialista",
-  PATIENT: "paciente",
+export const ROLE_LABEL: Record<UserRoleKey, string> = {
+  admin: "Administrador",
+  specialist: "Especialista",
+  patient: "Paciente",
 };
+
+const toRoleKey = (role: UserRole): UserRoleKey =>
+  role.toLowerCase() as UserRoleKey;
 
 // Raw shape returned by GET /api/users.
 interface UserListItemDto {
@@ -28,7 +30,7 @@ export interface AdminUser {
   id: string;
   fullName: string;
   email: string;
-  role: RoleEs;
+  role: UserRoleKey;
   isActive: boolean;
   createdAt: string | null;
 }
@@ -37,14 +39,14 @@ const toAdminUser = (dto: UserListItemDto): AdminUser => ({
   id: dto.id,
   fullName: `${dto.first_name} ${dto.last_name}`.trim(),
   email: dto.email,
-  role: ROLE_TO_ES[dto.role] ?? "paciente",
+  role: toRoleKey(dto.role),
   isActive: dto.is_active,
   createdAt: dto.created_at,
 });
 
 export interface ListUsersParams {
   search?: string;
-  role?: RoleEs;
+  role?: UserRoleKey;
   // Paginación (opcional). El backend usa limit=50 / offset=0 por defecto.
   limit?: number;
   offset?: number;
@@ -84,7 +86,7 @@ export const setUserStatus = async (
 export interface CreateUserPayload {
   fullName: string;
   email: string;
-  role: "paciente" | "especialista";
+  role: "patient" | "specialist";
   // Campos opcionales por rol (se guardan en patients / specialists).
   rut?: string;
   phone?: string;

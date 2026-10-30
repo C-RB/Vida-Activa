@@ -35,7 +35,7 @@ export default function CreateUserScreen() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"paciente" | "especialista">("paciente");
+  const [role, setRole] = useState<"patient" | "specialist">("patient");
 
   // Campos por rol (se guardan en patients / specialists en el backend).
   const [rut, setRut] = useState("");
@@ -75,7 +75,7 @@ export default function CreateUserScreen() {
       phone: phone.trim() || undefined,
     };
 
-    if (role === "paciente") {
+    if (role === "patient") {
       payload.age = age.trim() ? Number(age) : undefined;
       payload.gender = gender || undefined;
       payload.address = address.trim() || undefined;
@@ -182,18 +182,18 @@ export default function CreateUserScreen() {
             <Text style={styles.fieldLabel}>ROL DEL USUARIO</Text>
             <View style={styles.pillRow}>
               <TouchableOpacity
-                style={[styles.pill, role === "paciente" && styles.pillActive]}
-                onPress={() => setRole("paciente")}
+                style={[styles.pill, role === "patient" && styles.pillActive]}
+                onPress={() => setRole("patient")}
               >
                 <MaterialCommunityIcons
                   name="account-outline"
                   size={18}
-                  color={role === "paciente" ? Colors.onPrimary : Colors.textPrimary}
+                  color={role === "patient" ? Colors.onPrimary : Colors.textPrimary}
                 />
                 <Text
                   style={[
                     styles.pillText,
-                    role === "paciente" && styles.pillTextActive,
+                    role === "patient" && styles.pillTextActive,
                   ]}
                 >
                   Paciente
@@ -201,18 +201,18 @@ export default function CreateUserScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.pill, role === "especialista" && styles.pillActive]}
-                onPress={() => setRole("especialista")}
+                style={[styles.pill, role === "specialist" && styles.pillActive]}
+                onPress={() => setRole("specialist")}
               >
                 <MaterialCommunityIcons
                   name="medical-bag"
                   size={18}
-                  color={role === "especialista" ? Colors.onPrimary : Colors.textPrimary}
+                  color={role === "specialist" ? Colors.onPrimary : Colors.textPrimary}
                 />
                 <Text
                   style={[
                     styles.pillText,
-                    role === "especialista" && styles.pillTextActive,
+                    role === "specialist" && styles.pillTextActive,
                   ]}
                 >
                   Especialista
@@ -280,7 +280,7 @@ export default function CreateUserScreen() {
             </View>
 
             {/* Campos según el rol */}
-            {role === "paciente" ? (
+            {role === "patient" ? (
               <>
                 {/* Edad */}
                 <Text style={styles.fieldLabel}>EDAD</Text>
