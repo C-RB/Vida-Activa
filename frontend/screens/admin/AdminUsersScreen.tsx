@@ -13,8 +13,8 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
-import { useFocusEffect, useRouter } from "expo-router";
-import AdminNavbar from "../../components/AdminNavbar";
+import { useRouter } from "expo-router";
+import BottomNav from "../../components/BottomNav";
 import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
@@ -44,7 +44,6 @@ export default function AdminUsersScreen() {
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // Edit Modal State
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
@@ -121,7 +120,6 @@ export default function AdminUsersScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logoText}>Vida Activa</Text>
         <TouchableOpacity style={styles.profileIconWrap}>
@@ -244,9 +242,8 @@ export default function AdminUsersScreen() {
         <MaterialCommunityIcons name="account-plus" size={24} color="#fff" />
       </TouchableOpacity>
 
-      <AdminNavbar active="users" />
+      <BottomNav role="admin" active="users" />
 
-      {/* Edit User Modal */}
       <Modal
         visible={isEditModalVisible}
         transparent={true}
@@ -553,7 +550,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   
-  /* Modal Styles */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',

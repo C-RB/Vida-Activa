@@ -6,7 +6,7 @@ import {
   ValidatorState,
 } from '../types';
 
-import { calcularAngulo } from '../geometry';
+import { calculateAngle } from '../geometry';
 
 import {
   LEFT_HIP, 
@@ -37,17 +37,17 @@ function buildValidator(level: number): ValidatorFn {
     const ankle = lms[LEFT_ANKLE];
     const shoulder = lms[LEFT_SHOULDER];
 
-    const anguloRodilla = calcularAngulo(hip, knee, ankle);
-    const anguloCadera = calcularAngulo(shoulder, hip, knee);
+    const kneeAngle = calculateAngle(hip, knee, ankle);
+    const hipAngle = calculateAngle(shoulder, hip, knee);
 
     let feedback: string | null = null;
     let ok = true;
 
-    if (anguloRodilla < KNEE_STRAIGHT_ANGLE) {
+    if (kneeAngle < KNEE_STRAIGHT_ANGLE) {
       feedback = "Pierna doblada"; ok = false;
-    } else if (anguloCadera < HIP_LOW_ANGLE) {
+    } else if (hipAngle < HIP_LOW_ANGLE) {
       feedback = "Muy bajo"; ok = false;
-    } else if (anguloCadera > HIP_HIGH_ANGLE) {
+    } else if (hipAngle > HIP_HIGH_ANGLE) {
       feedback = "Demasiado alto"; ok = false;
     } else {
       feedback = "Correcto";

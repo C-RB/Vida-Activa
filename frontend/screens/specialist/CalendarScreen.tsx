@@ -12,10 +12,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { useLocalSearchParams } from "expo-router";
 import { getAppointmentsByDate, Appointment } from "../../services/calendarService";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 
 import { Colors, GradientColors } from "../../constants/theme";
-// ─── Helpers del Calendario ───────────────────────────────────────────────────
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MONTHS_ES = [
@@ -53,18 +52,15 @@ function buildCalendar(year: number, month: number): CalDay[][] {
   return weeks;
 }
 
-// ─── Componente Principal ─────────────────────────────────────────────────────
-
 export default function CalendarScreen() {
-  // Fecha opcional recibida al venir desde "Agendar Hora" (YYYY-MM-DD).
+  // Optional date (YYYY-MM-DD) received when coming from the schedule screen.
   const { date } = useLocalSearchParams<{ date?: string }>();
 
-  // Obtenemos la fecha de hoy a las 00:00:00 para comparar correctamente
+  // Today at 00:00:00, to compare dates correctly
   const todayDateObj = new Date();
   todayDateObj.setHours(0, 0, 0, 0);
 
-  // Si llegamos desde una cita recién agendada, arrancamos en ese día;
-  // si no, en el día de hoy.
+  // Start on the date of a just-booked appointment if we came from one, otherwise today.
   const initialDate = date ? new Date(`${date}T00:00:00`) : todayDateObj;
 
   const [year, setYear] = useState(initialDate.getFullYear());
@@ -79,14 +75,12 @@ export default function CalendarScreen() {
     InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
   });
 
-  // Efecto para buscar citas cada vez que se selecciona un día
   useEffect(() => {
     if (!selectedDay) return;
 
     const fetchAppointments = async () => {
       setIsLoading(true);
       try {
-        // Formateamos la fecha a YYYY-MM-DD para consultar GET /api/appointments
         const formattedMonth = String(month + 1).padStart(2, "0");
         const formattedDay = String(selectedDay).padStart(2, "0");
         const dateString = `${year}-${formattedMonth}-${formattedDay}`;
@@ -123,17 +117,14 @@ export default function CalendarScreen() {
     <LinearGradient colors={GradientColors as any} style={styles.safeArea}>
       <View style={styles.container}>
 
-        {/* ── Banner ── */}
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>Calendario</Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-          {/* ── Calendario Custom ── */}
           <View style={styles.calendarCard}>
             
-            {/* Controles de Mes */}
             <View style={styles.monthNav}>
               <TouchableOpacity onPress={prevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.textPrimary} />
@@ -146,23 +137,20 @@ export default function CalendarScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Cabecera de Días */}
             <View style={styles.calRow}>
               {DAYS_ES.map((d) => (
                 <Text key={d} style={styles.dayHeader}>{d}</Text>
               ))}
             </View>
 
-            {/* Cuadrícula de Días */}
             {weeks.map((week, wi) => (
               <View key={wi} style={styles.calRow}>
                 {week.map((cell, di) => {
-                  // Validación para saber si es un día pasado
                   const cellDate = new Date(year, month, cell.day);
                   const isPast = cellDate < todayDateObj;
                   
                   const isSelected = cell.inMonth && cell.day === selectedDay;
-                  // Deshabilitamos si no es del mes actual o si es un día en el pasado
+                  // Disabled for past days and days outside the current month
                   const isDisabled = !cell.inMonth || isPast;
 
                   return (
@@ -191,7 +179,6 @@ export default function CalendarScreen() {
             ))}
           </View>
 
-          {/* ── Lista de Citas ── */}
           <Text style={styles.sectionTitle}>
             Citas {selectedDay ? `el ${selectedDay} de ${MONTHS_ES[month]}` : "Programadas"}
           </Text>
@@ -238,13 +225,11 @@ export default function CalendarScreen() {
 
         </ScrollView>
 
-        <SpecialistNavbar active="calendar" />
+        <BottomNav role="specialist" active="calendar" />
       </View>
     </LinearGradient>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -272,7 +257,6 @@ const styles = StyleSheet.create({
     color: Colors.onPrimary,
   },
 
-  // ── Calendar Card ──
   calendarCard: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
     borderRadius: 16,
@@ -318,7 +302,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     color: Colors.textPrimary,
   },
-  // Estilo para días pasados o fuera del mes
   calCellGray: {
     color: "rgba(23, 32, 51, 0.25)",
   },
@@ -327,7 +310,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
   },
 
-  // ── Sección de Citas ──
   sectionTitle: {
     fontSize: 18,
     fontFamily: "InterSemiBold",
@@ -350,7 +332,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  // ── Tarjeta de Cita ──
   appointmentCard: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
     borderRadius: 16,

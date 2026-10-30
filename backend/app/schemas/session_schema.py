@@ -2,7 +2,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 
-# Aceptamos cualquier UUID válido, no solo v4. Mismo criterio que routine_schema.py.
+# Accept any valid UUID, not only v4 (same as routine_schema.py).
 UUID4 = UUID
 
 class SessionExerciseUpdate(BaseModel):

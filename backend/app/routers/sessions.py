@@ -25,15 +25,8 @@ def create_session(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Crea un nuevo registro de sesión para un paciente y su rutina.
-    La fecha se asigna automáticamente (DEFAULT NOW()) y la sesión
-    arranca como no completada (is_completed = False).
-
-    Además, en la misma operación, genera una fila session_exercises por cada
-    routine_exercise de la rutina (en orden order_index), con contadores en 0.
-    Así el frontend recibe ids reales de session_exercises para el PUT de
-    progreso, en vez de depender de ids sembrados. Si la rutina no tiene
-    ejercicios, la sesión queda válida igual (lista vacía).
+    Creates a session (not completed, date set by the DB) and one session_exercises row per routine
+    exercise (ordered by order_index, counters at 0), so the frontend gets real ids for the progress PUT.
     """
     new_session = SessionModel(
         patient_id=session_data.patient_id,
@@ -71,8 +64,7 @@ def create_session(
     for session_exercise in session_exercises:
         db.refresh(session_exercise)
 
-    # Adjuntamos la lista al objeto para que SessionResponse la serialice
-    # (SessionModel no tiene relationship con session_exercises a nivel ORM).
+    # Attached by hand: SessionModel has no ORM relationship with session_exercises.
     new_session.session_exercises = session_exercises
 
     return new_session
@@ -84,13 +76,7 @@ def get_session(
     db: DBSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Devuelve una sesión con sus session_exercises (incluye series_completed /
-    reps_completed reales). La pantalla de resumen final lo usa para mostrar
-    ejercicios completados, series totales y duración sin datos hardcodeados.
-    SessionModel no tiene relationship ORM con session_exercises, asi que la
-    lista se adjunta a mano (mismo patron que create_session).
-    """
+    """Returns a session with its session_exercises (real series_completed / reps_completed) and duration."""
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -109,10 +95,7 @@ def complete_session(
     db: DBSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Marca una sesión existente como completada (is_completed = True) y calcula
-    su duración en minutos.
-    """
+    """Marks a session as completed and computes its duration in minutes."""
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
 
     if not session:
@@ -120,11 +103,8 @@ def complete_session(
 
     session.is_completed = True
 
-    # Duración = minutos entre la creación de la sesión y ahora. El timestamp de
-    # creación es sessions.date (server_default NOW(); la tabla no tiene
-    # created_at). La columna es TIMESTAMP WITHOUT TIME ZONE y la DB corre en UTC,
-    # igual que datetime.utcnow() → ambos naive-UTC, la resta es directa.
-    # max(0, ...) evita negativos por un eventual skew de reloj.
+    # Duration = minutes since creation (sessions.date, a naive-UTC TIMESTAMP like datetime.utcnow()).
+    # max(0, ...) guards against clock skew.
     if session.date:
         elapsed_minutes = (datetime.utcnow() - session.date).total_seconds() / 60
         session.duration_minutes = max(0, round(elapsed_minutes))
@@ -143,17 +123,12 @@ def update_exercise_progress(
     db: DBSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Actualiza el total de series y repeticiones completadas para un ejercicio en una sesión.
-    Se debe llamar desde el Frontend cuando el usuario presiona 'Terminar' el ejercicio.
-    """
-    # Buscar el registro del ejercicio en la sesión
+    """Updates the completed series and reps of an exercise in a session."""
     session_exercise = db.query(SessionExercise).filter(SessionExercise.id == session_exercise_id).first()
 
     if not session_exercise:
         raise HTTPException(status_code=404, detail="Exercise for this session not found")
 
-    # Actualizar los totales
     session_exercise.series_completed = exercise_data.series_completed
     session_exercise.reps_completed = exercise_data.reps_completed
 

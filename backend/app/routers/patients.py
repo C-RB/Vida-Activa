@@ -25,17 +25,14 @@ router = APIRouter(prefix="/api/patients", tags=["patients"])
 
 def normalize_rut(rut: str) -> str:
     """
-    Normaliza un RUT para comparar contra el guardado en la BD: quita puntos,
-    espacios y guiones, y pasa a mayúsculas. El frontend formatea el RUT con
-    puntos (ej: "98.765.432-1") pero en la BD se guarda sin puntos
-    ("98765432-1"), por lo que la búsqueda directa fallaba con 404.
+    Normalizes a RUT to compare with the stored one: strips dots, spaces and hyphens and uppercases it.
+    The frontend sends it formatted ("98.765.432-1") but the DB stores it without dots ("98765432-1").
     """
     return (rut or "").replace(".", "").replace(" ", "").replace("-", "").upper()
 
 
 def _rut_column_normalized(column):
-    """Misma normalización que normalize_rut() pero aplicada en SQL sobre la
-    columna, para que la comparación no dependa del formato guardado."""
+    """Same as normalize_rut() but applied in SQL on the column, so matching does not depend on the stored format."""
     return func.upper(
         func.replace(func.replace(func.replace(column, ".", ""), " ", ""), "-", "")
     )
@@ -117,8 +114,7 @@ def get_patient_by_id(
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
-    # Un especialista solo puede ver la ficha de los pacientes que tiene
-    # asignados en specialist_patient. Otros roles (admin) no se restringen.
+    # A specialist can only see patients assigned in specialist_patient; other roles (admin) are not restricted.
     if current_user.role == UserRole.SPECIALIST:
         assigned = (
             db.query(SpecialistPatient)
@@ -131,8 +127,7 @@ def get_patient_by_id(
         if not assigned:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes acceso a este paciente")
 
-    # patients.is_active es la fuente de verdad del estado del paciente
-    # (coincide con /by-rut y PATCH /status).
+    # patients.is_active is the source of truth for the patient status (same as /by-rut and PATCH /status).
     patient_row = db.query(Patient).filter(Patient.user_id == patient_id).first()
     
     metrics, sessions_list = get_patient_metrics_and_sessions(db, patient_id)
@@ -151,8 +146,7 @@ def get_patient_by_id(
         sessions=sessions_list
     )
 
-# Asigna un paciente a un especialista. El especialista se obtiene del token
-# del usuario que hace la peticion; el RUT del paciente viene en el body.
+# Assigns a patient (RUT in the body) to the specialist taken from the token.
 @router.post("/assign", status_code=status.HTTP_200_OK)
 def assign_patient_to_specialist(
     body: AssignPatientRequest,
@@ -196,7 +190,6 @@ def update_patient_status(
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
-    # Fuente de verdad única: patients.is_active (la misma que lee /by-rut).
     patient.is_active = body.active
     db.commit()
     db.refresh(patient)

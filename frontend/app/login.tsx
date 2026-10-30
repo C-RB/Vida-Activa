@@ -1,6 +1,4 @@
-// app/login.tsx
-// Kept so the "/login" route still resolves (e.g. after logout). Both "/" and
-// "/login" render the same screen.
+// Keeps the "/login" route resolving (e.g. after logout); "/" renders the same screen.
 import LoginScreen from "../screens/LoginScreen";
 
 export default function Login() {

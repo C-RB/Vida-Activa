@@ -30,7 +30,6 @@ export default function ExercisesLibraryScreen() {
     InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
   });
 
-  // ─── Carga de ejercicios al montar ───────────────────
   useEffect(() => {
     let active = true;
     (async () => {
@@ -69,7 +68,6 @@ export default function ExercisesLibraryScreen() {
     router.push(routes.patientList as any);
   };
 
-  // ─── Card de ejercicio ───────────────────────────────
   const ExerciseCard = ({
     exercise,
     onAdd,
@@ -106,10 +104,8 @@ export default function ExercisesLibraryScreen() {
 
   if (!fontsLoaded) return null;
 
-  // ─── Pantalla principal ──────────────────────────────
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Banner */}
       <View style={styles.banner}>
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
@@ -126,7 +122,6 @@ export default function ExercisesLibraryScreen() {
           </Text>
         ) : null}
 
-        {/* Buscador */}
         <View style={styles.searchWrap}>
           <MaterialCommunityIcons
             name="magnify"

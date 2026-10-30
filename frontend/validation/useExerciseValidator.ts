@@ -1,14 +1,7 @@
 /**
- * Hook que resuelve el validador del ejercicio/nivel activo y expone una
- * función `evaluate(landmarks)` para que la pantalla la llame por frame.
- *
- * Detalles importantes:
- *  - El estado del validador vive en un `useRef`, no en `useState`, para no
- *    disparar re-render por frame.
- *  - Al cambiar `exerciseId` o `level` el estado se resetea automáticamente:
- *    nunca se arrastra la fase/contador de un ejercicio anterior.
- *  - Si el `exerciseId` no está registrado en `exerciseRegistry`, `evaluate`
- *    devuelve un NOOP válido (no rompe la pantalla).
+ * Resolves the validator for the active exercise and level and exposes `evaluate(landmarks)`.
+ * State lives in a ref (no re-render per frame) and resets when the exercise or level changes.
+ * An unregistered exerciseId yields a valid no-op result.
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -41,7 +34,7 @@ export function useExerciseValidator(
     return validator.levels[level] ?? null;
   }, [exerciseId, level]);
 
-  // Reset al cambiar de ejercicio o nivel: el estado anterior no aplica
+  // A new exercise or level starts from a clean state
   useEffect(() => {
     stateRef.current = initialState();
   }, [exerciseId, level]);

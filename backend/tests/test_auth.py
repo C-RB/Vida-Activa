@@ -1,5 +1,4 @@
-"""Smoke tests de autenticación: login por rol + credenciales inválidas +
-cuenta desactivada (403)."""
+"""Smoke tests for authentication: login per role, invalid credentials and a disabled account (403)."""
 
 from tests import seed_data
 
@@ -45,8 +44,7 @@ def test_login_wrong_password_401(client):
 
 
 def test_deactivated_user_login_403(client, admin_headers):
-    # El admin desactiva a Ana; su login debe dar 403 (no 401). Reactivamos al
-    # final para no dejar estado sucio para otros tests.
+    # The admin disables Ana; her login must return 403 (not 401). Re-enabled at the end to keep other tests clean.
     patch = f"/api/users/{seed_data.PATIENT_ANA_ID}/status"
     r = client.patch(patch, json={"is_active": False}, headers=admin_headers)
     assert r.status_code == 200, r.text

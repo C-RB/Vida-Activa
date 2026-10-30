@@ -1,8 +1,6 @@
-// services/authService.ts
 import { apiFetch } from "./apiClient";
 import { setAuth, clearAuth, UserRole, Patient } from "./authStore";
 
-// Shape returned by POST /api/auth/login on the backend.
 export interface LoginResponse {
   access_token: string;
   token_type: string;
@@ -11,8 +9,7 @@ export interface LoginResponse {
   patient?: Patient;
 }
 
-// Authenticates against the backend, stores the JWT + role in the auth store
-// and returns the raw response so the caller can route by role.
+// Logs in, stores the session and returns the response so the caller can route by role.
 export const loginApi = async (
   email: string,
   password: string
@@ -33,7 +30,6 @@ export const loginApi = async (
   return data;
 };
 
-// Clears the stored session. Call this from any "cerrar sesión" button.
 export const logout = (): void => {
   clearAuth();
 };

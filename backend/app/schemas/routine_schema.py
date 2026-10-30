@@ -4,9 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-# Aceptamos cualquier UUID válido, no solo v4. Los ids generados por
-# gen_random_uuid() son v4, pero datos sembrados/importados pueden usar otras
-# versiones y seguir siendo UUIDs válidos.
+# Accept any valid UUID, not only v4: seeded or imported data may use other versions.
 UUID4 = UUID
 
 

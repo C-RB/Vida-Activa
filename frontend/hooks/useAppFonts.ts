@@ -1,6 +1,6 @@
 import { useFonts } from "expo-font";
 
-// Carga las 4 variantes de Inter de la guía v2 (ver Fonts en constants/theme).
+// Loads the four Inter weights of the v2 style guide (see Fonts in constants/theme).
 export function useAppFonts(): boolean {
   const [loaded] = useFonts({
     InterRegular: require("../assets/fonts/Inter_400Regular.ttf"),

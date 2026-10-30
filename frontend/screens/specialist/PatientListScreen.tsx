@@ -12,13 +12,12 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { router, useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import { useRouter } from "expo-router";
+import BottomNav from "../../components/BottomNav";
 import { getPatients, PatientListItem } from "../../services/patientService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
-// ─── Patient card ─────────────────────────────────────────────────────────────
 
 function PatientCard({
   patient,
@@ -31,7 +30,6 @@ function PatientCard({
 }) {
   return (
     <View style={styles.card}>
-      {/* ── Top: avatar + info + alert badge ── */}
       <View style={styles.cardTop}>
         <View style={styles.avatarWrap}>
           <MaterialCommunityIcons
@@ -67,15 +65,12 @@ function PatientCard({
         )}
       </View>
 
-      {/* ── Alert sub-message ── */}
       {patient.alertMessage && (
         <Text style={styles.alertMessage}>{patient.alertMessage}</Text>
       )}
 
-      {/* ── Divider ── */}
       <View style={styles.cardDivider} />
 
-      {/* ── Action buttons ── */}
       <View style={styles.cardActions}>
         <TouchableOpacity
           style={styles.btnInfo}
@@ -106,8 +101,6 @@ function PatientCard({
     </View>
   );
 }
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function PatientListScreen({
   navigation,
@@ -170,7 +163,6 @@ export default function PatientListScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* ── Search bar ── */}
         <View style={styles.searchWrap}>
           <MaterialCommunityIcons
             name="magnify"
@@ -187,7 +179,6 @@ export default function PatientListScreen({
           />
         </View>
 
-        {/* ── Patient list ── */}
         {filtered.length === 0 ? (
           <Text style={styles.emptyText}>No se encontraron pacientes.</Text>
         ) : (
@@ -202,12 +193,10 @@ export default function PatientListScreen({
         )}
       </ScrollView>
 
-      <SpecialistNavbar active="patients" />
+      <BottomNav role="specialist" active="patients" />
     </LinearGradient>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -225,7 +214,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
 
-  // Banner
   banner: {
     width: "100%",
     backgroundColor: Colors.primary,
@@ -262,7 +250,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  // Search
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -282,7 +269,6 @@ const styles = StyleSheet.create({
     padding: 0,
   },
 
-  // Patient card
   card: {
     backgroundColor: Colors.surface,
     borderWidth: 1,
@@ -319,7 +305,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Alert badge
   alertBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -336,7 +321,6 @@ const styles = StyleSheet.create({
     color: Colors.warning,
   },
 
-  // Alert sub-text
   alertMessage: {
     fontSize: 11,
     fontFamily: "InterRegular",
@@ -345,20 +329,17 @@ const styles = StyleSheet.create({
     marginLeft: 54,
   },
 
-  // Divider between info and buttons
   cardDivider: {
     height: 1,
     backgroundColor: Colors.primary,
     marginVertical: 12,
   },
 
-  // Action buttons row
   cardActions: {
     flexDirection: "row",
     gap: 10,
   },
 
-  // "Ver información" — teal outline
   btnInfo: {
     flex: 1,
     flexDirection: "row",
@@ -377,7 +358,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
 
-  // "Asignar rutina" — primary filled
   btnRoutine: {
     flex: 1,
     flexDirection: "row",

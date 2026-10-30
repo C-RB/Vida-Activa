@@ -21,9 +21,7 @@ import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/them
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { createRoutine, RoutineCreate } from "../../services/routineService";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-// Ejercicio dentro de la rutina en construcción (editable por el especialista).
+// Exercise inside the routine being built (editable by the specialist).
 type BuilderItem = {
   exercise_id: string;
   name: string;
@@ -33,7 +31,7 @@ type BuilderItem = {
   rest_time_seconds: number;
 };
 
-// day_of_week del backend: 1 → Lunes … 7 → Domingo.
+// Backend day_of_week: 1 = Monday … 7 = Sunday.
 const DAYS: { value: number; label: string }[] = [
   { value: 1, label: "Lun" },
   { value: 2, label: "Mar" },
@@ -47,24 +45,20 @@ const DAYS: { value: number; label: string }[] = [
 const LEVELS = [1, 2, 3];
 
 const pad2 = (n: number) => n.toString().padStart(2, "0");
-// "HH:MM" para mostrar en pantalla.
+// "HH:MM" for display.
 const formatDisplayTime = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-// "HH:MM:00" para el campo TIME de PostgreSQL.
+// "HH:MM:00" for the PostgreSQL TIME column.
 const formatBackendTime = (d: Date) =>
   `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function CreateRoutineScreen() {
   const router = useRouter();
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
 
-  // Biblioteca de ejercicios
   const [available, setAvailable] = useState<Exercise[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(true);
   const [exercisesError, setExercisesError] = useState<string | null>(null);
 
-  // Rutina en construcción
   const [selected, setSelected] = useState<BuilderItem[]>([]);
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -73,7 +67,6 @@ export default function CreateRoutineScreen() {
   const [scheduledTime, setScheduledTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  // Guardado
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -82,7 +75,6 @@ export default function CreateRoutineScreen() {
     InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
   });
 
-  // ── Carga de la biblioteca al montar ──
   useEffect(() => {
     let active = true;
     (async () => {
@@ -103,7 +95,6 @@ export default function CreateRoutineScreen() {
     };
   }, []);
 
-  // ── Builder helpers ──
   const isAdded = (id: string) => selected.some((s) => s.exercise_id === id);
 
   const handleAdd = (ex: Exercise) => {
@@ -135,7 +126,6 @@ export default function CreateRoutineScreen() {
     );
   };
 
-  // ── Guardar ──
   const handleSave = async () => {
     setSaveError(null);
 
@@ -191,7 +181,6 @@ export default function CreateRoutineScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
         <Text style={styles.bannerTitle}>Crear Rutina</Text>
@@ -202,7 +191,6 @@ export default function CreateRoutineScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Datos de la rutina ── */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Datos de la rutina</Text>
 
@@ -267,7 +255,7 @@ export default function CreateRoutineScreen() {
               is24Hour
               display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(event: DateTimePickerEvent, date?: Date) => {
-                // En Android el picker se cierra solo tras la interacción.
+                // On Android the picker closes itself after the interaction.
                 if (Platform.OS !== "ios") setShowTimePicker(false);
                 if (event.type === "set" && date) setScheduledTime(date);
               }}
@@ -294,7 +282,6 @@ export default function CreateRoutineScreen() {
           </View>
         </View>
 
-        {/* ── Ejercicios disponibles ── */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ejercicios disponibles</Text>
 
@@ -340,7 +327,6 @@ export default function CreateRoutineScreen() {
           )}
         </View>
 
-        {/* ── Rutina en construcción ── */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Rutina en construcción ({selected.length})
@@ -368,7 +354,6 @@ export default function CreateRoutineScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Nivel */}
                 <Text style={styles.label}>Nivel</Text>
                 <View style={styles.levelRow}>
                   {LEVELS.map((lvl) => {
@@ -393,7 +378,6 @@ export default function CreateRoutineScreen() {
                   })}
                 </View>
 
-                {/* Series + Reps */}
                 <View style={styles.rowBlock}>
                   <Counter
                     label="Series"
@@ -411,7 +395,6 @@ export default function CreateRoutineScreen() {
                   />
                 </View>
 
-                {/* Descanso */}
                 <Counter
                   label="Descanso (seg)"
                   value={item.rest_time_seconds}
@@ -425,10 +408,8 @@ export default function CreateRoutineScreen() {
           )}
         </View>
 
-        {/* ── Error de guardado ── */}
         {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
 
-        {/* ── Acciones ── */}
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.cancelBtn}
@@ -455,8 +436,6 @@ export default function CreateRoutineScreen() {
     </LinearGradient>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Counter({
   label,
@@ -491,14 +470,11 @@ function Counter({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { padding: 16, paddingBottom: 32 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerSubtitle: {
     fontSize: 14,
@@ -512,7 +488,6 @@ const styles = StyleSheet.create({
     color: Colors.bannerTitle,
   },
 
-  // ── Section ──
   section: {
     backgroundColor: Colors.cardBg,
     borderRadius: 14,
@@ -528,7 +503,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // ── Inputs ──
   label: {
     fontSize: 12,
     fontFamily: Fonts.bold,
@@ -547,7 +521,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // ── Time input ──
   timeInput: {
     flexDirection: "row",
     alignItems: "center",
@@ -567,7 +540,6 @@ const styles = StyleSheet.create({
     color: "rgba(23, 32, 51, 0.4)",
   },
 
-  // ── Day selector ──
   daysRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -588,7 +560,6 @@ const styles = StyleSheet.create({
   },
   dayTextActive: { fontFamily: Fonts.bold, color: Colors.textOnDark },
 
-  // ── Library row ──
   libraryRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -624,7 +595,6 @@ const styles = StyleSheet.create({
     color: Colors.textOnDark,
   },
 
-  // ── Builder card ──
   builderCard: {
     backgroundColor: Colors.cardBgAlt,
     borderRadius: 12,
@@ -652,7 +622,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  // ── Level ──
   levelRow: {
     flexDirection: "row",
     gap: 8,
@@ -675,7 +644,6 @@ const styles = StyleSheet.create({
   },
   levelTextActive: { color: Colors.textOnDark },
 
-  // ── Counter ──
   rowBlock: { flexDirection: "row", gap: 12, marginBottom: 12 },
   fieldHalf: { flex: 1 },
   counterBox: {
@@ -695,7 +663,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // ── Estados ──
   errorText: {
     marginTop: 16,
     textAlign: "center",
@@ -709,7 +676,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
 
-  // ── Actions ──
   actionsRow: { flexDirection: "row", gap: 10, marginTop: 16 },
   cancelBtn: {
     flex: 1,

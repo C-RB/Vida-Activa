@@ -1,9 +1,4 @@
-# Pipeline de CI (migrado desde .gitlab-ci.yml).
-#
-# Solo corre los tests del backend contra un Postgres real (service container).
-# El despliegue a la VPS está OMITIDO por ahora: la app no se va a desplegar.
-# La lógica original (rsync + docker compose por SSH) sigue en .gitlab-ci.yml
-# como referencia por si se retoma.
+# CI: backend tests against a real Postgres (service container) and frontend typecheck + lint. Deployment is out of scope for now.
 
 name: CI
 
@@ -23,7 +18,7 @@ jobs:
       db:
         image: postgres:16
         env:
-          # Coinciden con los defaults de tests/conftest.py
+          # Same as the defaults in tests/conftest.py
           POSTGRES_USER: vida_activa
           POSTGRES_PASSWORD: change_me
           POSTGRES_DB: vida_activa_db
@@ -46,3 +41,19 @@ jobs:
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx eslint .

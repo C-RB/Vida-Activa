@@ -8,10 +8,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PatientNavbar from "../../components/PatientNavbar";
+import BottomNav from "../../components/BottomNav";
 import Icon from "../../components/ui/Icon";
 import Button from "../../components/ui/Button";
-import { Colors, Radius, Type } from "../../constants/theme";
+import Card from "../../components/ui/Card";
+import Avatar from "../../components/ui/Avatar";
+import { Colors, Type } from "../../constants/theme";
 import { useAppFonts } from "../../hooks/useAppFonts";
 import {
   getNextAppointment,
@@ -32,7 +34,6 @@ const MONTHS_LONG = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
-// Franja semanal: lunes a domingo.
 const WEEK_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
 
 // "Sábado 24 de octubre"
@@ -43,10 +44,10 @@ const formatLongDate = (d: Date): string =>
 const formatAppointmentDate = (date: string): string =>
   formatLongDate(new Date(`${date}T00:00:00`));
 
-// 0 = lunes … 6 = domingo
+// 0 = Monday … 6 = Sunday
 const mondayIndex = (d: Date): number => (d.getDay() + 6) % 7;
 
-// Inicio (00:00) de la semana de `d`, con la semana comenzando el lunes.
+// Start (00:00) of the week of `d`, weeks starting on Monday.
 const startOfWeek = (d: Date): Date => {
   const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   s.setDate(s.getDate() - mondayIndex(s));
@@ -55,14 +56,6 @@ const startOfWeek = (d: Date): Date => {
 
 // "10:00:00" → "10:00"
 const shortTime = (t: string): string => t.slice(0, 5);
-
-const initialsOf = (fullName: string): string =>
-  fullName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
 
 export default function PatientHomeScreen() {
   const router = useRouter();
@@ -81,15 +74,13 @@ export default function PatientHomeScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Próxima cita presencial del paciente (si tiene alguna agendada).
   useEffect(() => {
     getNextAppointment()
       .then(setNextAppointment)
       .catch(() => setNextAppointment(null));
   }, []);
 
-  // Rutina de hoy, rutinas vigentes (días programados) y sesiones recientes.
-  // getActiveRoutine devuelve null (no excepción) cuando no hay rutina hoy.
+  // getActiveRoutine returns null (not an error) when there is no routine today.
   useEffect(() => {
     if (!patientId) {
       setLoading(false);
@@ -113,7 +104,6 @@ export default function PatientHomeScreen() {
       .finally(() => setLoading(false));
   }, [patientId]);
 
-  // Navega a la encuesta previa. Sin rutina activa hoy no hace nada.
   const goToSurvey = () => {
     if (!routine) return;
     router.push(`/previous-survey?routineId=${routine.id}`);
@@ -121,7 +111,6 @@ export default function PatientHomeScreen() {
 
   const today = useMemo(() => new Date(), []);
 
-  // Resumen de la semana: días con sesión completada y días programados.
   const week = useMemo(() => {
     const start = startOfWeek(today);
     const end = new Date(start);
@@ -159,18 +148,12 @@ export default function PatientHomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Barra superior */}
         <View style={styles.topBar}>
           <Icon name="logo" size={40} />
           <Text style={[Type.title2, styles.brand]}>Vida Activa</Text>
-          <View style={styles.avatar}>
-            <Text style={[Type.bodyStrong, styles.avatarText]}>
-              {initialsOf(fullName)}
-            </Text>
-          </View>
+          <Avatar name={fullName} />
         </View>
 
-        {/* Saludo */}
         <View style={styles.greeting}>
           <Text style={[Type.title1, styles.textPrimary]}>
             {firstName ? `Hola, ${firstName}` : "Hola"}
@@ -180,8 +163,7 @@ export default function PatientHomeScreen() {
           </Text>
         </View>
 
-        {/* Próxima sesión */}
-        <View style={styles.card}>
+        <Card>
           {loading ? (
             <ActivityIndicator color={Colors.primary} />
           ) : routine ? (
@@ -223,11 +205,10 @@ export default function PatientHomeScreen() {
               </View>
             </View>
           )}
-        </View>
+        </Card>
 
-        {/* Esta semana */}
         {week.total > 0 && (
-          <View style={styles.card}>
+          <Card>
             <View style={styles.rowBetween}>
               <Text style={[Type.bodyStrong, styles.textPrimary]}>
                 Esta semana
@@ -264,12 +245,11 @@ export default function PatientHomeScreen() {
                 );
               })}
             </View>
-          </View>
+          </Card>
         )}
 
-        {/* Próxima cita presencial */}
         {nextAppointment && (
-          <View style={[styles.card, styles.row]}>
+          <Card style={styles.row}>
             <View style={styles.infoBadge}>
               <Icon name="calendar" size={30} />
             </View>
@@ -282,11 +262,11 @@ export default function PatientHomeScreen() {
                 {nextAppointment.time}
               </Text>
             </View>
-          </View>
+          </Card>
         )}
       </ScrollView>
 
-      <PatientNavbar active="home" />
+      <BottomNav role="patient" active="home" />
     </View>
   );
 }
@@ -319,27 +299,8 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.textPrimary,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    color: Colors.primary,
-  },
   greeting: {
     gap: 4,
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.card,
-    padding: 20,
-    gap: 14,
   },
   row: {
     flexDirection: "row",

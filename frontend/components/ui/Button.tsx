@@ -8,8 +8,7 @@ import {
 } from "react-native";
 import { Colors, Radius, Type } from "../../constants/theme";
 
-// v2 / Botón: alto 64 px para dedos con poca precisión. Una sola acción
-// primaria por pantalla; "danger" solo para terminar o acciones irreversibles.
+// One primary action per screen; "danger" only for finishing or irreversible actions.
 type Variant = "primary" | "soft" | "outline" | "danger";
 
 type Props = {

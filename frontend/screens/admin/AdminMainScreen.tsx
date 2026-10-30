@@ -4,12 +4,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useFocusEffect, useRouter } from "expo-router";
-import AdminNavbar from "../../components/AdminNavbar";
+import BottomNav from "../../components/BottomNav";
 import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 import { routes } from "../../router/routes";
 
 import { Colors, GradientColors } from "../../constants/theme";
-// Maps the role filter pills to the backend role labels.
+// Role filter pills.
 const FILTERS: { label: string; role?: UserRoleKey }[] = [
   { label: "Todos" },
   { label: "Paciente", role: "patient" },
@@ -68,7 +68,6 @@ export default function AdminMainScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logoText}>Vida Activa</Text>
         <TouchableOpacity style={styles.profileIconWrap}>
@@ -77,15 +76,12 @@ export default function AdminMainScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Panel Principal Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Panel Principal</Text>
           <Text style={styles.sectionSubtitle}>Resumen de actividad y gestión del sistema.</Text>
         </View>
 
-        {/* Stats Cards */}
         <View style={styles.statsContainer}>
-          {/* Total Usuarios */}
           <View style={styles.statCard}>
             <View style={styles.statRow}>
               <View>
@@ -96,7 +92,6 @@ export default function AdminMainScreen() {
             </View>
           </View>
 
-          {/* Usuarios Activos */}
           <View style={styles.statCard}>
             <View style={styles.statRow}>
               <View>
@@ -110,7 +105,6 @@ export default function AdminMainScreen() {
             </View>
           </View>
 
-          {/* Usuarios Inactivos */}
           <View style={[styles.statCard, styles.statCardInactive]}>
             <View style={styles.statRow}>
               <View>
@@ -122,7 +116,6 @@ export default function AdminMainScreen() {
           </View>
         </View>
 
-        {/* Acciones Rápidas */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
         </View>
@@ -144,12 +137,10 @@ export default function AdminMainScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Resumen de Usuarios */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Resumen de Usuarios</Text>
         </View>
         
-        {/* Filters */}
         <View style={styles.filtersContainer}>
           {FILTERS.map(({ label }) => (
             <TouchableOpacity
@@ -169,7 +160,6 @@ export default function AdminMainScreen() {
           ))}
         </View>
 
-        {/* User List */}
         {loading ? (
           <ActivityIndicator color={Colors.textPrimary} size="large" style={{ marginTop: 30 }} />
         ) : visibleUsers.length === 0 ? (
@@ -217,8 +207,7 @@ export default function AdminMainScreen() {
 
       </ScrollView>
 
-      {/* Admin Navbar */}
-      <AdminNavbar active="home" />
+      <BottomNav role="admin" active="home" />
 
       <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
         <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />

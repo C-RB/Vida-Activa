@@ -3,12 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import PatientNavbar from "../../components/PatientNavbar";
+import BottomNav from "../../components/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function PatientHistoryScreen() {
   const [fontsLoaded] = useFonts({
@@ -41,7 +39,6 @@ export default function PatientHistoryScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerTitle}>Historial de sesiones</Text>
         <Text style={styles.bannerSubtitle}>
@@ -63,12 +60,10 @@ export default function PatientHistoryScreen() {
         )}
       </ScrollView>
 
-      <PatientNavbar active="history" />
+      <BottomNav role="patient" active="history" />
     </LinearGradient>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SessionCard({ session }: { session: Session }) {
   const [expanded, setExpanded] = useState(false);
@@ -120,13 +115,10 @@ function SessionCard({ session }: { session: Session }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 40 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerTitle: {
     fontSize: 28,
@@ -140,7 +132,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // ── Section ──
   sectionTitle: {
     fontSize: 22,
     fontFamily: Fonts.bold,
@@ -149,7 +140,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  // ── Card ──
   cardWrapper: {
     marginBottom: 14,
   },
@@ -185,7 +175,6 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
 
-  // ── Expanded details ──
   details: {
     backgroundColor: Colors.cardBgAlt,
     borderRadius: 16,

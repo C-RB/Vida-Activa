@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
-import PatientNavbar from '../../components/PatientNavbar';
+import BottomNav from '../../components/BottomNav';
 import { getSession } from '../../services/authStore';
 
 
 import { Colors, GradientColors } from "../../constants/theme";
 export default function PatientProfileScreen() {
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
     const [fontsLoaded] = useFonts({
         InterRegular: require("../../assets/fonts/Inter_400Regular.ttf"),
         InterSemiBold: require("../../assets/fonts/Inter_600SemiBold.ttf"),
@@ -79,7 +75,7 @@ export default function PatientProfileScreen() {
                 </View>
             </ScrollView>
 
-            <PatientNavbar active="profile" />
+            <BottomNav role="patient" active="profile" />
         </LinearGradient>
     );
 }

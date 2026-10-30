@@ -19,8 +19,7 @@ from app.schemas.appointment_schema import (
 
 router = APIRouter(prefix="/api/appointments", tags=["appointments"])
 
-# Franja de atención del consultorio: cupos cada 30 min entre las 08:00 y
-# las 20:00 (el último cupo arranca 08:00 + N·30min < 20:00).
+# Clinic hours: 30-minute slots from 08:00 to 20:00 (the last slot starts before 20:00).
 WORKING_START_HOUR = 8
 WORKING_END_HOUR = 20
 SLOT_MINUTES = 30
@@ -38,7 +37,7 @@ def _build_working_slots() -> list[str]:
 
 WORKING_SLOTS = _build_working_slots()
 
-# Estados que ocupan un horario (una cita cancelada libera el cupo).
+# Statuses that occupy a slot (a cancelled appointment frees it).
 ACTIVE_STATUSES = (
     AppointmentStatus.PENDING,
     AppointmentStatus.CONFIRMED,
@@ -74,8 +73,8 @@ def create_appointment(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """Agenda una cita para un paciente. El especialista se toma del token."""
-    # Evita doble reserva del mismo cupo (fecha + hora) para este especialista.
+    """Books an appointment for a patient; the specialist comes from the token."""
+    # Prevents double-booking the same slot (date + time) for this specialist.
     clash = (
         db.query(Appointment)
         .filter(
@@ -112,7 +111,7 @@ def get_available_slots(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """Horarios fijos del día marcando cuáles ya están reservados."""
+    """Fixed slots for the day, flagging the ones already booked."""
     taken = {
         appt.time_slot.strftime("%H:%M")
         for appt in (
@@ -138,7 +137,7 @@ def get_next_appointment(
     db: Session = Depends(get_db),
     patient: User = Depends(require_patient),
 ):
-    """Próxima cita futura del paciente autenticado (o null si no tiene)."""
+    """Next future appointment of the authenticated patient (or null)."""
     today = datetime.now().date()
     appointment = (
         db.query(Appointment)
@@ -163,10 +162,8 @@ def list_appointments(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Lista citas del usuario autenticado:
-      - Especialista → sus citas agendadas (opcionalmente de un paciente).
-      - Paciente     → sus propias citas.
-    Filtros opcionales: date (YYYY-MM-DD), patient_id.
+    Lists the authenticated user's appointments: a specialist's booked ones (optionally for one patient)
+    or the patient's own. Optional filters: date (YYYY-MM-DD), patient_id.
     """
     query = db.query(Appointment)
 
@@ -176,7 +173,7 @@ def list_appointments(
             query = query.filter(Appointment.patient_id == patient_id)
     elif current_user.role == UserRole.PATIENT:
         query = query.filter(Appointment.patient_id == current_user.id)
-    else:  # ADMIN ve todo, con filtro opcional por paciente
+    else:  # ADMIN sees everything, with an optional patient filter
         if patient_id is not None:
             query = query.filter(Appointment.patient_id == patient_id)
 
@@ -196,7 +193,7 @@ def update_appointment_status(
     db: Session = Depends(get_db),
     specialist: User = Depends(require_specialist),
 ):
-    """Actualiza el estado de una cita (p.ej. cancelar o marcar completada)."""
+    """Updates an appointment status (e.g. cancel or mark as completed)."""
     appointment = (
         db.query(Appointment)
         .filter(

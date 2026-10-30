@@ -23,8 +23,7 @@ import { Colors, GradientColors } from "../../constants/theme";
 import Icon from "../../components/ui/Icon";
 export default function PreviousSurveyScreen() {
   const router = useRouter();
-  // routineId llega como query param desde PatientHome; patientId del paciente
-  // logueado en el authStore.
+  // routineId comes from PatientHome as a query param; patientId from the logged-in user in authStore.
   const { routineId } = useLocalSearchParams<{ routineId?: string }>();
   const patientId = getSession()?.patient?.id;
 
@@ -46,10 +45,8 @@ export default function PreviousSurveyScreen() {
     }
     setLoading(true);
     try {
-      // 1. Create session first
       const session = await createSession(patientId, routineId);
       
-      // 2. Submit pre survey
       await submitPreSurvey({
         session_id: session.id,
         pain_level: effort,
@@ -57,14 +54,13 @@ export default function PreviousSurveyScreen() {
         comments: comments || undefined,
       });
 
-      // 3. Navigate to instructions with the sessionId + los ids reales de los
-      //    session_exercises (ordenados por order_index). Viajan como CSV por la
-      //    cadena instruction → active-exercise, que resuelve seIds[index].
+      // Navigate to instructions with the sessionId and the session_exercise ids (ordered by order_index),
+      // passed as CSV through instruction → active-exercise, which resolves seIds[index].
       const seIds = session.session_exercises.map((se) => se.id).join(",");
       router.push(`/instruction?sessionId=${session.id}&index=0&seIds=${seIds}`);
     } catch (e) {
       console.error(e);
-      // Fallback navigation even if it fails (optional)
+      // Navigate anyway if this fails
       router.push(`/instruction?index=0`);
     } finally {
       setLoading(false);

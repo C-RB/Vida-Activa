@@ -1,5 +1,4 @@
-"""Smoke tests del flujo de pacientes: listar, buscar por RUT y asignar
-(agregar un paciente a la lista del especialista)."""
+"""Smoke tests of the patient flow: list, find by RUT and assign a patient to the specialist."""
 
 from tests import seed_data
 
@@ -32,7 +31,7 @@ def test_lookup_by_rut_not_found_404(client, specialist_headers):
 
 
 def test_specialist_assigns_patient(client, specialist_headers):
-    # Ana arranca sin asignar: la primera asignación debe funcionar.
+    # Ana starts unassigned: the first assignment must work.
     r = client.post(
         "/api/patients/assign",
         json={"rut": seed_data.PATIENT_ANA_RUT},
@@ -40,7 +39,7 @@ def test_specialist_assigns_patient(client, specialist_headers):
     )
     assert r.status_code in (200, 201), r.text
 
-    # Reasignar la misma debe dar 409 (guard de duplicado).
+    # Assigning her again must return 409 (duplicate guard).
     r = client.post(
         "/api/patients/assign",
         json={"rut": seed_data.PATIENT_ANA_RUT},

@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-# ─── Perfil propio del administrador (GET/PATCH /api/admins/me) ─────────────────
+# Own profile (GET/PATCH /api/admins/me)
 
 
 class AdminMeResponse(BaseModel):
@@ -16,7 +16,7 @@ class AdminMeResponse(BaseModel):
 
 
 class AdminMeUpdate(BaseModel):
-    # Todos opcionales: se aplican solo los campos presentes (PATCH parcial).
+    # All optional: only the fields present are applied (partial PATCH).
     first_name: str | None = None
     last_name: str | None = None
     job_title: str | None = None

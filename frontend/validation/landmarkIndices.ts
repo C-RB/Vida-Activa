@@ -1,14 +1,4 @@
-/**
- * Índices de los landmarks de MediaPipe BlazePose (modelo de 33 puntos).
- *
- * Acá solo están exportados los que se usan hoy. Si tu ejercicio necesita
- * otros puntos (orejas, ojos, dedos, talones), agregalos siguiendo el
- * orden oficial del modelo:
- * https://developers.google.com/mediapipe/solutions/vision/pose_landmarker
- *
- * Convención: usar SIEMPRE estas constantes en los validadores, nunca
- * números mágicos como `lms[15]`.
- */
+/** MediaPipe BlazePose landmark indices (33-point model). Use these instead of magic numbers. */
 export const NOSE = 0;
 export const LEFT_SHOULDER = 11;
 export const RIGHT_SHOULDER = 12;
@@ -23,5 +13,5 @@ export const RIGHT_KNEE = 26;
 export const LEFT_ANKLE = 27;
 export const RIGHT_ANKLE = 28;
 
-/** Visibilidad mínima para considerar válido un landmark. */
+/** Minimum visibility for a landmark to count as valid. */
 export const MIN_VISIBILITY = 0.5;

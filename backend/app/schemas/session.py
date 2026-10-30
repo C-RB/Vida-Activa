@@ -5,8 +5,7 @@ from datetime import datetime
 
 from app.schemas.session_schema import SessionExerciseResponse
 
-# Aceptamos cualquier UUID válido, no solo v4 (los usuarios sembrados usan
-# UUIDs no-v4 y siguen siendo válidos). Mismo criterio que routine_schema.py.
+# Accept any valid UUID, not only v4 (same as routine_schema.py).
 UUID4 = UUID
 
 
@@ -23,9 +22,7 @@ class SessionResponse(BaseModel):
     date: Optional[datetime] = None
     duration_minutes: Optional[int] = None
     is_completed: Optional[bool] = None
-    # Ejercicios de la sesión (uno por routine_exercise de la rutina). POST
-    # /api/sessions los crea e incluye sus ids reales aquí para que el frontend
-    # pueda hacer el PUT de progreso. /complete devuelve la lista por defecto.
+    # One per routine_exercise, created by POST /api/sessions so the frontend can PUT progress; /complete returns [].
     session_exercises: list[SessionExerciseResponse] = []
 
     class Config:

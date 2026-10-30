@@ -27,7 +27,7 @@ def get_my_profile(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
-    """Perfil propio del administrador logueado (datos de users + admin)."""
+    """Own profile of the logged-in administrator (users + admin data)."""
     row = db.query(Admin).filter(Admin.user_id == admin.id).first()
     return _admin_response(admin, row)
 
@@ -39,10 +39,8 @@ def update_my_profile(
     admin: User = Depends(require_admin),
 ):
     """
-    Actualiza el perfil propio (solo los campos presentes en el body).
-
-    Los admins creados vía POST /api/users no traen fila en `admin`, así que
-    hacemos upsert: si no existe, la creamos al primer PATCH.
+    Updates the own profile (only the fields present in the body).
+    Admins created via POST /api/users have no `admin` row, so it is created on the first PATCH (upsert).
     """
     row = db.query(Admin).filter(Admin.user_id == admin.id).first()
     if row is None:

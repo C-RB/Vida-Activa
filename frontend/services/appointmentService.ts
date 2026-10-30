@@ -1,16 +1,5 @@
-// services/appointmentService.ts
-//
-// Cliente de los endpoints de citas del backend (todos protegidos con auth):
-//   GET  /api/appointments/available-slots?date=YYYY-MM-DD → cupos del día
-//   POST /api/appointments                                 → agenda una cita
-//   GET  /api/appointments/next                            → próxima cita (paciente)
-//
-// El especialista se obtiene del token en el backend, por eso no se envía.
-
 import { apiFetch } from "./apiClient";
 import { getPatientById } from "./patientService";
-
-// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 export interface TimeSlot {
   id: string;
@@ -37,8 +26,6 @@ export interface NextAppointment {
   specialistName: string;
 }
 
-// ─── Formas crudas del backend ─────────────────────────────────────────────────
-
 interface RawSlot {
   time: string;
   available: boolean;
@@ -61,9 +48,7 @@ interface RawAppointment {
   notes: string | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-// Date → "YYYY-MM-DD" en hora local (evita el corrimiento de toISOString).
+// Local "YYYY-MM-DD" (toISOString would shift the day across time zones).
 const toDateString = (date: Date): string => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -80,9 +65,6 @@ const formatTime = (timeSlot: string): string => {
   return `${String(h).padStart(2, "0")}:${mStr ?? "00"} ${period}`;
 };
 
-// ─── Funciones ────────────────────────────────────────────────────────────────
-
-// GET /api/appointments/available-slots → cupos del día con su disponibilidad.
 export const getAvailableSlots = async (date: Date): Promise<TimeSlot[]> => {
   const raw = await apiFetch<RawAvailableSlots>(
     `/api/appointments/available-slots?date=${toDateString(date)}`,
@@ -95,7 +77,6 @@ export const getAvailableSlots = async (date: Date): Promise<TimeSlot[]> => {
   }));
 };
 
-// Reutiliza la ficha del paciente para mostrar su nombre en el resumen.
 export const getPatientForAppointment = async (
   id: string
 ): Promise<AppointmentPatient> => {
@@ -103,7 +84,6 @@ export const getPatientForAppointment = async (
   return { id: patient.id, fullName: patient.fullName };
 };
 
-// POST /api/appointments → agenda la cita para el paciente indicado.
 export const confirmAppointment = async (
   payload: AppointmentPayload
 ): Promise<void> => {
@@ -118,7 +98,6 @@ export const confirmAppointment = async (
   });
 };
 
-// GET /api/appointments/next → próxima cita futura del paciente autenticado.
 export const getNextAppointment = async (): Promise<NextAppointment | null> => {
   const raw = await apiFetch<RawAppointment | null>(
     "/api/appointments/next",

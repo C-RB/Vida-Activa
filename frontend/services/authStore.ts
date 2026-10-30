@@ -1,12 +1,4 @@
-// services/authStore.ts
-//
-// Lightweight in-memory holder for the authenticated session (JWT + role +
-// user id). It is intentionally dependency-free so every service/screen can
-// read the current token without prop drilling or extra packages.
-//
-// The token lives for the duration of the app process. If you later need it to
-// survive app restarts, swap the internals for expo-secure-store / AsyncStorage
-// — the public API below can stay the same.
+// The token lives only for the app process; to persist it, swap the internals for expo-secure-store.
 
 export type UserRole = "ADMIN" | "SPECIALIST" | "PATIENT";
 
@@ -58,8 +50,6 @@ export function isAuthenticated(): boolean {
   return session !== null;
 }
 
-// Subscribe to session changes (e.g. to redirect to login on logout).
-// Returns an unsubscribe function.
 export function subscribe(cb: (session: AuthSession | null) => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);

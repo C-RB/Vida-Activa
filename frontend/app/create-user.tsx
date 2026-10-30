@@ -1,4 +1,3 @@
-// app/create-user.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -21,7 +20,7 @@ import { createUserApi, CreateUserPayload } from "../services/userService";
 import { Colors, GradientColors } from "../constants/theme";
 const GENDERS = ["Masculino", "Femenino", "Otro"] as const;
 
-// Formatea el RUT chileno a medida que se escribe (12.345.678-9).
+// Formats a Chilean RUT while typing (12.345.678-9).
 const formatRut = (value: string) => {
   const cleanValue = value.replace(/[^0-9kK]/g, "").toUpperCase().slice(0, 9);
   if (cleanValue.length === 0) return "";
@@ -37,7 +36,6 @@ export default function CreateUserScreen() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"patient" | "specialist">("patient");
 
-  // Campos por rol (se guardan en patients / specialists en el backend).
   const [rut, setRut] = useState("");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
@@ -47,7 +45,7 @@ export default function CreateUserScreen() {
 
   const [loading, setLoading] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
-  // Acordeón: los datos opcionales arrancan colapsados (E1 — divulgación progresiva).
+  // The optional fields start collapsed (progressive disclosure).
   const [showMore, setShowMore] = useState(false);
 
   const [fontsLoaded] = useFonts({
@@ -66,7 +64,7 @@ export default function CreateUserScreen() {
       return;
     }
 
-    // Solo enviamos los campos con valor; los vacíos quedan NULL en el backend.
+    // Only send fields with a value; empty ones stay NULL in the backend.
     const payload: CreateUserPayload = {
       fullName: fullName.trim(),
       email: email.trim(),
@@ -87,12 +85,11 @@ export default function CreateUserScreen() {
     try {
       const created = await createUserApi(payload);
 
-      // Mostrar el mensaje de éxito
       setShowSuccessToast(true);
 
       const goBack = () => {
         setShowSuccessToast(false);
-        router.back(); // Vuelve a la pantalla anterior
+        router.back();
       };
 
       // Surface the one-time temporary password so the admin can share it.
@@ -118,7 +115,6 @@ export default function CreateUserScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* Banner */}
       <View style={styles.banner}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={28} color={Colors.onPrimary} />
@@ -139,7 +135,6 @@ export default function CreateUserScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            {/* Nombre */}
             <Text style={styles.fieldLabel}>NOMBRE COMPLETO</Text>
             <View style={styles.inputRow}>
               <MaterialCommunityIcons
@@ -157,7 +152,6 @@ export default function CreateUserScreen() {
               />
             </View>
 
-            {/* Correo */}
             <Text style={styles.fieldLabel}>CORREO ELECTRÓNICO</Text>
             <View style={styles.inputRow}>
               <MaterialCommunityIcons
@@ -178,7 +172,6 @@ export default function CreateUserScreen() {
               />
             </View>
 
-            {/* Rol */}
             <Text style={styles.fieldLabel}>ROL DEL USUARIO</Text>
             <View style={styles.pillRow}>
               <TouchableOpacity
@@ -220,7 +213,6 @@ export default function CreateUserScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* RUT */}
             <Text style={styles.fieldLabel}>RUT</Text>
             <View style={styles.inputRow}>
               <MaterialCommunityIcons
@@ -244,7 +236,6 @@ export default function CreateUserScreen() {
               />
             </View>
 
-            {/* ── Acordeón: datos adicionales (opcional) ── */}
             <TouchableOpacity
               style={styles.accordionHeader}
               onPress={() => setShowMore((v) => !v)}
@@ -260,7 +251,6 @@ export default function CreateUserScreen() {
 
             {showMore && (
               <>
-            {/* Teléfono */}
             <Text style={styles.fieldLabel}>TELÉFONO</Text>
             <View style={styles.inputRow}>
               <MaterialCommunityIcons
@@ -279,10 +269,8 @@ export default function CreateUserScreen() {
               />
             </View>
 
-            {/* Campos según el rol */}
             {role === "patient" ? (
               <>
-                {/* Edad */}
                 <Text style={styles.fieldLabel}>EDAD</Text>
                 <View style={styles.inputRow}>
                   <MaterialCommunityIcons
@@ -302,7 +290,6 @@ export default function CreateUserScreen() {
                   />
                 </View>
 
-                {/* Género */}
                 <Text style={styles.fieldLabel}>GÉNERO</Text>
                 <View style={styles.pillRow}>
                   {GENDERS.map((g) => (
@@ -323,7 +310,6 @@ export default function CreateUserScreen() {
                   ))}
                 </View>
 
-                {/* Dirección */}
                 <Text style={styles.fieldLabel}>DIRECCIÓN</Text>
                 <View style={styles.inputRow}>
                   <MaterialCommunityIcons
@@ -343,7 +329,6 @@ export default function CreateUserScreen() {
               </>
             ) : (
               <>
-                {/* Especialidad */}
                 <Text style={styles.fieldLabel}>ESPECIALIDAD</Text>
                 <View style={styles.inputRow}>
                   <MaterialCommunityIcons
@@ -366,7 +351,6 @@ export default function CreateUserScreen() {
             )}
           </View>
 
-          {/* Botón Guardar */}
           <TouchableOpacity
             style={[styles.submitBtn, loading && { opacity: 0.7 }]}
             onPress={handleSave}
@@ -381,7 +365,6 @@ export default function CreateUserScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Toast de Éxito Flotante */}
       {showSuccessToast && (
         <View style={styles.toastContainer}>
           <View style={styles.toastIconCircle}>

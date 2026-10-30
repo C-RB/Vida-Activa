@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { routes } from "../../router/routes";
 import { Colors, GradientColors, BannerStyle } from "../../constants/theme";
 import {
@@ -20,8 +20,6 @@ import {
   togglePatientStatus,
   Patient,
 } from "../../services/patientService";
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function ContactRow({
   icon,
@@ -88,8 +86,6 @@ function SessionItem({
   );
 }
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function MedicalRecordScreen() {
   const router = useRouter();
   const { patientId } = useLocalSearchParams<{ patientId?: string }>();
@@ -144,13 +140,11 @@ export default function MedicalRecordScreen() {
 
   return (
     <LinearGradient colors={GradientColors as unknown as [string, string]} style={styles.container}>
-      {/* ── Header banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerTitle}>Ficha Medica Paciente</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        {/* ── Patient card ── */}
         <View style={styles.card}>
           <View style={styles.patientRow}>
             <View style={styles.avatarWrap}>
@@ -177,7 +171,6 @@ export default function MedicalRecordScreen() {
           </View>
         </View>
 
-        {/* ── Contact info ── */}
         <View style={styles.sectionLabel}>
           <Text style={styles.sectionTitle}>Información de Contacto</Text>
         </View>
@@ -187,7 +180,6 @@ export default function MedicalRecordScreen() {
           <ContactRow icon="map-marker-outline" value={patient.address} />
         </View>
 
-        {/* ── CTA ── */}
         <TouchableOpacity
           style={styles.agendarBtn}
           onPress={() =>
@@ -200,7 +192,6 @@ export default function MedicalRecordScreen() {
           <Text style={styles.agendarText}>Agendar Hora</Text>
         </TouchableOpacity>
 
-        {/* ── Compliance metrics ── */}
         <View style={styles.card}>
           <View style={styles.metricsHeader}>
             <MaterialCommunityIcons
@@ -222,7 +213,6 @@ export default function MedicalRecordScreen() {
           />
         </View>
 
-        {/* ── Session history ── */}
         <View style={styles.sectionLabel}>
           <Text style={styles.sectionTitle}>Historial de Sesiones</Text>
         </View>
@@ -240,7 +230,6 @@ export default function MedicalRecordScreen() {
           ))}
         </View>
 
-        {/* ── Disable / Enable ── */}
         <TouchableOpacity
           style={[styles.disableBtn, !patient.active && styles.enableBtn]}
           onPress={handleToggleStatus}
@@ -251,12 +240,10 @@ export default function MedicalRecordScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      <SpecialistNavbar active="patients" />
+      <BottomNav role="specialist" active="patients" />
     </LinearGradient>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -299,7 +286,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
     color: Colors.textPrimary,
   },
-  // Patient
   patientRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -340,7 +326,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
     color: Colors.textPrimary,
   },
-  // Contact
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -358,7 +343,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     flex: 1,
   },
-  // Agendar
   agendarBtn: {
     backgroundColor: Colors.btnPrimary,
     borderRadius: 12,
@@ -372,7 +356,6 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
     color: Colors.bannerTitle,
   },
-  // Metrics
   metricsHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -420,7 +403,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: Colors.textPrimary,
   },
-  // Sessions
   sessionItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -466,7 +448,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.cardBgAlt,
   },
-  // Disable/Enable
   disableBtn: {
     backgroundColor: Colors.btnDanger,
     borderRadius: 12,

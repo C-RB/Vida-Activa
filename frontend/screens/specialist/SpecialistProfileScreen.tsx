@@ -4,12 +4,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { BannerStyle, Colors, Fonts, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
 
 const PLACEHOLDER = "No establecido";
 
@@ -47,7 +46,6 @@ export default function SpecialistProfileScreen() {
 
   return (
     <LinearGradient colors={GradientColors as any} style={styles.container}>
-      {/* ── Banner ── */}
       <View style={styles.banner}>
         <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
         <Text style={styles.bannerTitle}>Mi Perfil</Text>
@@ -59,7 +57,6 @@ export default function SpecialistProfileScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* ── Profile card ── */}
           <View style={styles.profileCard}>
             <View style={styles.avatarWrap}>
               <MaterialCommunityIcons name="account-circle-outline" size={72} color={Colors.textPrimary} />
@@ -71,7 +68,6 @@ export default function SpecialistProfileScreen() {
             </View>
           </View>
 
-          {/* ── Contact info ── */}
           <Text style={styles.sectionTitle}>Información personal</Text>
           <View style={styles.infoCard}>
             <InfoRow icon="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
@@ -81,7 +77,6 @@ export default function SpecialistProfileScreen() {
             <InfoRow icon="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
           </View>
 
-          {/* ── Logout ── */}
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
             <MaterialCommunityIcons name="logout" size={20} color={Colors.textOnDark} />
             <Text style={styles.logoutText}>Cerrar sesión</Text>
@@ -89,12 +84,11 @@ export default function SpecialistProfileScreen() {
         </ScrollView>
       )}
 
-      <SpecialistNavbar active="profile" />
+      <BottomNav role="specialist" active="profile" />
     </LinearGradient>
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function InfoRow({
   icon,
@@ -118,14 +112,12 @@ function InfoRow({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
 
-  // ── Banner ──
   banner: { ...BannerStyle },
   bannerSubtitle: {
     fontSize: 14,
@@ -139,7 +131,6 @@ const styles = StyleSheet.create({
     color: Colors.bannerTitle,
   },
 
-  // ── Profile card ──
   profileCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 16,
@@ -186,7 +177,6 @@ const styles = StyleSheet.create({
     color: Colors.textOnDark,
   },
 
-  // ── Info ──
   sectionTitle: {
     fontSize: 16,
     fontFamily: Fonts.bold,
@@ -231,7 +221,6 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
 
-  // ── Logout ──
   logoutBtn: {
     flexDirection: "row",
     alignItems: "center",

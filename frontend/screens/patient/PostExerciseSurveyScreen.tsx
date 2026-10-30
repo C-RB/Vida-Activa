@@ -13,7 +13,7 @@ import { completeSession } from "../../services/sessionService";
 import { Colors, GradientColors } from "../../constants/theme";
 export default function PostExerciseSurveyScreen() {
     const router = useRouter();
-    // session_id viene desde ActiveExercise; lo reenviamos a la pantalla final.
+    // session_id comes from ActiveExercise and is forwarded to the final screen.
     const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
     const [selected, setSelected] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export default function PostExerciseSurveyScreen() {
             });
         } catch (e) {
             console.error(e);
-            // Si falla igual navegamos
+            // Navigate anyway if this fails
             router.push({
                 pathname: routes.exerciseSessionCompleted as any,
                 params: { sessionId: sessionId ?? "" },

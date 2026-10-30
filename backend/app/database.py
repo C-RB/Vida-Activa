@@ -14,7 +14,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# Dependency para inyectar la sesión en las rutas
+# Dependency that provides a DB session to the routes
 def get_db():
     db = SessionLocal()
     try:

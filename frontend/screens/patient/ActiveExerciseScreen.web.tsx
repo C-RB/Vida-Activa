@@ -1,7 +1,5 @@
-// Versión web de "Ejercicio activo". La cámara y la detección de postura
-// (react-native-vision-camera) solo existen en el celular, y con solo importar
-// esa librería la app web falla al iniciar. Metro usa este archivo en lugar de
-// ActiveExerciseScreen.tsx cuando la plataforma es web.
+// Web version of the active exercise screen: VisionCamera only works on devices and fails on import in
+// the browser, so Metro uses this file instead of ActiveExerciseScreen.tsx on web.
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";

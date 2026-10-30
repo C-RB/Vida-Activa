@@ -5,7 +5,7 @@ node_modules
 
 expo-env.d.ts
 # @end expo-cli
-# Secretos
+# Secrets
 .env
 .env.*
 !.env.example

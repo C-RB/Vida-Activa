@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
-import SpecialistNavbar from "../../components/SpecialistNavbar";
+import BottomNav from "../../components/BottomNav";
 import { getDashboard, DashboardResponse } from "../../services/specialistService";
 
 import { Colors, GradientColors } from "../../constants/theme";
@@ -50,7 +50,7 @@ function MetricRow({ label, value, progress, topMargin }: MetricRowProps) {
   );
 }
 
-// "—" cuando no hay dato real (cargando o error de red).
+// "—" when there is no real data (loading or network error).
 const fmt = (n: number | null | undefined) => (n != null ? `${n}` : "—");
 
 export default function SpecialistHomeScreen() {
@@ -75,7 +75,7 @@ export default function SpecialistHomeScreen() {
   const stats = dashboardData?.stats;
   const progress = dashboardData?.progress;
 
-  // Barras de progreso en [0,100] para el ancho del fill; "—" si no hay datos.
+  // Progress bars in [0,100] for the fill width; "—" when there is no data.
   const sessionsValue =
     progress != null
       ? `${progress.sessions_completed_today}/${progress.sessions_total_today}`
@@ -152,7 +152,7 @@ export default function SpecialistHomeScreen() {
         </ScrollView>
       )}
 
-      <SpecialistNavbar active="home" />
+      <BottomNav role="specialist" active="home" />
 
       <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
         <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />

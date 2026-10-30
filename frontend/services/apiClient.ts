@@ -1,16 +1,9 @@
-// services/apiClient.ts
-//
-// Thin wrapper around fetch that every service should use to talk to the
-// backend. It prefixes the API base URL, sends/parses JSON, and automatically
-// attaches the Bearer token stored in authStore so all authenticated screens
-// just work without each call re-implementing auth.
-
 import { API_BASE_URL } from "./config";
 import { getToken, clearAuth } from "./authStore";
 
 export interface ApiOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
-  // Set to false for endpoints that must NOT send the token (e.g. login).
+  // Set to false for endpoints that must not send the token (e.g. login).
   auth?: boolean;
 }
 
@@ -49,7 +42,7 @@ export async function apiFetch<T = unknown>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // An expired/invalid token means the session is no longer valid.
+  // An expired or invalid token ends the session.
   if (response.status === 401) {
     clearAuth();
   }

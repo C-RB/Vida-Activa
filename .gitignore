@@ -1,4 +1,4 @@
-# ── Secretos y credenciales (nunca commitear) ────────────────────────────────
+# Secrets and credentials (never commit)
 .env
 .env.*
 !.env.example
@@ -25,7 +25,7 @@ keystore.properties
 *.secrets
 secrets/
 
-# ── Dumps y datos locales de base de datos ───────────────────────────────────
+# Database dumps and local data
 *.sql.bak
 *.dump
 *.backup
@@ -34,18 +34,18 @@ secrets/
 *.db
 postgres_data/
 
-# ── Notas internas y herramientas locales ────────────────────────────────────
+# Internal notes and local tooling
 EXECUTE.md
 backend/EXECUTE.md
 planning.md
 
-# ── Editores / SO ────────────────────────────────────────────────────────────
+# Editors / OS
 .vscode
 .idea
 .DS_Store
 Thumbs.db
 
-# ── Python ───────────────────────────────────────────────────────────────────
+# Python
 venv
 .venv
 __pycache__
@@ -54,7 +54,7 @@ __pycache__
 .coverage
 htmlcov/
 
-# ── Node / Expo / React Native ───────────────────────────────────────────────
+# Node / Expo / React Native
 node_modules
 .expo
 dist/
@@ -69,5 +69,5 @@ frontend/ios/
 *.aab
 *.ipa
 
-# ── Logs ─────────────────────────────────────────────────────────────────────
+# Logs
 *.log
