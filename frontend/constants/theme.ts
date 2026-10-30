@@ -12,6 +12,7 @@ export const Palette = {
   textSecondary: "#4A5568",
   onPrimary: "#FFFFFF",
   shadow: "#172033",
+  overlay: "rgba(23, 32, 51, 0.5)",
 
   // Action
   primary: "#1D5FD1",
