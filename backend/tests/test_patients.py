@@ -8,7 +8,9 @@ def test_specialist_lists_patients(client, specialist_headers):
     assert r.status_code == 200, r.text
     data = r.json()
     assert isinstance(data, list)
-    assert len(data) >= 2  # Pedro + Ana como mínimo
+    ids = {p["id"] for p in data}
+    assert seed_data.PATIENT_PEDRO_ID in ids  # assigned in the seed
+    assert seed_data.PATIENT_ANA_ID not in ids  # not assigned yet
 
 
 def test_patients_pagination_limit(client, specialist_headers):
@@ -56,3 +58,24 @@ def test_dashboard_lists_patients_needing_attention(client, specialist_headers):
     for item in body["attention"]:
         assert item["full_name"]
         assert item["kind"] in {"pain", "inactive", "no_sessions"}
+
+
+def test_specialist_lists_only_assigned_patients(client, specialist_headers):
+    client.post("/api/patients/assign", json={"rut": seed_data.PATIENT_ANA_RUT}, headers=specialist_headers)
+    after = {p["id"] for p in client.get("/api/patients/", headers=specialist_headers).json()}
+    assert seed_data.PATIENT_ANA_ID in after
+
+
+def test_patient_cannot_list_patients(client, patient_headers):
+    assert client.get("/api/patients/", headers=patient_headers).status_code == 403
+
+
+def test_by_rut_withholds_contact_data_until_assigned(client, specialist_headers):
+    body = client.get(f"/api/patients/by-rut/{seed_data.PATIENT_ANA_RUT}", headers=specialist_headers).json()
+    if not body["assigned"]:
+        assert body["email"] == "" and body["phone"] is None and body["address"] is None
+        assert body["fullName"]
+
+    client.post("/api/patients/assign", json={"rut": seed_data.PATIENT_ANA_RUT}, headers=specialist_headers)
+    body = client.get(f"/api/patients/by-rut/{seed_data.PATIENT_ANA_RUT}", headers=specialist_headers).json()
+    assert body["assigned"] is True and body["email"]

@@ -45,14 +45,16 @@ def get_patients(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    patients = (
-        db.query(User)
-        .filter(User.role == UserRole.PATIENT)
-        .order_by(User.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+    # A specialist only lists their assigned patients; admins list everyone; patients cannot list.
+    if current_user.role not in (UserRole.SPECIALIST, UserRole.ADMIN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes acceso a esta lista")
+
+    query = db.query(User).filter(User.role == UserRole.PATIENT)
+    if current_user.role == UserRole.SPECIALIST:
+        query = query.join(SpecialistPatient, SpecialistPatient.patient_id == User.id).filter(
+            SpecialistPatient.specialist_id == current_user.id
+        )
+    patients = query.order_by(User.created_at.desc()).offset(offset).limit(limit).all()
     results = []
 
     for p in patients:
@@ -75,7 +77,7 @@ def get_patients(
 def get_patient_by_rut(
     rut: str,
     db: Session = Depends(get_db),
-    _specialist: User = Depends(require_specialist),
+    specialist: User = Depends(require_specialist),
 ):
     patient = db.query(Patient).filter(
         _rut_column_normalized(Patient.rut) == normalize_rut(rut)
@@ -86,6 +88,29 @@ def get_patient_by_rut(
     user = db.query(User).filter(User.id == patient.user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paciente no encontrado.")
+
+    assigned = (
+        db.query(SpecialistPatient)
+        .filter(
+            SpecialistPatient.specialist_id == specialist.id,
+            SpecialistPatient.patient_id == patient.user_id,
+        )
+        .first()
+        is not None
+    )
+
+    # Before the assignment the specialist only sees who the patient is, not their contact data or history.
+    if not assigned:
+        return PatientResponse(
+            id=str(patient.user_id),
+            fullName=f"{user.first_name} {user.last_name}".strip(),
+            rut=patient.rut,
+            age=patient.age,
+            gender=patient.gender,
+            email="",
+            active=patient.is_active,
+            assigned=False,
+        )
 
     metrics, sessions_list = get_patient_metrics_and_sessions(db, str(patient.user_id))
 
@@ -100,7 +125,8 @@ def get_patient_by_rut(
         address=patient.address,
         active=patient.is_active,
         metrics=metrics,
-        sessions=sessions_list
+        sessions=sessions_list,
+        assigned=True,
     )
 
 

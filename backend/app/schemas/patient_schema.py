@@ -58,6 +58,9 @@ class PatientResponse(BaseModel):
     address: Optional[str] = None
     metrics: Optional[ComplianceMetrics] = None
     sessions: Optional[List[SessionItem]] = None
+    # Only set by /by-rut: whether the searching specialist already has this patient. Contact data and
+    # metrics are withheld until the patient is assigned.
+    assigned: Optional[bool] = None
 
     model_config = {"from_attributes": True}
 
