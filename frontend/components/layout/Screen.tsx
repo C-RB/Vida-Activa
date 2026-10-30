@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NavRole } from "../../constants/navigation";
 import { Colors } from "../../constants/theme";
+import Avatar from "../ui/Avatar";
 import Icon from "../ui/Icon";
 import IconButton from "../ui/IconButton";
 import BottomNav from "./BottomNav";
@@ -20,6 +21,8 @@ type Props = {
   subtitle?: string;
   // Shows the logo and app name above the title.
   brand?: boolean;
+  // With `brand`, shows this person's initials at the right of the top bar.
+  avatarName?: string;
   onBack?: () => void;
   nav?: { role: NavRole; active: string };
   // Rendered over the content, above the bottom bar (toast, floating button).
@@ -29,7 +32,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-function Layout({ title, subtitle, brand, onBack, nav, floating, children }: Omit<Props, "density">) {
+function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, children }: Omit<Props, "density">) {
   const { type } = useDensity();
   const insets = useSafeAreaInsets();
 
@@ -48,7 +51,8 @@ function Layout({ title, subtitle, brand, onBack, nav, floating, children }: Omi
           {brand && (
             <View style={styles.brand}>
               <Icon name="logo" size={40} />
-              <Text style={[type.title2, styles.textPrimary]}>Vida Activa</Text>
+              <Text style={[type.title2, styles.textPrimary, styles.flex]}>Vida Activa</Text>
+              {avatarName ? <Avatar name={avatarName} size={44} /> : null}
             </View>
           )}
           <View style={styles.heading}>
@@ -92,6 +96,9 @@ const styles = StyleSheet.create({
   },
   heading: {
     gap: 4,
+  },
+  flex: {
+    flex: 1,
   },
   textPrimary: {
     color: Colors.textPrimary,

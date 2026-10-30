@@ -1,182 +1,110 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { getDashboard, DashboardResponse } from "../../services/specialistService";
-
-import { Colors, GradientColors, Type } from "../../constants/theme";
-import StatCard from "../../components/ui/StatCard";
+import Screen from "../../components/layout/Screen";
+import AttentionRow from "../../components/specialist/AttentionRow";
+import Card from "../../components/ui/Card";
+import FabButton from "../../components/ui/FabButton";
 import ProgressRow from "../../components/ui/ProgressRow";
-// "—" when there is no real data (loading or network error).
-const fmt = (n: number | null | undefined) => (n != null ? `${n}` : "—");
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
+import type { IconName } from "../../constants/icons";
+import { Colors } from "../../constants/theme";
+import { routes } from "../../router/routes";
+import { DashboardAttention, DashboardResponse, getDashboard } from "../../services/specialistService";
+import { formatLongDate } from "../../utils/dates";
+
+const ICON_BY_KIND: Record<DashboardAttention["kind"], IconName> = {
+  pain: "pain",
+  inactive: "alertTriangle",
+  no_sessions: "alertTriangle",
+};
 
 export default function SpecialistHomeScreen() {
   const router = useRouter();
-  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getDashboard()
-      .then(setDashboardData)
-      .catch((e) => console.error("Error cargando dashboard:", e))
+      .then(setDashboard)
+      .catch((e) => setError(e?.message ?? "No se pudo cargar el panel."))
       .finally(() => setLoading(false));
   }, []);
 
-  const stats = dashboardData?.stats;
-  const progress = dashboardData?.progress;
+  const fullName = dashboard?.specialist.full_name ?? "";
+  const firstName = fullName.split(" ")[0] ?? "";
+  const progress = dashboard?.progress;
+  const done = progress?.sessions_completed_today ?? 0;
+  const total = progress?.sessions_total_today ?? 0;
 
-  // Progress bars in [0,100] for the fill width; "—" when there is no data.
-  const sessionsValue =
-    progress != null
-      ? `${progress.sessions_completed_today}/${progress.sessions_total_today}`
-      : "—";
-  const sessionsProgress =
-    progress != null && progress.sessions_total_today > 0
-      ? (progress.sessions_completed_today / progress.sessions_total_today) * 100
-      : 0;
-  const compliance = progress?.daily_compliance;
+  const openRecord = (patientId: string) =>
+    router.push({ pathname: routes.medicalRecord as any, params: { patientId } });
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.banner}>
-        <Text style={styles.bannerTitle}>Dashboard de Resumen</Text>
-        <Text style={styles.bannerSubtitle}>
-          {dashboardData
-            ? `Hola, ${dashboardData.specialist.full_name}`
-            : "Estado general de su red de atención para hoy."}
-        </Text>
-      </View>
-
+    <Screen
+      density="compact"
+      brand
+      avatarName={fullName}
+      title={firstName ? `Hola, ${firstName}` : "Hola"}
+      subtitle={formatLongDate(new Date())}
+      nav={{ role: "specialist", active: "home" }}
+      floating={
+        <FabButton
+          mdi="plus"
+          label="Nuevo paciente"
+          text="Nuevo paciente"
+          onPress={() => router.push(routes.registerPatient as any)}
+        />
+      }
+    >
       {loading ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.textPrimary} />
-        </View>
+        <StateMessage loading />
+      ) : error ? (
+        <StateMessage error={error} />
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.grid}>
-            <StatCard
-              mdi="account-group-outline"
-              value={fmt(stats?.total_patients)}
-              label="Pacientes"
-            />
-            <StatCard
-              mdi="run-fast"
-              value={fmt(stats?.active_today)}
-              label="Activos Hoy"
-            />
-            <StatCard
-              mdi="alert-outline"
-              tone="danger"
-              value={fmt(stats?.alerts)}
-              label="Alertas"
-              alert={(stats?.alerts ?? 0) > 0}
-            />
-            <StatCard
-              mdi="trending-up"
-              value={stats != null ? `${stats.avg_adherence}%` : "—"}
-              label="Progreso Prom."
-            />
-          </View>
+        <>
+          <SectionTitle>Necesitan atención</SectionTitle>
+          {dashboard && dashboard.attention.length > 0 ? (
+            <Card style={styles.list}>
+              {dashboard.attention.map((item, i) => (
+                <View key={item.patient_id} style={i > 0 && styles.separator}>
+                  <AttentionRow
+                    name={item.full_name}
+                    reason={item.reason}
+                    icon={ICON_BY_KIND[item.kind]}
+                    onPress={() => openRecord(item.patient_id)}
+                  />
+                </View>
+              ))}
+            </Card>
+          ) : (
+            <StateMessage empty="Ningún paciente necesita atención por ahora." />
+          )}
 
-          <View style={styles.metricsCard}>
-            <View style={styles.metricsHeader}>
-              <Text style={styles.metricsTitle}>Métricas de Hoy</Text>
-              <MaterialCommunityIcons name="chart-bar" size={22} color={Colors.primary} />
-            </View>
-
+          <Card>
             <ProgressRow
-              label="Sesiones completadas"
-              value={sessionsValue}
-              progress={sessionsProgress}
+              label="Sesiones de hoy"
+              value={`${done} de ${total}`}
+              progress={total > 0 ? (done / total) * 100 : 0}
+              caption={`${dashboard?.stats.total_patients ?? 0} pacientes en seguimiento`}
             />
-            <ProgressRow
-              label="Cumplimiento diario"
-              value={compliance != null ? `${compliance}%` : "—"}
-              progress={compliance ?? 0}
-            />
-          </View>
-        </ScrollView>
+          </Card>
+        </>
       )}
-
-      <BottomNav role="specialist" active="home" />
-
-      <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
-        <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />
-      </TouchableOpacity>
-    </LinearGradient>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  list: {
+    gap: 0,
+    padding: 0,
+    overflow: "hidden",
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  loadingWrap: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  banner: {
-    width: "100%",
-    backgroundColor: Colors.primary,
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  bannerTitle: {
-    ...Type.title2,
-    color: Colors.onPrimary,
-  },
-  bannerSubtitle: {
-    ...Type.label,
-    color: Colors.onPrimary,
-    marginTop: 4,
-  },
-  backToSplash: {
-    position: "absolute",
-    top: 50,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginHorizontal: 16,
-  },
-  metricsCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginTop: 4,
-    padding: 20,
-  },
-  metricsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  metricsTitle: {
-    ...Type.bodyStrong,
-    color: Colors.textPrimary,
+  separator: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
 });

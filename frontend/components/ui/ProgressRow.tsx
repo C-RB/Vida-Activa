@@ -8,9 +8,11 @@ type Props = {
   // 0–100
   progress: number;
   value?: string;
+  // Small text under the bar.
+  caption?: string;
 };
 
-export default function ProgressRow({ label, progress, value }: Props) {
+export default function ProgressRow({ label, progress, value, caption }: Props) {
   const { type } = useDensity();
   return (
     <View style={styles.wrap}>
@@ -21,6 +23,7 @@ export default function ProgressRow({ label, progress, value }: Props) {
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${Math.min(100, Math.max(0, progress))}%` }]} />
       </View>
+      {caption && <Text style={[type.secondary, styles.label]}>{caption}</Text>}
     </View>
   );
 }
@@ -40,7 +43,7 @@ const styles = StyleSheet.create({
   track: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.primarySoft,
     overflow: "hidden",
   },
   fill: {
