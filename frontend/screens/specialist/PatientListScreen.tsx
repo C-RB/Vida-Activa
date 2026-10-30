@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
 import { getPatients, PatientListItem } from "../../services/patientService";
 import { routes } from "../../router/routes";
@@ -30,12 +30,15 @@ export default function PatientListScreen({
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getPatients()
-      .then(setPatients)
-      .catch((err) => Alert.alert("Error", err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  // Reload on focus so a patient added from the assign screen shows up when coming back.
+  useFocusEffect(
+    useCallback(() => {
+      getPatients()
+        .then(setPatients)
+        .catch((err) => Alert.alert("Error", err.message))
+        .finally(() => setLoading(false));
+    }, [])
+  );
 
   const filtered = patients.filter((p) =>
     p.fullName.toLowerCase().includes(query.toLowerCase())
@@ -50,7 +53,7 @@ export default function PatientListScreen({
   };
 
   const handleAddPatient = () => {
-    router.push(routes.registerPatient as any);
+    router.push(routes.assignPatient as any);
   };
 
   if (loading) {
@@ -93,7 +96,13 @@ export default function PatientListScreen({
         </View>
 
         {filtered.length === 0 ? (
-          <StateMessage empty="No se encontraron pacientes." />
+          <StateMessage
+            empty={
+              patients.length === 0
+                ? "Aún no tiene pacientes. Toque + para agregar uno."
+                : "No se encontraron pacientes."
+            }
+          />
         ) : (
           filtered.map((p) => (
             <PatientCard

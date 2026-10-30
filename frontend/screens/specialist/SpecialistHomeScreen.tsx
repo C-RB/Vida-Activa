@@ -52,9 +52,9 @@ export default function SpecialistHomeScreen() {
       floating={
         <FabButton
           mdi="plus"
-          label="Nuevo paciente"
-          text="Nuevo paciente"
-          onPress={() => router.push(routes.registerPatient as any)}
+          label="Agregar paciente"
+          text="Agregar paciente"
+          onPress={() => router.push(routes.assignPatient as any)}
         />
       }
     >

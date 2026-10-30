@@ -16,7 +16,7 @@ export const routes = {
   patientList: "/patient-list",
   routineList: "/routine-list",
   medicalRecord: "/medical-record",
-  registerPatient: "/register-patient",
+  assignPatient: "/assign-patient",
   adminMain: "/admin-main",
   adminUsers: "/admin-users",
   adminProfile: "/admin-profile",
