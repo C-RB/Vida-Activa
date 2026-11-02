@@ -18,8 +18,8 @@ type Props = {
   children: React.ReactNode;
 };
 
-const HERO_HEIGHT = 240;
-const SHEET_OVERLAP = 32;
+// The sheet rises over the bottom of the hero by this much; the hero reserves it so nothing is covered.
+const SHEET_OVERLAP = 28;
 
 // Entry screens: the logo on top and a white sheet with the form rising from below.
 export default function AuthScreen({ title, subtitle, children }: Props) {
@@ -36,8 +36,8 @@ export default function AuthScreen({ title, subtitle, children }: Props) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.hero, { paddingTop: insets.top + 24 }]}>
-          <Icon name="logo" size={88} />
+        <View style={[styles.hero, { paddingTop: insets.top + 32 }]}>
+          <Icon name="logo" size={80} />
           <Text style={[type.title2, styles.brand]}>Vida Activa</Text>
         </View>
 
@@ -63,10 +63,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   hero: {
-    height: HERO_HEIGHT,
     alignItems: "center",
-    justifyContent: "center",
     gap: 12,
+    paddingBottom: SHEET_OVERLAP + 24,
   },
   brand: {
     color: Colors.primary,
