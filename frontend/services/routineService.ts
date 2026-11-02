@@ -16,7 +16,8 @@ export interface RoutineCreate {
   name: string;
   start_date: string;
   end_date: string;
-  day_of_week: number;
+  // Weekdays, 1 = Monday … 7 = Sunday.
+  days_of_week: number[];
   scheduled_time: string;
   exercises: RoutineExerciseCreate[];
 }
@@ -28,7 +29,7 @@ export interface Routine {
   name: string;
   start_date: string;
   end_date: string;
-  day_of_week: number;
+  days_of_week: number[];
   scheduled_time: string;
   created_at: string;
 }
@@ -51,6 +52,16 @@ export interface RoutineWithExercises extends Routine {
 export const createRoutine = (data: RoutineCreate): Promise<Routine> =>
   apiFetch<Routine>("/api/routines", {
     method: "POST",
+    auth: true,
+    body: data,
+  });
+
+export const updateRoutine = (
+  routineId: string,
+  data: RoutineCreate
+): Promise<RoutineWithExercises> =>
+  apiFetch<RoutineWithExercises>(`/api/routines/${encodeURIComponent(routineId)}`, {
+    method: "PUT",
     auth: true,
     body: data,
   });

@@ -1,5 +1,14 @@
-// Backend day_of_week: 1 = Monday … 7 = Sunday.
+// Backend weekdays: 1 = Monday … 7 = Sunday.
 const WEEKDAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+const WEEKDAYS_SHORT = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+// [1, 3, 5] → "Lun · Mié · Vie"
+export const formatDays = (days: number[]): string =>
+  days.length === 7 ? "Todos los días" : days.map((d) => WEEKDAYS_SHORT[d - 1] ?? "—").join(" · ");
+
+// "10:00:00" → "10:00"
+export const shortTime = (time: string): string => time.slice(0, 5);
 
 export const weekdayName = (day: number): string => WEEKDAYS[day - 1] ?? "—";
 
