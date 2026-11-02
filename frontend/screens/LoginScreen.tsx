@@ -1,23 +1,14 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loginApi } from "../services/authService";
 import type { UserRole } from "../services/authStore";
 import { routes } from "../router/routes";
 import { Colors, Type } from "../constants/theme";
-import Icon from "../components/ui/Icon";
+import AuthScreen from "../components/layout/AuthScreen";
 import Button from "../components/ui/Button";
-import TextField from "../components/ui/TextField";
 import TextButton from "../components/ui/TextButton";
+import TextField from "../components/ui/TextField";
 
 const HOME_BY_ROLE: Record<UserRole, string> = {
   ADMIN: routes.adminMain,
@@ -31,7 +22,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const handleLogin = async () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -65,82 +55,55 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <AuthScreen
+      title="Le damos la bienvenida"
+      subtitle="Ingrese con el correo y la clave que le entregó su especialista."
     >
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 },
-        ]}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Icon name="logo" size={72} />
+      <TextField
+        label="Correo"
+        icon="mail"
+        value={email}
+        onChangeText={(text) => setEmail(text.toLowerCase())}
+        placeholder="nombre@correo.cl"
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+        textContentType="username"
+        editable={!loading}
+      />
 
-        <View style={styles.titleGroup}>
-          <Text style={[Type.title1, styles.title]}>Le damos la bienvenida</Text>
-          <Text style={[Type.body, styles.subtitle]}>
-            Ingrese con el correo y la clave que le entregó su especialista.
-          </Text>
-        </View>
+      <TextField
+        label="Clave"
+        icon="lock"
+        secure
+        value={password}
+        onChangeText={setPassword}
+        placeholder="••••••••"
+        autoCapitalize="none"
+        autoCorrect={false}
+        textContentType="password"
+        editable={!loading}
+      />
 
-        <TextField
-          label="Correo"
-          icon="mail"
-          value={email}
-          onChangeText={(text) => setEmail(text.toLowerCase())}
-          placeholder="nombre@correo.cl"
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          textContentType="username"
-          editable={!loading}
-        />
+      <View style={styles.link}>
+        <TextButton title="¿Olvidó su clave?" onPress={handleForgot} />
+      </View>
 
-        <TextField
-          label="Clave"
-          icon="lock"
-          secure
-          value={password}
-          onChangeText={setPassword}
-          placeholder="••••••••"
-          autoCapitalize="none"
-          autoCorrect={false}
-          textContentType="password"
-          editable={!loading}
-        />
+      <Button title="Entrar" onPress={handleLogin} loading={loading} />
 
-        <View style={styles.link}>
-          <TextButton title="¿Olvidó su clave?" onPress={handleForgot} />
-        </View>
-
-        <Button title="Entrar" onPress={handleLogin} loading={loading} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Text style={[Type.secondary, styles.footer]}>
+        ¿Primera vez? Su especialista le entregará su correo y su clave.
+      </Text>
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    gap: 24,
-  },
-  titleGroup: {
-    gap: 8,
-  },
-  title: {
-    color: Colors.textPrimary,
-  },
-  subtitle: {
-    color: Colors.textSecondary,
-  },
   link: {
-    alignItems: "flex-start",
+    alignItems: "flex-end",
+  },
+  footer: {
+    color: Colors.textSecondary,
+    textAlign: "center",
   },
 });

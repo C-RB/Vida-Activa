@@ -38,6 +38,7 @@ export default function SpecialistHomeScreen() {
   const progress = dashboard?.progress;
   const done = progress?.sessions_completed_today ?? 0;
   const total = progress?.sessions_total_today ?? 0;
+  const followed = dashboard?.stats.total_patients ?? 0;
 
   const openRecord = (patientId: string) =>
     router.push({ pathname: routes.medicalRecord as any, params: { patientId } });
@@ -87,7 +88,7 @@ export default function SpecialistHomeScreen() {
               label="Sesiones de hoy"
               value={`${done} de ${total}`}
               progress={total > 0 ? (done / total) * 100 : 0}
-              caption={`${dashboard?.stats.total_patients ?? 0} pacientes en seguimiento`}
+              caption={`${followed} ${followed === 1 ? "paciente" : "pacientes"} en seguimiento`}
             />
           </Card>
         </>
