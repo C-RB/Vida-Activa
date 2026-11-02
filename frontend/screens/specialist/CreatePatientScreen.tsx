@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../components/layout/Screen";
+import AddPatientMode from "../../components/specialist/AddPatientMode";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import ChipGroup from "../../components/ui/ChipGroup";
@@ -68,10 +69,12 @@ export default function CreatePatientScreen() {
 
   return (
     <Screen
-      title="Nuevo paciente"
+      title="Agregar paciente"
       subtitle="Regístrelo aquí y quedará en su lista. Le daremos una clave temporal para que se la entregue."
       onBack={() => router.back()}
     >
+      <AddPatientMode active="new" />
+
       <Card>
         <TextField
           label="RUT"
@@ -146,10 +149,6 @@ export default function CreatePatientScreen() {
       )}
 
       <Button title="Guardar paciente" loading={saving} onPress={handleSave} />
-      <TextButton
-        title="¿Ya está registrado? Búsquelo por RUT"
-        onPress={() => router.replace(routes.assignPatient as any)}
-      />
     </Screen>
   );
 }
