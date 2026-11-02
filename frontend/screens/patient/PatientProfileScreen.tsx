@@ -1,145 +1,135 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import BottomNav from '../../components/layout/BottomNav';
-import { getSession } from '../../services/authStore';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomNav from "../../components/layout/BottomNav";
+import Avatar from "../../components/ui/Avatar";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import Icon from "../../components/ui/Icon";
+import SegmentedControl from "../../components/ui/SegmentedControl";
+import SettingRow from "../../components/ui/SettingRow";
+import Toggle from "../../components/ui/Toggle";
+import { Colors, Type } from "../../constants/theme";
+import { routes } from "../../router/routes";
+import { clearAuth, getSession } from "../../services/authStore";
+import { getNextAppointment, NextAppointment } from "../../services/appointmentService";
+import { formatLongDate } from "../../utils/dates";
 
+const TEXT_SIZES = ["A", "A+", "A++"] as const;
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
 export default function PatientProfileScreen() {
-    const session = getSession();
-    const patient = session?.patient;
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const patient = getSession()?.patient;
+  const fullName = patient?.fullName ?? "";
 
-    return (
-        <LinearGradient colors={GradientColors as any} style={styles.container}>
-            <View style={styles.banner}>
-                <Text style={styles.bannerTitle}>Mi Perfil</Text>
+  const [appointment, setAppointment] = useState<NextAppointment | null>(null);
+  const [textSize, setTextSize] = useState<(typeof TEXT_SIZES)[number]>("A");
+  const [voice, setVoice] = useState(false);
+  const [contrast, setContrast] = useState(false);
+
+  useEffect(() => {
+    getNextAppointment()
+      .then(setAppointment)
+      .catch(() => setAppointment(null));
+  }, []);
+
+  const handleLogout = () => {
+    clearAuth();
+    router.replace(routes.login as any);
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={[Type.title1, styles.textPrimary]}>Mi perfil</Text>
+
+        <Card style={styles.row}>
+          <Avatar name={fullName} size={64} />
+          <View style={styles.flex}>
+            <Text style={[Type.title2, styles.textPrimary]}>{fullName}</Text>
+            {patient?.age != null && (
+              <Text style={[Type.secondary, styles.textSecondary]}>{patient.age} años</Text>
+            )}
+          </View>
+        </Card>
+
+        {appointment && (
+          <Card style={styles.card}>
+            <Text style={[Type.secondary, styles.textSecondary]}>Mi especialista</Text>
+            <View style={styles.row}>
+              <Avatar name={appointment.specialistName} size={52} />
+              <Text style={[Type.bodyStrong, styles.textPrimary, styles.flex]}>
+                {appointment.specialistName}
+              </Text>
             </View>
+            <View style={styles.divider} />
+            <View style={styles.row}>
+              <Icon name="calendarLine" size={22} />
+              <View>
+                <Text style={[Type.label, styles.textSecondary]}>Próxima cita</Text>
+                <Text style={[Type.bodyStrong, styles.textPrimary]}>
+                  {formatLongDate(new Date(`${appointment.date}T00:00:00`))} · {appointment.time}
+                </Text>
+              </View>
+            </View>
+          </Card>
+        )}
 
-            <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-                <View style={styles.contact}>
-                    <MaterialCommunityIcons name="account-circle-outline" size={60} color={Colors.textPrimary} />
-                    <View style={styles.textBlock}>
-                        <Text style={styles.name}>{patient?.fullName}</Text>
-                        <Text style={styles.name}>{patient?.age} Años</Text>
-                    </View>
-                </View>
+        <Card style={styles.card}>
+          <Text style={[Type.secondary, styles.textSecondary]}>Para ver y oír mejor</Text>
+          <SettingRow icon="letter" label="Letra">
+            <SegmentedControl options={TEXT_SIZES} value={textSize} onChange={setTextSize} />
+          </SettingRow>
+          <SettingRow icon="speaker" label="Instrucciones por voz">
+            <Toggle label="Instrucciones por voz" value={voice} onChange={setVoice} />
+          </SettingRow>
+          <SettingRow icon="contrast" label="Alto contraste">
+            <Toggle label="Alto contraste" value={contrast} onChange={setContrast} />
+          </SettingRow>
+        </Card>
 
-                <Text style={styles.sectionLabel}>Información del contacto</Text>
-                <View style={styles.contact_info}>
-                    <View style={styles.item}>
-                        <MaterialCommunityIcons name="email-outline" size={30} color={Colors.textPrimary} />
-                        <View style={styles.textBlock}>
-                            <Text style={styles.name_contact}>Correo Electrónico</Text>
-                            <Text style={styles.name_contact}>{patient?.email}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.item}>
-                        <MaterialCommunityIcons name="phone-outline" size={30} color={Colors.textPrimary} />
-                        <View style={styles.textBlock}>
-                            <Text style={styles.name_contact}>Teléfono</Text>
-                            <Text style={styles.name_contact}>{patient?.phone}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.item}>
-                        <MaterialCommunityIcons name="map-marker-outline" size={30} color={Colors.textPrimary} />
-                        <View style={styles.textBlock}>
-                            <Text style={styles.name_contact}>Dirección</Text>
-                            <Text style={styles.name_contact}>{patient?.address}</Text>
-                        </View>
-                    </View>
-                </View>
+        <Button title="Cerrar sesión" variant="text" onPress={handleLogout} />
+      </ScrollView>
 
-                <Text style={styles.sectionLabel}>Mi profesional de salud</Text>
-                <View style={styles.contact_info}>
-                    <View style={styles.item}>
-                        <MaterialCommunityIcons name="account-circle-outline" size={60} color={Colors.textPrimary} />
-                        <View style={styles.textBlock}>
-                            <Text style={styles.name}>Dr Carlos Fernández</Text>
-                            <Text style={styles.name}>38 años</Text>
-                        </View>
-                    </View>
-                </View>
-            </ScrollView>
-
-            <BottomNav role="patient" active="profile" />
-        </LinearGradient>
-    );
+      <BottomNav role="patient" active="profile" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    banner: {
-        width: '100%',
-        backgroundColor: Colors.primary,
-        paddingTop: 50,
-        paddingBottom: 24,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        borderTopLeftRadius: 0,
-        borderTopRightRadius: 0,
-    },
-    bannerTitle: {
-      ...Type.title2,
-        color: Colors.onPrimary,
-    },
-    scroll: {
-        flex: 1,
-    },
-    scrollContent: {
-        paddingTop: 16,
-        paddingBottom: 24,
-    },
-    sectionLabel: {
-      ...Type.bodyStrong,
-        color: Colors.textPrimary,
-        paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 8,
-    },
-    item: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    textBlock: {
-        marginLeft: 10,
-        flex: 1,
-    },
-    contact: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderWidth: 2,
-        borderRadius: 20,
-        borderColor: Colors.primary,
-        backgroundColor: Colors.surface,
-        marginHorizontal: 16,
-        marginTop: 16,
-    },
-    contact_info: {
-        marginHorizontal: 16,
-        marginBottom: 12,
-        borderWidth: 2,
-        borderRadius: 20,
-        padding: 20,
-        borderColor: Colors.primary,
-        backgroundColor: Colors.surface,
-    },
-    name_contact: {
-      ...Type.secondary,
-        marginLeft: 10,
-        color: Colors.textPrimary,
-    },
-    name: {
-      ...Type.body,
-        marginLeft: 10,
-        color: Colors.textPrimary,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    gap: 16,
+  },
+  flex: {
+    flex: 1,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  card: {
+    gap: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  textPrimary: {
+    color: Colors.textPrimary,
+  },
+  textSecondary: {
+    color: Colors.textSecondary,
+  },
 });
