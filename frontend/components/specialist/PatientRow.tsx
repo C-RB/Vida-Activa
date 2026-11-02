@@ -8,13 +8,15 @@ import Icon from "../ui/Icon";
 
 type Props = {
   name: string;
+  // Shown next to the name, e.g. "72 años".
+  detail?: string;
   reason: string;
   icon: IconName;
   onPress: () => void;
 };
 
-// A patient that needs attention and why; stack several inside a Card.
-export default function AttentionRow({ name, reason, icon, onPress }: Props) {
+// A patient with a short status line; stack several inside a Card.
+export default function PatientRow({ name, detail, reason, icon, onPress }: Props) {
   const { type } = useDensity();
   return (
     <TouchableOpacity
@@ -27,7 +29,7 @@ export default function AttentionRow({ name, reason, icon, onPress }: Props) {
       <Avatar name={name} size={44} />
       <View style={styles.info}>
         <Text style={[type.bodyStrong, styles.name]} numberOfLines={1}>
-          {name}
+          {detail ? `${name} · ${detail}` : name}
         </Text>
         <View style={styles.reason}>
           <Icon name={icon} size={18} />

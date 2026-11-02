@@ -34,8 +34,8 @@ export interface Patient {
 export interface PatientListItem {
   id: string;
   fullName: string;
+  rut?: string;
   age?: number;
-  lastActivity?: string; // e.g. "Hoy, 10:00"
   hasAlert: boolean;
   alertMessage?: string;
 }
@@ -48,6 +48,8 @@ interface RawPatientListItem {
   created_at: string | null;
   hasAlert: boolean;
   alertMessage?: string;
+  rut?: string | null;
+  age?: number | null;
 }
 
 interface RawPatientResponse {
@@ -108,6 +110,8 @@ export const getPatients = async (
   return raw.map((p) => ({
     id: p.id,
     fullName: fullNameFrom(p.first_name, p.last_name),
+    rut: p.rut ?? undefined,
+    age: p.age ?? undefined,
     hasAlert: p.hasAlert,
     alertMessage: p.alertMessage,
   }));

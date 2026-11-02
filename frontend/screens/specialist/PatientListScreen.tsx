@@ -1,198 +1,113 @@
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { getPatients, PatientListItem } from "../../services/patientService";
-import { routes } from "../../router/routes";
-
-import { AdminType, Colors, GradientColors } from "../../constants/theme";
-import PatientCard from "../../components/specialist/PatientCard";
+import Screen from "../../components/layout/Screen";
+import PatientRow from "../../components/specialist/PatientRow";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import ChipGroup from "../../components/ui/ChipGroup";
+import FabButton from "../../components/ui/FabButton";
 import StateMessage from "../../components/ui/StateMessage";
+import TextField from "../../components/ui/TextField";
+import { Colors } from "../../constants/theme";
+import { routes } from "../../router/routes";
+import { getPatients, PatientListItem } from "../../services/patientService";
 
-export default function PatientListScreen({
-  navigation,
-}: {
-  navigation?: any;
-}) {
+type Filter = "all" | "alerts";
+
+const FILTERS = [
+  { value: "all", label: "Todos" },
+  { value: "alerts", label: "Con alertas" },
+] as const;
+
+// Same RUT with or without dots and hyphen, so "12.345.678-9" finds "12345678-9".
+const plain = (text: string) => text.toLowerCase().replace(/[.\-\s]/g, "");
+
+export default function PatientListScreen() {
   const router = useRouter();
   const [patients, setPatients] = useState<PatientListItem[]>([]);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Reload on focus so a patient added from the assign screen shows up when coming back.
+  // Reload on focus so a patient added from the add screen shows up when coming back.
   useFocusEffect(
     useCallback(() => {
       getPatients()
-        .then(setPatients)
-        .catch((err) => Alert.alert("Error", err.message))
+        .then((data) => {
+          setPatients(data);
+          setError(null);
+        })
+        .catch((e) => setError(e?.message ?? "No se pudo cargar la lista."))
         .finally(() => setLoading(false));
     }, [])
   );
 
-  const filtered = patients.filter((p) =>
-    p.fullName.toLowerCase().includes(query.toLowerCase())
+  const needle = plain(query);
+  const visible = patients.filter(
+    (p) =>
+      (filter === "all" || p.hasAlert) &&
+      (needle === "" || plain(p.fullName).includes(needle) || plain(p.rut ?? "").includes(needle))
   );
 
-  const handleViewInfo = (id: string) => {
+  const addPatient = () => router.push(routes.assignPatient as any);
+  const openRecord = (id: string) =>
     router.push({ pathname: routes.medicalRecord as any, params: { patientId: id } });
-  };
-
-  const handleAssignRoutine = (id: string) => {
-    router.push({ pathname: routes.routineList as any, params: { patientId: id } });
-  };
-
-  const handleAddPatient = () => {
-    router.push(routes.assignPatient as any);
-  };
-
-  if (loading) {
-    return (
-      <LinearGradient colors={GradientColors as any} style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </LinearGradient>
-    );
-  }
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.banner}>
-        <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
-            <Text style={styles.bannerTitle}>Mis pacientes</Text>
-          </View>
-          <TouchableOpacity style={styles.addBtn} onPress={handleAddPatient}>
-            <MaterialCommunityIcons name="plus" size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
+    <Screen
+      title="Pacientes"
+      subtitle={`${patients.length} en seguimiento`}
+      nav={{ role: "specialist", active: "patients" }}
+      floating={
+        <FabButton mdi="plus" label="Agregar paciente" text="Agregar paciente" onPress={addPatient} />
+      }
+    >
+      <TextField mdi="magnify" placeholder="Buscar por nombre o RUT" value={query} onChangeText={setQuery} />
+      <ChipGroup options={FILTERS} value={filter} onChange={setFilter} />
+
+      {loading ? (
+        <StateMessage loading />
+      ) : error ? (
+        <StateMessage error={error} />
+      ) : patients.length === 0 ? (
+        <View style={styles.empty}>
+          <StateMessage empty="Aún no tiene pacientes en su lista. Búsquelos por su RUT para agregarlos." />
+          <Button title="Agregar paciente" onPress={addPatient} />
         </View>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.searchWrap}>
-          <MaterialCommunityIcons
-            name="magnify"
-            size={20}
-            color={Colors.textPrimary}
-            style={{ marginRight: 8 }}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar Pacientes..."
-            placeholderTextColor={Colors.textMuted}
-            value={query}
-            onChangeText={setQuery}
-          />
-        </View>
-
-        {filtered.length === 0 ? (
-          <StateMessage
-            empty={
-              patients.length === 0
-                ? "Aún no tiene pacientes. Toque + para agregar uno."
-                : "No se encontraron pacientes."
-            }
-          />
-        ) : (
-          filtered.map((p) => (
-            <PatientCard
-              key={p.id}
-              patient={p}
-              onViewInfo={handleViewInfo}
-              onAssignRoutine={handleAssignRoutine}
-            />
-          ))
-        )}
-      </ScrollView>
-
-      <BottomNav role="specialist" active="patients" />
-    </LinearGradient>
+      ) : visible.length === 0 ? (
+        <StateMessage empty="Ningún paciente coincide con la búsqueda." />
+      ) : (
+        <Card style={styles.list}>
+          {visible.map((p, i) => (
+            <View key={p.id} style={i > 0 && styles.separator}>
+              <PatientRow
+                name={p.fullName}
+                detail={p.age != null ? `${p.age} años` : undefined}
+                reason={p.hasAlert ? (p.alertMessage ?? "Necesita atención") : "Sin alertas"}
+                icon={p.hasAlert ? "alertTriangle" : "check"}
+                onPress={() => openRecord(p.id)}
+              />
+            </View>
+          ))}
+        </Card>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  empty: {
+    gap: 16,
   },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-
-  banner: {
-    width: "100%",
-    backgroundColor: Colors.primary,
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  bannerSubtitle: {
-    ...AdminType.label,
-    color: Colors.onPrimary,
-    marginBottom: 4,
-  },
-  bannerTitle: {
-    ...AdminType.title2,
-    color: Colors.onPrimary,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: Colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  searchWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 14,
-    borderColor: Colors.primary,
-    borderWidth: 1,
-    backgroundColor: Colors.background,
-  },
-  searchInput: {
-    ...AdminType.label,
-    flex: 1,
-    color: Colors.textPrimary,
+  list: {
+    gap: 0,
     padding: 0,
+    overflow: "hidden",
   },
-
-
-
-
-
-
-
-
+  separator: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
 });
