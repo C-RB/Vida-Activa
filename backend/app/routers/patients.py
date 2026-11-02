@@ -55,10 +55,15 @@ def get_patients(
             SpecialistPatient.specialist_id == current_user.id
         )
     patients = query.order_by(User.created_at.desc()).offset(offset).limit(limit).all()
+    details = {
+        row.user_id: row
+        for row in db.query(Patient).filter(Patient.user_id.in_([p.id for p in patients])).all()
+    }
     results = []
 
     for p in patients:
         has_alert, alert_message = get_patient_alert(db, p.id)
+        detail = details.get(p.id)
 
         results.append(
             PatientListResponse(
@@ -68,7 +73,9 @@ def get_patients(
                 email=p.email,
                 created_at=p.created_at,
                 hasAlert=has_alert,
-                alertMessage=alert_message
+                alertMessage=alert_message,
+                rut=detail.rut if detail else None,
+                age=detail.age if detail else None,
             )
         )
     return results

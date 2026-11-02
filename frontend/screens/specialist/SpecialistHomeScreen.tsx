@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../components/layout/Screen";
-import AttentionRow from "../../components/specialist/AttentionRow";
+import PatientRow from "../../components/specialist/PatientRow";
 import Card from "../../components/ui/Card";
 import FabButton from "../../components/ui/FabButton";
 import ProgressRow from "../../components/ui/ProgressRow";
@@ -70,7 +70,7 @@ export default function SpecialistHomeScreen() {
             <Card style={styles.list}>
               {dashboard.attention.map((item, i) => (
                 <View key={item.patient_id} style={i > 0 && styles.separator}>
-                  <AttentionRow
+                  <PatientRow
                     name={item.full_name}
                     reason={item.reason}
                     icon={ICON_BY_KIND[item.kind]}

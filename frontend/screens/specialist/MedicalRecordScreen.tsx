@@ -125,6 +125,18 @@ export default function MedicalRecordScreen() {
           <Text style={styles.agendarText}>Agendar Hora</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.agendarBtn}
+          onPress={() =>
+            router.push({
+              pathname: routes.routineList as any,
+              params: { patientId: patient.id },
+            })
+          }
+        >
+          <Text style={styles.agendarText}>Ver rutinas</Text>
+        </TouchableOpacity>
+
         <View style={styles.card}>
           <View style={styles.metricsHeader}>
             <MaterialCommunityIcons

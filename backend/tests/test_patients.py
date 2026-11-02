@@ -79,3 +79,9 @@ def test_by_rut_withholds_contact_data_until_assigned(client, specialist_headers
     client.post("/api/patients/assign", json={"rut": seed_data.PATIENT_ANA_RUT}, headers=specialist_headers)
     body = client.get(f"/api/patients/by-rut/{seed_data.PATIENT_ANA_RUT}", headers=specialist_headers).json()
     assert body["assigned"] is True and body["email"]
+
+
+def test_patient_list_includes_rut_and_age(client, specialist_headers):
+    items = client.get("/api/patients/", headers=specialist_headers).json()
+    pedro = next(p for p in items if p["id"] == seed_data.PATIENT_PEDRO_ID)
+    assert pedro["rut"] and pedro["age"]
