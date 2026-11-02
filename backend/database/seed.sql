@@ -71,14 +71,14 @@ INSERT INTO patients (user_id, rut, age, gender, phone, address, is_active) VALU
 --   routine_id  → 12f7ce23-cac4-4987-a338-9b0e1175edd8
 --   patient_id  → 90bcc710-3984-4f86-8570-772ac433d7cd (Pedro Soto)
 
-INSERT INTO routines (id, specialist_id, patient_id, name, start_date, end_date, day_of_week, scheduled_time) VALUES
+INSERT INTO routines (id, specialist_id, patient_id, name, start_date, end_date, days_of_week, scheduled_time) VALUES
   ('12f7ce23-cac4-4987-a338-9b0e1175edd8',
    'ba80b312-b4e8-4800-bf46-8c8d84f5052a',
    '90bcc710-3984-4f86-8570-772ac433d7cd',
    'Rutina de prueba - sesiones',
    CURRENT_DATE,
    CURRENT_DATE + INTERVAL '30 days',
-   1,
+   ARRAY[1],
    '10:00:00');
 
 -- =====================

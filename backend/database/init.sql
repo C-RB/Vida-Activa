@@ -88,7 +88,7 @@ CREATE TABLE routines (
     name            VARCHAR,
     start_date      DATE,
     end_date        DATE,
-    day_of_week     INT,  -- 1 (Monday) to 7 (Sunday)
+    days_of_week    INT[] NOT NULL DEFAULT '{}',  -- each 1 (Monday) to 7 (Sunday)
     scheduled_time  TIME,
     created_at      TIMESTAMP DEFAULT NOW()
 );

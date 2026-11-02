@@ -12,6 +12,7 @@ from app.models.routine_model import Routine, RoutineExercise
 from app.schemas.routine_schema import (
     RoutineCreate,
     RoutineResponse,
+    RoutineUpdate,
     RoutineWithExercisesResponse,
 )
 
@@ -30,7 +31,7 @@ def create_routine(
         name=body.name,
         start_date=body.start_date,
         end_date=body.end_date,
-        day_of_week=body.day_of_week,
+        days_of_week=body.days_of_week,
         scheduled_time=body.scheduled_time,
     )
     db.add(routine)
@@ -63,7 +64,7 @@ def get_active_routine(
 ):
     """
     Returns today's routine for the patient: the latest one (start_date, then created_at) whose date range
-    includes today and whose day_of_week matches (1 = Monday … 7 = Sunday, like isoweekday()).
+    includes today and whose days_of_week include today's weekday (1 = Monday … 7 = Sunday, like isoweekday()).
     """
     today = date.today()
     weekday = today.isoweekday()  # 1 (Monday) .. 7 (Sunday)
@@ -75,7 +76,7 @@ def get_active_routine(
             Routine.patient_id == patient_id,
             Routine.start_date <= today,
             Routine.end_date >= today,
-            Routine.day_of_week == weekday,
+            Routine.days_of_week.any(weekday),
         )
         .order_by(Routine.start_date.desc(), Routine.created_at.desc())
         .first()
@@ -87,6 +88,63 @@ def get_active_routine(
             detail="Sin rutina activa para hoy",
         )
 
+    return routine
+
+
+@router.put("/{routine_id}", response_model=RoutineWithExercisesResponse)
+def update_routine(
+    routine_id: UUID,
+    body: RoutineUpdate,
+    db: Session = Depends(get_db),
+    specialist: User = Depends(require_specialist),
+):
+    """
+    Edits a routine in place. Exercises are matched by exercise_id: the ones still present keep their row (so past
+    sessions stay linked), new ones are added and removed ones are deleted along with their session metrics.
+    """
+    routine = (
+        db.query(Routine)
+        .options(joinedload(Routine.exercises))
+        .filter(Routine.id == routine_id)
+        .first()
+    )
+    if not routine:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rutina no encontrada")
+    if routine.specialist_id != specialist.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes acceso a esta rutina")
+
+    routine.name = body.name
+    routine.start_date = body.start_date
+    routine.end_date = body.end_date
+    routine.days_of_week = body.days_of_week
+    routine.scheduled_time = body.scheduled_time
+
+    existing = {e.exercise_id: e for e in routine.exercises}
+    wanted_ids = {e.exercise_id for e in body.exercises}
+
+    removed = [e for e in routine.exercises if e.exercise_id not in wanted_ids]
+    for entry in removed:
+        db.execute(
+            text("DELETE FROM session_exercises WHERE routine_exercise_id = :id"),
+            {"id": str(entry.id)},
+        )
+        routine.exercises.remove(entry)
+    db.flush()
+
+    for exercise in body.exercises:
+        row = existing.get(exercise.exercise_id)
+        if row is None:
+            row = RoutineExercise(routine_id=routine.id, exercise_id=exercise.exercise_id)
+            routine.exercises.append(row)
+        row.order_index = exercise.order_index
+        row.level = exercise.level
+        row.total_series = exercise.total_series
+        row.total_reps = exercise.total_reps
+        row.rest_time_seconds = exercise.rest_time_seconds
+        row.time_limit_seconds = exercise.time_limit_seconds
+
+    db.commit()
+    db.refresh(routine)
     return routine
 
 
