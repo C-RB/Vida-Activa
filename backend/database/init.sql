@@ -134,5 +134,7 @@ CREATE TABLE surveys (
     type           survey_type,
     pain_level     INT,    -- scale 1–10
     fatigue_level  INT,    -- scale 1–10
+    mood_level     INT,    -- scale 1–5 (1 = very bad, 5 = very good)
+    pain_area      VARCHAR, -- where it hurt during the exercise, post-session only
     comments       TEXT
 );

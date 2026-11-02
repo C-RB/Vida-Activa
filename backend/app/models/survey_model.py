@@ -11,4 +11,6 @@ class Survey(Base):
     type = Column(String)
     pain_level = Column(Integer)
     fatigue_level = Column(Integer)
+    mood_level = Column(Integer)  # 1 (very bad) to 5 (very good)
+    pain_area = Column(String, nullable=True)
     comments = Column(Text)

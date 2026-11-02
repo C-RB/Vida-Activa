@@ -17,12 +17,12 @@ def create_pre_survey(
     db: Session = Depends(get_db),
     _patient: User = Depends(require_patient),
 ):
-    # We map effort and tiredness to pain_level and fatigue_level for simplicity
     new_survey = Survey(
         session_id=survey_in.session_id,
         type='PRE_SESSION',
         pain_level=survey_in.pain_level,
         fatigue_level=survey_in.fatigue_level,
+        mood_level=survey_in.mood_level,
         comments=survey_in.comments
     )
     db.add(new_survey)
@@ -36,12 +36,12 @@ def create_post_survey(
     db: Session = Depends(get_db),
     _patient: User = Depends(require_patient),
 ):
-    # Mood mapping: "Muy mal"(1), "Mal"(2), "Regular"(3), "Bien"(4), "Muy bien"(5)
-    # We can store this as fatigue_level or pain_level, or we can just leave it in fatigue_level
+    # Mood: "Muy mal"(1), "Mal"(2), "Regular"(3), "Bien"(4), "Muy bien"(5)
     new_survey = Survey(
         session_id=survey_in.session_id,
         type='POST_SESSION',
-        fatigue_level=survey_in.mood_level, # Mapping mood to fatigue as there is no mood column
+        mood_level=survey_in.mood_level,
+        pain_area=survey_in.pain_area,
         comments=survey_in.comments
     )
     db.add(new_survey)

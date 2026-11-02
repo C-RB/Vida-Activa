@@ -23,7 +23,7 @@ def test_full_session_and_survey_flow(client, patient_headers):
     # 2. PRE survey (patient-only, /surveys prefix).
     r = client.post(
         "/surveys/pre",
-        json={"session_id": session_id, "pain_level": 3, "fatigue_level": 4, "comments": "ok"},
+        json={"session_id": session_id, "pain_level": 3, "fatigue_level": 4, "mood_level": 5, "comments": "ok"},
         headers=patient_headers,
     )
     assert r.status_code in (200, 201), r.text
@@ -44,10 +44,13 @@ def test_full_session_and_survey_flow(client, patient_headers):
     # 5. POST survey.
     r = client.post(
         "/surveys/post",
-        json={"session_id": session_id, "mood_level": 4, "comments": "listo"},
+        json={"session_id": session_id, "mood_level": 4, "pain_area": "Hombro", "comments": "listo"},
         headers=patient_headers,
     )
     assert r.status_code in (200, 201), r.text
+    # The mood has its own column now (it used to be kept in fatigue_level).
+    body = r.json()
+    assert body["mood_level"] == 4 and body["pain_area"] == "Hombro" and body["fatigue_level"] is None
 
     # 6. The session is marked as completed.
     r = client.get(f"/api/sessions/{session_id}", headers=patient_headers)
