@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "../../constants/theme";
 import { useDensity } from "../../hooks/useDensity";
@@ -19,10 +18,10 @@ type Props = {
   children: React.ReactNode;
 };
 
-const HERO_HEIGHT = 300;
+const HERO_HEIGHT = 240;
 const SHEET_OVERLAP = 32;
 
-// Entry screens: brand hero on top and a white sheet with the form rising over it.
+// Entry screens: the logo on top and a white sheet with the form rising from below.
 export default function AuthScreen({ title, subtitle, children }: Props) {
   const { type } = useDensity();
   const insets = useSafeAreaInsets();
@@ -38,23 +37,7 @@ export default function AuthScreen({ title, subtitle, children }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.hero, { paddingTop: insets.top + 24 }]}>
-          <Svg style={StyleSheet.absoluteFill} viewBox="0 0 412 300" preserveAspectRatio="xMidYMax slice">
-            <Circle cx={340} cy={70} r={90} fill={Colors.surface} opacity={0.55} />
-            <Circle cx={60} cy={120} r={46} fill={Colors.surface} opacity={0.4} />
-            <Path
-              d="M0 210 C70 150 130 150 200 190 C270 230 340 170 412 150 L412 300 L0 300 Z"
-              fill={Colors.primary}
-              opacity={0.14}
-            />
-            <Path
-              d="M0 250 C90 205 160 215 230 240 C300 265 360 225 412 205 L412 300 L0 300 Z"
-              fill={Colors.primary}
-              opacity={0.22}
-            />
-          </Svg>
-          <View style={styles.logoBadge}>
-            <Icon name="logo" size={64} color={Colors.onPrimary} />
-          </View>
+          <Icon name="logo" size={88} />
           <Text style={[type.title2, styles.brand]}>Vida Activa</Text>
         </View>
 
@@ -74,7 +57,7 @@ export default function AuthScreen({ title, subtitle, children }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.primarySoft,
+    backgroundColor: Colors.background,
   },
   scroll: {
     flexGrow: 1,
@@ -84,20 +67,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
-    overflow: "hidden",
-  },
-  logoBadge: {
-    width: 112,
-    height: 112,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
   },
   brand: {
     color: Colors.primary,
