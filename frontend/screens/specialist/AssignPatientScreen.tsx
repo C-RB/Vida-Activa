@@ -74,8 +74,8 @@ export default function AssignPatientScreen() {
 
   return (
     <Screen
-      title="Agregar paciente"
-      subtitle="Busque por RUT a un paciente ya registrado y agréguelo a su lista."
+      title="Paciente ya registrado"
+      subtitle="Busque por RUT a un paciente que ya esté registrado y agréguelo a su lista."
       onBack={() => router.back()}
       floating={<Toast message={toast} onHide={() => setToast(null)} />}
     >

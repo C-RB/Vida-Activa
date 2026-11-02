@@ -51,7 +51,7 @@ export default function PatientListScreen() {
       (needle === "" || plain(p.fullName).includes(needle) || plain(p.rut ?? "").includes(needle))
   );
 
-  const addPatient = () => router.push(routes.assignPatient as any);
+  const addPatient = () => router.push(routes.createPatient as any);
   const openRecord = (id: string) =>
     router.push({ pathname: routes.medicalRecord as any, params: { patientId: id } });
 
@@ -73,7 +73,7 @@ export default function PatientListScreen() {
         <StateMessage error={error} />
       ) : patients.length === 0 ? (
         <View style={styles.empty}>
-          <StateMessage empty="Aún no tiene pacientes en su lista. Búsquelos por su RUT para agregarlos." />
+          <StateMessage empty="Aún no tiene pacientes en su lista. Registre uno nuevo o agregue uno que ya exista." />
           <Button title="Agregar paciente" onPress={addPatient} />
         </View>
       ) : visible.length === 0 ? (
