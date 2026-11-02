@@ -27,6 +27,8 @@ export interface Patient {
   metrics: ComplianceMetrics;
   sessions: Session[];
   active: boolean;
+  // Set by the RUT lookup: whether the specialist already has this patient.
+  assigned?: boolean;
 }
 
 export interface PatientListItem {
@@ -60,6 +62,7 @@ interface RawPatientResponse {
   address?: string | null;
   metrics?: ComplianceMetrics;
   sessions?: Session[];
+  assigned?: boolean | null;
 }
 
 // Metrics and sessions may be missing from the response: default to safe empty values.
@@ -84,6 +87,7 @@ const toPatient = (raw: RawPatientResponse): Patient => ({
   metrics: raw.metrics ?? EMPTY_METRICS,
   sessions: raw.sessions ?? [],
   active: raw.active,
+  assigned: raw.assigned ?? undefined,
 });
 
 export const getPatients = async (

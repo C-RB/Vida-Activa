@@ -18,10 +18,18 @@ export interface DashboardProgress {
   daily_compliance: number;
 }
 
+export interface DashboardAttention {
+  patient_id: string;
+  full_name: string;
+  reason: string;
+  kind: "pain" | "inactive" | "no_sessions";
+}
+
 export interface DashboardResponse {
   specialist: DashboardSpecialist;
   stats: DashboardStats;
   progress: DashboardProgress;
+  attention: DashboardAttention[];
 }
 
 export const getDashboard = (): Promise<DashboardResponse> =>

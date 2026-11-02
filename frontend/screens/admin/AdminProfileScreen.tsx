@@ -138,7 +138,6 @@ export default function AdminProfileScreen() {
 
   return (
     <Screen
-      density="compact"
       title="Mi perfil"
       subtitle="Gestione su información personal y su seguridad."
       nav={{ role: "admin", active: "profile" }}

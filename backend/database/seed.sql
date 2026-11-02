@@ -146,3 +146,7 @@ INSERT INTO session_exercises (id, session_id, exercise_id, routine_exercise_id,
    NULL,
    NULL);
 
+
+-- Pedro is already in the specialist list; Ana stays unassigned so the assignment flow can be tested.
+INSERT INTO specialist_patient (specialist_id, patient_id) VALUES
+  ('ba80b312-b4e8-4800-bf46-8c8d84f5052a', '90bcc710-3984-4f86-8570-772ac433d7cd');

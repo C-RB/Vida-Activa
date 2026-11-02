@@ -20,7 +20,7 @@ import {
 } from "../../services/appointmentService";
 import BottomNav from "../../components/layout/BottomNav";
 import { routes } from "../../router/routes";
-import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
 import SectionCard from "../../components/ui/SectionCard";
 
 const DAYS_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
@@ -328,12 +328,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.bannerTitle,
   },
 
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   monthLabel: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   calRow: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   dayHeader: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     flex: 1,
     textAlign: "center",
     color: "rgba(23, 32, 51, 0.5)",
@@ -376,14 +376,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   calCellText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
   calCellGray: {
     color: "rgba(23, 32, 51, 0.25)",
   },
   calCellTextSelected: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(23, 32, 51, 0.15)",
   },
   slotText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   slotTextActive: {
@@ -425,14 +425,14 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
   },
   slotsEmpty: {
-    ...Type.label,
+    ...AdminType.label,
     color: "rgba(23, 32, 51, 0.6)",
     textAlign: "center",
     paddingVertical: 12,
   },
 
   summaryLabel: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: "rgba(23, 32, 51, 0.45)",
     marginBottom: 6,
     marginTop: 4,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   summaryPatientName: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
   },
   summaryDateTimeRow: {
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   summaryDateText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
   infoBox: {
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   infoText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -491,11 +491,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   confirmBtnText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textOnDark,
   },
   confirmNote: {
-    ...Type.label,
+    ...AdminType.label,
     color: "rgba(23, 32, 51, 0.5)",
     textAlign: "center",
   },

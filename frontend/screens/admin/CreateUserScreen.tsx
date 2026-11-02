@@ -10,6 +10,7 @@ import TextButton from "../../components/ui/TextButton";
 import TextField from "../../components/ui/TextField";
 import Toast, { ToastMessage } from "../../components/ui/Toast";
 import { createUserApi, CreateUserPayload } from "../../services/userService";
+import { formatRut } from "../../utils/rut";
 
 type Role = "patient" | "specialist";
 
@@ -19,14 +20,6 @@ const ROLES = [
 ] as const;
 
 const GENDERS = ["Masculino", "Femenino", "Otro"].map((g) => ({ value: g, label: g }));
-
-// Formats a Chilean RUT while typing (12.345.678-9).
-const formatRut = (value: string) => {
-  const clean = value.replace(/[^0-9kK]/g, "").toUpperCase().slice(0, 9);
-  if (clean.length <= 1) return clean;
-  const body = clean.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `${body}-${clean.slice(-1)}`;
-};
 
 export default function CreateUserScreen() {
   const router = useRouter();
@@ -98,7 +91,6 @@ export default function CreateUserScreen() {
 
   return (
     <Screen
-      density="compact"
       title="Crear usuario"
       subtitle="Registre un nuevo perfil en el sistema."
       onBack={() => router.back()}

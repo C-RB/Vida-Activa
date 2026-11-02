@@ -12,7 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
-import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import {
   deleteRoutine,
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
   banner: { ...BannerStyle },
   bannerRow: { flexDirection: "row", alignItems: "center" },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.bannerTitle,
   },
 
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryCtaText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

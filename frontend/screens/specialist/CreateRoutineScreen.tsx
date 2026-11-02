@@ -16,7 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { routes } from "../../router/routes";
-import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { createRoutine, RoutineCreate } from "../../services/routineService";
 import Stepper from "../../components/ui/Stepper";
@@ -433,12 +433,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.bannerTitle,
   },
 
@@ -451,18 +451,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionTitle: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
 
   label: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
     marginBottom: 6,
   },
   input: {
-    ...Type.label,
+    ...AdminType.label,
     backgroundColor: Colors.cardBgAlt,
     borderRadius: 10,
     paddingHorizontal: 12,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   timeInputText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
   timeInputPlaceholder: {
@@ -503,10 +503,10 @@ const styles = StyleSheet.create({
   },
   dayBtnActive: { backgroundColor: Colors.btnPrimary },
   dayText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textPrimary,
   },
-  dayTextActive: { ...Type.labelStrong, color: Colors.textOnDark },
+  dayTextActive: { ...AdminType.labelStrong, color: Colors.textOnDark },
 
   libraryRow: {
     flexDirection: "row",
@@ -516,11 +516,11 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.cardBgAlt,
   },
   libraryName: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
   },
   libraryDesc: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   },
   addBtnDisabled: { opacity: 0.5 },
   addText: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   exerciseName: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textPrimary,
     flex: 1,
   },
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   },
   levelBtnActive: { backgroundColor: Colors.btnPrimary, borderColor: Colors.btnPrimary },
   levelText: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textPrimary,
   },
   levelTextActive: { color: Colors.textOnDark },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   fieldHalf: { flex: 1 },
 
   mutedText: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textSecondary,
   },
 
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textOnDark,
   },
   saveBtn: {
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: { opacity: 0.6 },
   saveText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

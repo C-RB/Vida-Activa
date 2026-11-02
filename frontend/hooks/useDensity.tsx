@@ -1,5 +1,6 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useSyncExternalStore } from "react";
 import { AdminType, Type } from "../constants/theme";
+import { getRole, subscribe } from "../services/authStore";
 
 export type DensityName = "comfortable" | "compact";
 
@@ -25,3 +26,13 @@ export function DensityProvider({
 // Components read the type scale and control height from here instead of importing `Type`,
 // so a `Screen` can switch a whole view between densities.
 export const useDensity = () => DENSITIES[useContext(DensityContext)];
+
+// Patients get the large scale; specialists and admins the compact one, in every view.
+export function RoleDensity({ children }: { children: React.ReactNode }) {
+  const role = useSyncExternalStore(subscribe, getRole, getRole);
+  return (
+    <DensityProvider density={role === "PATIENT" || role === null ? "comfortable" : "compact"}>
+      {children}
+    </DensityProvider>
+  );
+}

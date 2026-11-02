@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 import type { Session } from "../../services/patientService";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -15,17 +16,18 @@ type Props = {
 };
 
 export default function SessionCard({ session, expandable = false }: Props) {
+  const { type } = useDensity();
   const [expanded, setExpanded] = useState(false);
 
   const header = (
     <View style={styles.header}>
       <IconBadge mdi="run-fast" />
       <View style={styles.title}>
-        <Text style={Type.bodyStrong} numberOfLines={2}>
+        <Text style={type.bodyStrong} numberOfLines={2}>
           {session.name}
         </Text>
         {!expandable && (
-          <Text style={[Type.secondary, styles.meta]}>
+          <Text style={[type.secondary, styles.meta]}>
             {session.date} · {session.duration}
           </Text>
         )}

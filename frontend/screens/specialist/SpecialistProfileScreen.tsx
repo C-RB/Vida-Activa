@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import BottomNav from "../../components/layout/BottomNav";
-import { BannerStyle, Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
 import { clearAuth } from "../../services/authStore";
 import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
 import InfoRow from "../../components/ui/InfoRow";
@@ -92,12 +92,12 @@ const styles = StyleSheet.create({
 
   banner: { ...BannerStyle },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.bannerSubtitle,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.bannerTitle,
   },
 
@@ -121,11 +121,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   profileName: {
-    ...Type.button,
+    ...AdminType.button,
     color: Colors.textPrimary,
   },
   profileMeta: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   specialtyText: {
-    ...Type.labelStrong,
+    ...AdminType.labelStrong,
     color: Colors.textOnDark,
   },
 
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   logoutText: {
-    ...Type.secondaryStrong,
+    ...AdminType.secondaryStrong,
     color: Colors.textOnDark,
   },
 });

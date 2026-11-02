@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useAppFonts } from "../hooks/useAppFonts";
+import { RoleDensity } from "../hooks/useDensity";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,5 +16,9 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null;
 
-  return <Slot />;
+  return (
+    <RoleDensity>
+      <Slot />
+    </RoleDensity>
+  );
 }

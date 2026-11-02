@@ -14,7 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { routes } from "../../router/routes";
 import { getExercises, Exercise } from "../../services/exerciseService";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
+import { AdminType, Colors, GradientColors } from "../../constants/theme";
 import ExerciseCard from "../../components/specialist/ExerciseCard";
 import StateMessage from "../../components/ui/StateMessage";
 export default function ExercisesLibraryScreen() {
@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   bannerSubtitle: {
-    ...Type.label,
+    ...AdminType.label,
     color: Colors.onPrimary,
     marginBottom: 4,
   },
   bannerTitle: {
-    ...Type.title2,
+    ...AdminType.title2,
     color: Colors.textPrimary,
   },
   headerRow: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   assignText: {
-    ...Type.label,
+    ...AdminType.label,
     marginBottom: 10,
     color: Colors.textPrimary,
   },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchInput: {
-    ...Type.label,
+    ...AdminType.label,
     flex: 1,
     color: Colors.textPrimary,
     padding: 0,
@@ -182,5 +182,5 @@ const styles = StyleSheet.create({
     margin: 19,
     marginBottom: 129,
   },
-  cancelText: { ...Type.secondaryStrong, color: Colors.onPrimary },
+  cancelText: { ...AdminType.secondaryStrong, color: Colors.onPrimary },
 });

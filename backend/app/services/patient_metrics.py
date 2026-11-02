@@ -10,6 +10,14 @@ from app.models.routine_model import Routine
 from app.schemas.patient_schema import ComplianceMetrics, SessionItem
 
 
+ALERT_INACTIVE = "Inactivo por más de 5 días"
+ALERT_PAIN = "Nivel de dolor alto"
+ALERT_NO_SESSIONS = "Sin sesiones registradas"
+
+# Machine-readable kind of each alert message, so clients can pick an icon.
+ALERT_KINDS = {ALERT_INACTIVE: "inactive", ALERT_PAIN: "pain", ALERT_NO_SESSIONS: "no_sessions"}
+
+
 def get_patient_alert(db: Session, patient_id):
     """
     Whether a patient has an active alert, and its message. Criteria, in order: last session over 5 days ago →
@@ -24,15 +32,15 @@ def get_patient_alert(db: Session, patient_id):
     if last_session:
         if last_session.date and (datetime.now() - last_session.date) > timedelta(days=5):
             has_alert = True
-            alert_message = "Inactivo por más de 5 días"
+            alert_message = ALERT_INACTIVE
 
         last_survey = db.query(Survey).filter(Survey.session_id == last_session.id).first()
         if last_survey and last_survey.pain_level and last_survey.pain_level > 7:
             has_alert = True
-            alert_message = "Nivel de dolor alto"
+            alert_message = ALERT_PAIN
     else:
         has_alert = True
-        alert_message = "Sin sesiones registradas"
+        alert_message = ALERT_NO_SESSIONS
 
     return has_alert, alert_message
 

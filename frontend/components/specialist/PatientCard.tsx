@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { AdminType, Colors } from "../../constants/theme";
 import type { PatientListItem } from "../../services/patientService";
 import Avatar from "../ui/Avatar";
 import Badge from "../ui/Badge";
@@ -23,14 +23,14 @@ export default function PatientCard({ patient, onViewInfo, onAssignRoutine }: Pr
       <View style={styles.top}>
         <Avatar name={patient.fullName} size={44} />
         <View style={styles.info}>
-          <Text style={Type.bodyStrong}>{patient.fullName}</Text>
-          {meta !== "" && <Text style={[Type.secondary, styles.meta]}>{meta}</Text>}
+          <Text style={AdminType.bodyStrong}>{patient.fullName}</Text>
+          {meta !== "" && <Text style={[AdminType.secondary, styles.meta]}>{meta}</Text>}
         </View>
         {patient.hasAlert && <Badge label="Alerta" tone="warning" mdi="alert-outline" />}
       </View>
 
       {patient.alertMessage && (
-        <Text style={[Type.secondary, styles.alert]}>{patient.alertMessage}</Text>
+        <Text style={[AdminType.secondary, styles.alert]}>{patient.alertMessage}</Text>
       )}
 
       <View style={styles.actions}>
