@@ -85,3 +85,48 @@ def test_patient_list_includes_rut_and_age(client, specialist_headers):
     items = client.get("/api/patients/", headers=specialist_headers).json()
     pedro = next(p for p in items if p["id"] == seed_data.PATIENT_PEDRO_ID)
     assert pedro["rut"] and pedro["age"]
+
+
+def _new_patient(**overrides):
+    body = {
+        "fullName": "Rosa Pérez Díaz",
+        "email": "rosa.perez@test.com",
+        "rut": "15.555.555-5",
+        "phone": "+56911112222",
+        "age": 70,
+        "gender": "Femenino",
+    }
+    body.update(overrides)
+    return body
+
+
+def test_specialist_creates_patient_and_gets_them_in_the_list(client, specialist_headers):
+    r = client.post("/api/patients", json=_new_patient(), headers=specialist_headers)
+    assert r.status_code == 201, r.text
+    created = r.json()
+    assert created["temp_password"] and created["role"] == "PATIENT"
+
+    ids = {p["id"] for p in client.get("/api/patients/", headers=specialist_headers).json()}
+    assert created["id"] in ids
+
+    # The patient can log in with the temporary password.
+    login = client.post(
+        "/api/auth/login", json={"email": "rosa.perez@test.com", "password": created["temp_password"]}
+    )
+    assert login.status_code == 200, login.text
+
+
+def test_create_patient_rejects_duplicates(client, specialist_headers):
+    client.post("/api/patients", json=_new_patient(email="dup@test.com", rut="16.666.666-6"), headers=specialist_headers)
+    same_rut = client.post(
+        "/api/patients", json=_new_patient(email="otro@test.com", rut="16666666-6"), headers=specialist_headers
+    )
+    assert same_rut.status_code == 409
+    same_email = client.post(
+        "/api/patients", json=_new_patient(email="dup@test.com", rut="17.777.777-7"), headers=specialist_headers
+    )
+    assert same_email.status_code == 409
+
+
+def test_patient_cannot_create_patients(client, patient_headers):
+    assert client.post("/api/patients", json=_new_patient(), headers=patient_headers).status_code == 403
