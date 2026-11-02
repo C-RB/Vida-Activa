@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NAV, NavRole } from "../../constants/navigation";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import Icon from "../ui/Icon";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   role: NavRole;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function BottomNav({ role, active }: Props) {
+  const { type } = useDensity();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -36,7 +38,7 @@ export default function BottomNav({ role, active }: Props) {
                 <Icon mdi={item.icon.mdi} size={26} color={color} />
               )}
             </View>
-            <Text style={[Type.label, { color }]}>{item.label}</Text>
+            <Text style={[type.label, { color }]}>{item.label}</Text>
           </TouchableOpacity>
         );
       })}

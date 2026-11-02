@@ -1,40 +1,30 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  Modal,
-  ActivityIndicator
-} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { listUsers, setUserStatus, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
+import UserCard from "../../components/admin/UserCard";
+import Screen from "../../components/layout/Screen";
+import Badge from "../../components/ui/Badge";
+import ChipGroup from "../../components/ui/ChipGroup";
+import FabButton from "../../components/ui/FabButton";
+import FormDialog from "../../components/ui/FormDialog";
+import FormField from "../../components/ui/FormField";
+import IconButton from "../../components/ui/IconButton";
+import StateMessage from "../../components/ui/StateMessage";
+import TextButton from "../../components/ui/TextButton";
+import TextField from "../../components/ui/TextField";
 import { routes } from "../../router/routes";
+import {
+  AdminUser,
+  listUsers,
+  ROLE_LABEL,
+  setUserStatus,
+  UserRoleKey,
+} from "../../services/userService";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
-import Chip from "../../components/ui/Chip";
-const ROLES: UserRoleKey[] = ["admin", "specialist", "patient"];
-
-// Left-border accent: grey when inactive, red for admins, teal otherwise.
-const borderColorFor = (role: UserRoleKey, isActive: boolean) => {
-  if (!isActive) return Colors.border;
-  return role === "admin" ? Colors.warning : Colors.primary;
-};
-
-const initialsFor = (fullName: string) => {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length === 0 || !parts[0]) return "?";
-  return (parts.length > 1
-    ? `${parts[0][0]}${parts[1][0]}`
-    : parts[0].substring(0, 2)
-  ).toUpperCase();
-};
+const ROLE_OPTIONS = (Object.keys(ROLE_LABEL) as UserRoleKey[]).map((value) => ({
+  value,
+  label: ROLE_LABEL[value],
+}));
 
 export default function AdminUsersScreen() {
   const router = useRouter();
@@ -43,17 +33,13 @@ export default function AdminUsersScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
-
-  // Fetch users from the backend, debounced on the search box.
   const loadUsers = useCallback(async (search: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await listUsers({ search });
-      setUsers(data);
+      setUsers(await listUsers({ search }));
     } catch (e: any) {
       setError(e?.message ?? "No se pudieron cargar los usuarios.");
     } finally {
@@ -61,540 +47,141 @@ export default function AdminUsersScreen() {
     }
   }, []);
 
+  // Debounced on the search box.
   useEffect(() => {
     const handle = setTimeout(() => loadUsers(searchQuery), 350);
     return () => clearTimeout(handle);
   }, [searchQuery, loadUsers]);
 
-  // Toggle user status against the backend, then update the row in place.
+  // Toggles the status against the backend, then updates the row in place.
   const handleToggleStatus = (user: AdminUser) => {
     const action = user.isActive ? "desactivar" : "activar";
-    Alert.alert(
-      "Confirmar Acción",
-      `¿Estás seguro de que deseas ${action} a ${user.fullName}?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Confirmar",
-          style: action === "desactivar" ? "destructive" : "default",
-          onPress: async () => {
-            setTogglingId(user.id);
-            try {
-              const updated = await setUserStatus(user.id, !user.isActive);
-              setUsers(prev => prev.map(u => (u.id === updated.id ? updated : u)));
-            } catch (e: any) {
-              Alert.alert("Error", e?.message ?? "No se pudo actualizar el estado.");
-            } finally {
-              setTogglingId(null);
-            }
+    Alert.alert("Confirmar acción", `¿Está seguro de que desea ${action} a ${user.fullName}?`, [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Confirmar",
+        style: user.isActive ? "destructive" : "default",
+        onPress: async () => {
+          setTogglingId(user.id);
+          try {
+            const updated = await setUserStatus(user.id, !user.isActive);
+            setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+          } catch (e: any) {
+            Alert.alert("Error", e?.message ?? "No se pudo actualizar el estado.");
+          } finally {
+            setTogglingId(null);
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
-  // Open edit modal (edits are local only — no edit endpoint yet).
-  const openEditModal = (user: AdminUser) => {
-    setEditingUser({ ...user });
-    setEditModalVisible(true);
-  };
-
-  // Save changes from modal (updates the local list only for now).
+  // There is no edit endpoint yet, so edits only change the local list.
   const handleSaveEdit = () => {
     if (editingUser) {
-      setUsers(prevUsers => prevUsers.map(u =>
-        u.id === editingUser.id
-          ? { ...u, fullName: editingUser.fullName, email: editingUser.email, role: editingUser.role }
-          : u
-      ));
+      setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? editingUser : u)));
     }
-    setEditModalVisible(false);
+    setEditingUser(null);
   };
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.logoText}>Vida Activa</Text>
-        <TouchableOpacity style={styles.profileIconWrap}>
-          <MaterialCommunityIcons name="account-circle" size={32} color={Colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
+    <Screen
+      density="compact"
+      title="Gestión de usuarios"
+      subtitle="Administre los usuarios del sistema, sus roles y estados."
+      nav={{ role: "admin", active: "users" }}
+      floating={
+        <FabButton
+          mdi="account-plus"
+          label="Crear usuario"
+          onPress={() => router.push(routes.createUser as any)}
+        />
+      }
+    >
+      <TextField
+        mdi="magnify"
+        placeholder="Buscar por nombre, correo o rol"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.pageTitle}>Gestión de Usuarios</Text>
-          <Text style={styles.pageSubtitle}>
-            Administra los usuarios del sistema, sus roles y estados.
-          </Text>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <MaterialCommunityIcons name="magnify" size={20} color="rgba(23, 32, 51, 0.6)" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar por nombre, correo o rol..."
-            placeholderTextColor="rgba(23, 32, 51, 0.5)"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-
-        {loading ? (
-          <ActivityIndicator color={Colors.textPrimary} size="large" style={{ marginTop: 40 }} />
-        ) : error ? (
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="alert-circle-outline" size={28} color={Colors.danger} />
-            <Text style={styles.emptyStateText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={() => loadUsers(searchQuery)}>
-              <Text style={styles.retryButtonText}>Reintentar</Text>
-            </TouchableOpacity>
+      {loading ? (
+        <StateMessage loading />
+      ) : error ? (
+        <>
+          <StateMessage error={error} />
+          <View style={styles.center}>
+            <TextButton title="Reintentar" onPress={() => loadUsers(searchQuery)} />
           </View>
-        ) : users.length === 0 ? (
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="account-search-outline" size={28} color="rgba(23, 32, 51, 0.6)" />
-            <Text style={styles.emptyStateText}>No se encontraron usuarios.</Text>
-          </View>
-        ) : (
-          <View style={styles.listContainer}>
-            {users.map((user) => (
-              <View key={user.id} style={[styles.userCard, { borderLeftColor: borderColorFor(user.role, user.isActive) }]}>
-                <View style={styles.cardTopRow}>
-                  <View style={styles.userInfoLeft}>
-                    <View style={styles.userInitialsAvatar}>
-                      <Text style={[styles.userInitialsText, { color: user.role === 'admin' ? Colors.warning : Colors.primary }]}>
-                        {initialsFor(user.fullName)}
-                      </Text>
-                    </View>
-                    <View style={styles.userDetails}>
-                      <Text style={styles.userName}>{user.fullName}</Text>
-                      <Text style={styles.userEmail}>{user.email}</Text>
-                    </View>
-                  </View>
+        </>
+      ) : users.length === 0 ? (
+        <StateMessage empty="No se encontraron usuarios." />
+      ) : (
+        users.map((user) => (
+          <UserCard key={user.id} name={user.fullName} detail={user.email} active={user.isActive}>
+            <Badge
+              label={ROLE_LABEL[user.role]}
+              tone={user.role === "admin" ? "warning" : "primary"}
+              mdi={user.role === "admin" ? "shield-account-outline" : "briefcase-outline"}
+            />
+            <View style={styles.spacer} />
+            <IconButton mdi="pencil-outline" label="Editar" onPress={() => setEditingUser(user)} />
+            <IconButton
+              mdi={user.isActive ? "cancel" : "check-circle-outline"}
+              label={user.isActive ? "Desactivar" : "Activar"}
+              danger={user.isActive}
+              loading={togglingId === user.id}
+              onPress={() => handleToggleStatus(user)}
+            />
+          </UserCard>
+        ))
+      )}
 
-                  <View style={[
-                    styles.statusPill,
-                    !user.isActive && styles.statusPillInactive
-                  ]}>
-                    <View style={[
-                      styles.statusDot,
-                      !user.isActive && styles.statusDotInactive
-                    ]} />
-                    <Text style={[
-                      styles.statusText,
-                      !user.isActive && styles.statusTextInactive
-                    ]}>{user.isActive ? 'ACTIVO' : 'INACTIVO'}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.cardBottomRow}>
-                  <View style={styles.roleContainer}>
-                    <MaterialCommunityIcons
-                      name={user.role === 'admin' ? 'shield-account-outline' : 'briefcase-outline'}
-                      size={14}
-                      color={user.role === 'admin' ? Colors.warning : "rgba(23, 32, 51, 0.7)"}
-                    />
-                    <Text style={[
-                      styles.roleText,
-                      user.role === 'admin' && { color: Colors.danger }
-                    ]}>{ROLE_LABEL[user.role]}</Text>
-                  </View>
-
-                  <View style={styles.actionsContainer}>
-                    <TouchableOpacity
-                      style={styles.actionIconButton}
-                      onPress={() => openEditModal(user)}
-                    >
-                      <MaterialCommunityIcons name="pencil-outline" size={16} color={Colors.textPrimary} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.actionIconButton}
-                      onPress={() => handleToggleStatus(user)}
-                      disabled={togglingId === user.id}
-                    >
-                      {togglingId === user.id ? (
-                        <ActivityIndicator size="small" color={Colors.textPrimary} />
-                      ) : user.isActive ? (
-                        <MaterialCommunityIcons name="cancel" size={16} color="rgba(23, 32, 51, 0.6)" />
-                      ) : (
-                        <MaterialCommunityIcons name="check-circle-outline" size={16} color={Colors.textPrimary} />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
+      <FormDialog
+        visible={editingUser !== null}
+        title="Editar usuario"
+        confirmLabel="Guardar"
+        onConfirm={handleSaveEdit}
+        onCancel={() => setEditingUser(null)}
+      >
+        {editingUser && (
+          <>
+            <TextField
+              label="Nombre completo"
+              value={editingUser.fullName}
+              onChangeText={(fullName) => setEditingUser({ ...editingUser, fullName })}
+              placeholder="Ej. Juan Pérez"
+            />
+            <TextField
+              label="Correo electrónico"
+              value={editingUser.email}
+              onChangeText={(email) => setEditingUser({ ...editingUser, email })}
+              placeholder="ejemplo@correo.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <FormField label="Rol del usuario">
+              <ChipGroup
+                options={ROLE_OPTIONS}
+                value={editingUser.role}
+                onChange={(role) => setEditingUser({ ...editingUser, role })}
+              />
+            </FormField>
+            <StateMessage empty="Los cambios de perfil son locales por ahora. El estado (activo o inactivo) sí se guarda en el servidor." />
+          </>
         )}
-      </ScrollView>
-
-      <TouchableOpacity 
-        style={styles.fab}
-        onPress={() => router.push(routes.createUser as any)}
-      >
-        <MaterialCommunityIcons name="account-plus" size={24} color={Colors.onPrimary} />
-      </TouchableOpacity>
-
-      <BottomNav role="admin" active="users" />
-
-      <Modal
-        visible={isEditModalVisible}
-        transparent={true}
-        animationType="fade"
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Editar Usuario</Text>
-
-            {editingUser && (
-              <ScrollView style={{ maxHeight: 500 }} showsVerticalScrollIndicator={false}>
-                <Text style={styles.inputLabel}>Nombre Completo</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={editingUser.fullName}
-                  onChangeText={(text) => setEditingUser({...editingUser, fullName: text})}
-                  placeholder="Ej. Juan Pérez"
-                />
-
-                <Text style={styles.inputLabel}>Correo Electrónico</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={editingUser.email}
-                  onChangeText={(text) => setEditingUser({...editingUser, email: text})}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholder="ejemplo@correo.com"
-                />
-
-                <Text style={styles.inputLabel}>Rol del Usuario</Text>
-                <View style={styles.rolesContainer}>
-                  {ROLES.map((role) => (
-                    <Chip
-                      key={role}
-                      label={ROLE_LABEL[role]}
-                      selected={editingUser.role === role}
-                      onPress={() => setEditingUser({ ...editingUser, role })}
-                    />
-                  ))}
-                </View>
-
-                <Text style={styles.editHint}>
-                  Los cambios de perfil son locales por ahora. El estado (activo/inactivo) sí se guarda en el servidor.
-                </Text>
-
-                <View style={styles.modalActions}>
-                  <TouchableOpacity 
-                    style={[styles.modalButton, styles.modalButtonCancel]}
-                    onPress={() => setEditModalVisible(false)}
-                  >
-                    <Text style={styles.modalButtonTextCancel}>Cancelar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.modalButton, styles.modalButtonSave]}
-                    onPress={handleSaveEdit}
-                  >
-                    <Text style={styles.modalButtonTextSave}>Guardar Cambios</Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-    </LinearGradient>
+      </FormDialog>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  center: {
+    alignItems: "center",
+  },
+  spacer: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 10,
-    backgroundColor: Colors.primary,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  logoText: {
-    ...Type.button,
-    color: Colors.onPrimary,
-  },
-  profileIconWrap: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 20,
-    padding: 2,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 80, 
-  },
-  sectionHeader: {
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  pageTitle: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-  },
-  pageSubtitle: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.8)",
-    marginTop: 4,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 48,
-    marginBottom: 24,
-  },
-  searchInput: {
-    ...Type.label,
-    flex: 1,
-    marginLeft: 10,
-    color: Colors.textPrimary,
-  },
-  listContainer: {
-    gap: 16,
-  },
-  userCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  userInfoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  userAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  userInitialsAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userInitialsText: {
-    ...Type.secondaryStrong,
-    color: Colors.textPrimary,
-  },
-  userDetails: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  userName: {
-    ...Type.secondaryStrong,
-    color: Colors.textPrimary,
-  },
-  userEmail: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.6)",
-    marginTop: 2,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  statusPillInactive: {
-    backgroundColor: 'rgba(220, 220, 220, 0.8)',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.primaryPressed,
-  },
-  statusDotInactive: {
-    backgroundColor: Colors.textSecondary,
-  },
-  statusText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  statusTextInactive: {
-    color: Colors.textSecondary,
-  },
-  cardBottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  roleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  roleText: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionIconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadMoreButton: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    marginTop: 10,
-  },
-  loadMoreText: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 50,
-    gap: 10,
-  },
-  emptyStateText: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.8)",
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.primaryPressed,
-  },
-  retryButtonText: {
-    ...Type.labelStrong,
-    color: Colors.onPrimary,
-  },
-  editHint: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.6)",
-    marginTop: 14,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 90,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.primaryPressed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContainer: {
-    width: '100%',
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  modalTitle: {
-    ...Type.button,
-    color: Colors.textPrimary,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  inputLabel: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.8)",
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  modalInput: {
-    ...Type.label,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: Colors.textPrimary,
-  },
-  rolesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-    marginBottom: 10,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalButtonCancel: {
-    backgroundColor: Colors.primarySoft,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  modalButtonSave: {
-    backgroundColor: Colors.primaryPressed,
-  },
-  modalButtonTextCancel: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  modalButtonTextSave: {
-    ...Type.labelStrong,
-    color: Colors.onPrimary,
-  }
 });

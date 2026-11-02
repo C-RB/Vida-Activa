@@ -1,35 +1,29 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useCallback, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { listUsers, AdminUser, ROLE_LABEL, UserRoleKey } from "../../services/userService";
-import { routes } from "../../router/routes";
-
-import { Colors, GradientColors, Type } from "../../constants/theme";
-import Chip from "../../components/ui/Chip";
+import UserCard from "../../components/admin/UserCard";
+import Screen from "../../components/layout/Screen";
+import ChipGroup from "../../components/ui/ChipGroup";
 import SectionTitle from "../../components/ui/SectionTitle";
+import StatCard from "../../components/ui/StatCard";
 import StateMessage from "../../components/ui/StateMessage";
-// Role filter pills.
-const FILTERS: { label: string; role?: UserRoleKey }[] = [
-  { label: "Todos" },
-  { label: "Paciente", role: "patient" },
-  { label: "Especialista", role: "specialist" },
-];
+import TextButton from "../../components/ui/TextButton";
+import { routes } from "../../router/routes";
+import { AdminUser, listUsers, ROLE_LABEL, UserRoleKey } from "../../services/userService";
 
-const initialsFor = (fullName: string) => {
-  const parts = fullName.trim().split(/\s+/);
-  if (!parts[0]) return "?";
-  return (parts.length > 1
-    ? `${parts[0][0]}${parts[1][0]}`
-    : parts[0].substring(0, 2)
-  ).toUpperCase();
-};
+// Role filters list active users, matching the cards; "inactive" lists every deactivated user.
+type Filter = "all" | "patient" | "specialist" | "inactive";
+
+const FILTERS = [
+  { value: "all", label: "Todos", mdi: "filter-variant" },
+  { value: "patient", label: "Paciente" },
+  { value: "specialist", label: "Especialista" },
+  { value: "inactive", label: "Inactivos" },
+] as const;
 
 export default function AdminMainScreen() {
   const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState("Todos");
+  const [filter, setFilter] = useState<Filter>("all");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,380 +45,82 @@ export default function AdminMainScreen() {
     }, [loadUsers])
   );
 
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u) => u.isActive).length;
-  const inactiveUsers = totalUsers - activeUsers;
-  const activePct = totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
+  const activeOf = (role: UserRoleKey) => users.filter((u) => u.role === role && u.isActive).length;
+  const inactive = users.filter((u) => !u.isActive).length;
 
-  const activeRole = FILTERS.find((f) => f.label === activeFilter)?.role;
-  const visibleUsers = activeRole
-    ? users.filter((u) => u.role === activeRole)
-    : users;
+  const visibleUsers = users.filter((u) => {
+    if (filter === "all") return true;
+    if (filter === "inactive") return !u.isActive;
+    return u.role === filter && u.isActive;
+  });
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.logoText}>Vida Activa</Text>
-        <TouchableOpacity style={styles.profileIconWrap}>
-          <MaterialCommunityIcons name="account-circle" size={32} color={Colors.onPrimary} />
-        </TouchableOpacity>
+    <Screen
+      density="compact"
+      brand
+      title="Panel principal"
+      subtitle="Resumen de actividad y gestión del sistema."
+      nav={{ role: "admin", active: "home" }}
+    >
+      <View style={styles.stats}>
+        <StatCard mdi="account-outline" value={String(activeOf("patient"))} label="Pacientes" />
+        <StatCard
+          mdi="medical-bag"
+          value={String(activeOf("specialist"))}
+          label="Especialistas"
+          tone="info"
+        />
+        <StatCard
+          mdi="shield-account-outline"
+          value={String(activeOf("admin"))}
+          label="Administradores"
+          tone="warning"
+        />
+        <StatCard
+          mdi="account-cancel"
+          value={String(inactive)}
+          label="Inactivos"
+          tone="danger"
+          alert={inactive > 0}
+        />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionHeader}>
-          <SectionTitle>Panel Principal</SectionTitle>
-          <Text style={styles.sectionSubtitle}>Resumen de actividad y gestión del sistema.</Text>
-        </View>
+      <SectionTitle>Resumen de usuarios</SectionTitle>
+      <ChipGroup options={FILTERS} value={filter} onChange={setFilter} />
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <View style={styles.statRow}>
-              <View>
-                <Text style={styles.statLabel}>Total Usuarios</Text>
-                <Text style={styles.statValue}>{totalUsers}</Text>
-              </View>
-              <MaterialCommunityIcons name="account-group" size={28} color={Colors.textPrimary} />
-            </View>
-          </View>
-
-          <View style={styles.statCard}>
-            <View style={styles.statRow}>
-              <View>
-                <Text style={styles.statLabel}>Usuarios Activos</Text>
-                <Text style={styles.statValue}>{activeUsers}</Text>
-              </View>
-              <MaterialCommunityIcons name="account-check" size={28} color={Colors.textPrimary} />
-            </View>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${activePct}%` }]} />
-            </View>
-          </View>
-
-          <View style={[styles.statCard, styles.statCardInactive]}>
-            <View style={styles.statRow}>
-              <View>
-                <Text style={styles.statLabel}>Usuarios Inactivos</Text>
-                <Text style={[styles.statValue, { color: Colors.danger }]}>{inactiveUsers}</Text>
-              </View>
-              <MaterialCommunityIcons name="account-cancel" size={28} color={Colors.danger} />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <SectionTitle>Acciones Rápidas</SectionTitle>
-        </View>
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: Colors.primaryPressed }]}
-            onPress={() => router.push(routes.createUser as any)}
-          >
-            <MaterialCommunityIcons name="account-plus" size={20} color={Colors.onPrimary} style={styles.actionIcon} />
-            <Text style={styles.actionButtonText}>Crear usuario</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: Colors.primary }]}
-            onPress={() => router.push("/admin-users" as any)}
-          >
-            <MaterialCommunityIcons name="account-cog" size={20} color={Colors.textPrimary} style={styles.actionIcon} />
-            <Text style={[styles.actionButtonText, { color: Colors.textPrimary }]}>Gestionar usuarios</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <SectionTitle>Resumen de Usuarios</SectionTitle>
-        </View>
-        
-        <View style={styles.filtersContainer}>
-          {FILTERS.map(({ label }) => (
-            <Chip
-              key={label}
-              label={label}
-              mdi={label === "Todos" ? "filter-variant" : undefined}
-              selected={activeFilter === label}
-              onPress={() => setActiveFilter(label)}
+      {loading ? (
+        <StateMessage loading />
+      ) : visibleUsers.length === 0 ? (
+        <StateMessage empty="No hay usuarios para mostrar." />
+      ) : (
+        <>
+          {visibleUsers.map((user) => (
+            <UserCard
+              key={user.id}
+              name={user.fullName}
+              detail={ROLE_LABEL[user.role]}
+              active={user.isActive}
             />
           ))}
-        </View>
-
-        {loading ? (
-          <ActivityIndicator color={Colors.textPrimary} size="large" style={{ marginTop: 30 }} />
-        ) : visibleUsers.length === 0 ? (
-          <StateMessage empty="No hay usuarios para mostrar." />
-        ) : (
-          <View style={styles.userListContainer}>
-            {visibleUsers.map((user) => (
-              <View key={user.id} style={styles.userCard}>
-                <View style={styles.userInfoLeft}>
-                  <View style={styles.userInitialsAvatar}>
-                    <Text style={styles.userInitialsText}>{initialsFor(user.fullName)}</Text>
-                  </View>
-                  <View style={styles.userDetails}>
-                    <Text style={styles.userName}>{user.fullName}</Text>
-                    <Text style={styles.userRole}>{ROLE_LABEL[user.role]}</Text>
-                  </View>
-                </View>
-                <View style={styles.userInfoRight}>
-                  <View style={[
-                    styles.statusPill,
-                    !user.isActive && styles.statusPillInactive
-                  ]}>
-                    <View style={[
-                      styles.statusDot,
-                      !user.isActive && styles.statusDotInactive
-                    ]} />
-                    <Text style={[
-                      styles.statusText,
-                      !user.isActive && styles.statusTextInactive
-                    ]}>{user.isActive ? 'Activo' : 'Inactivo'}</Text>
-                  </View>
-
-                  <TouchableOpacity style={styles.moreOptions} onPress={() => router.push("/admin-users" as any)}>
-                    <MaterialCommunityIcons name="dots-vertical" size={20} color={Colors.textPrimary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-
-            <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push("/admin-users" as any)}>
-              <Text style={styles.viewAllText}>Ver todos los usuarios</Text>
-            </TouchableOpacity>
+          <View style={styles.center}>
+            <TextButton
+              title="Ver todos los usuarios"
+              onPress={() => router.push(routes.adminUsers as any)}
+            />
           </View>
-        )}
-
-      </ScrollView>
-
-      <BottomNav role="admin" active="home" />
-
-      <TouchableOpacity style={styles.backToSplash} onPress={() => router.replace("/" as any)}>
-        <MaterialCommunityIcons name="home-outline" size={18} color={Colors.textPrimary} />
-      </TouchableOpacity>
-    </LinearGradient>
+        </>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  stats: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 54,
-    paddingBottom: 10,
-    backgroundColor: Colors.primary,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  logoText: {
-    ...Type.button,
-    color: Colors.onPrimary,
-  },
-  backToSplash: {
-    position: "absolute",
-    top: 50,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
+  center: {
     alignItems: "center",
-    justifyContent: "center",
   },
-  profileIconWrap: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: 2,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
-  sectionHeader: {
-    marginBottom: 16,
-    marginTop: 10,
-  },
-  sectionSubtitle: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.7)",
-    marginTop: 4,
-  },
-  statsContainer: {
-    marginBottom: 20,
-  },
-  statCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
-  },
-  statCardInactive: {
-    backgroundColor: 'rgba(231,87,86,0.15)',
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  statLabel: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  statValue: {
-    ...Type.title1,
-    color: Colors.textPrimary,
-    marginTop: 4,
-  },
-  statTrendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  statTrendText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  statTrendSubtext: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.6)",
-  },
-  progressTrack: {
-    width: "100%",
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "rgba(23, 32, 51, 0.1)",
-    marginTop: 16,
-  },
-  progressFill: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.primaryPressed,
-  },
-  actionsContainer: {
-    marginBottom: 24,
-    gap: 12,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  actionIcon: {
-    marginRight: 8,
-  },
-  actionButtonText: {
-    ...Type.labelStrong,
-    color: Colors.onPrimary,
-  },
-
-  filtersContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  userListContainer: {
-    gap: 12,
-  },
-  userCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 16,
-    padding: 12,
-  },
-  userInfoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  userInitialsAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userInitialsText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  userDetails: {
-    marginLeft: 12,
-  },
-  userName: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  userRole: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.6)",
-  },
-  userInfoRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-    moreOptions: {
-    padding: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  statusPillInactive: {
-    backgroundColor: 'rgba(225, 160, 160, 0.8)',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.primaryPressed,
-  },
-  statusDotInactive: {
-    backgroundColor: Colors.danger,
-  },
-  statusText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  statusTextInactive: {
-    color: Colors.danger,
-  },
-
-  viewAllButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 4,
-  },
-  viewAllText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-  },
-  emptyText: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.7)",
-    textAlign: "center",
-    marginTop: 24,
-  }
 });

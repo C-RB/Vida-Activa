@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from "react-native";
-import { Colors, Radius, Type } from "../../constants/theme";
+import { Colors, Radius } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 // One primary action per screen; "danger" only for finishing or irreversible actions.
 type Variant = "primary" | "soft" | "outline" | "danger" | "text";
@@ -39,6 +40,7 @@ export default function Button({
   compact = false,
   style,
 }: Props) {
+  const { type, control } = useDensity();
   const c = PALETTE[variant];
   return (
     <TouchableOpacity
@@ -50,7 +52,7 @@ export default function Button({
       style={[
         styles.base,
         {
-          height: compact ? 48 : 64,
+          height: compact ? 48 : control,
           backgroundColor: c.bg,
           borderColor: c.border ?? "transparent",
           borderWidth: c.border ? 1.5 : 0,
@@ -62,7 +64,7 @@ export default function Button({
       {loading ? (
         <ActivityIndicator color={c.fg} />
       ) : (
-        <Text style={[compact ? Type.bodyStrong : Type.button, { color: c.fg }]}>{title}</Text>
+        <Text style={[compact ? type.bodyStrong : type.button, { color: c.fg }]}>{title}</Text>
       )}
     </TouchableOpacity>
   );

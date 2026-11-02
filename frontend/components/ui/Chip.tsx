@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import Icon, { MdiName } from "./Icon";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   label: string;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export default function Chip({ label, selected = false, mdi, onPress }: Props) {
+  const { type } = useDensity();
   return (
     <TouchableOpacity
       accessibilityRole="button"
@@ -19,7 +21,7 @@ export default function Chip({ label, selected = false, mdi, onPress }: Props) {
       style={[styles.chip, selected && styles.chipSelected]}
     >
       {mdi && <Icon mdi={mdi} size={16} color={selected ? Colors.onPrimary : Colors.textPrimary} />}
-      <Text style={[Type.label, { color: selected ? Colors.onPrimary : Colors.textPrimary }]}>
+      <Text style={[type.label, { color: selected ? Colors.onPrimary : Colors.textPrimary }]}>
         {label}
       </Text>
     </TouchableOpacity>

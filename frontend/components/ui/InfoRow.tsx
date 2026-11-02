@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import type { MdiName } from "./Icon";
 import IconBadge from "./IconBadge";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   mdi: MdiName;
@@ -14,18 +15,19 @@ type Props = {
 };
 
 export default function InfoRow({ mdi, value, label, inline = false, highlight = false }: Props) {
+  const { type } = useDensity();
   return (
     <View style={styles.row}>
       <IconBadge mdi={mdi} size={40} />
       {inline ? (
         <>
-          <Text style={[Type.body, styles.label]}>{label}</Text>
-          <Text style={[Type.title2, highlight && styles.highlight]}>{value}</Text>
+          <Text style={[type.body, styles.label]}>{label}</Text>
+          <Text style={[type.title2, highlight && styles.highlight]}>{value}</Text>
         </>
       ) : (
         <View style={styles.stack}>
-          {label && <Text style={[Type.label, styles.secondary]}>{label}</Text>}
-          <Text style={Type.bodyStrong}>{value}</Text>
+          {label && <Text style={[type.label, styles.secondary]}>{label}</Text>}
+          <Text style={type.bodyStrong}>{value}</Text>
         </View>
       )}
     </View>

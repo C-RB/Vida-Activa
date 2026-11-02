@@ -8,8 +8,9 @@ import {
   View,
 } from "react-native";
 import type { IconName } from "../../constants/icons";
-import { Colors, Radius, Type } from "../../constants/theme";
-import Icon from "./Icon";
+import { Colors, Radius } from "../../constants/theme";
+import Icon, { MdiName } from "./Icon";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = Pick<
   TextInputProps,
@@ -21,25 +22,32 @@ type Props = Pick<
   | "autoCorrect"
   | "textContentType"
   | "editable"
+  | "maxLength"
+  | "autoComplete"
+  | "importantForAutofill"
 > & {
-  label: string;
+  label?: string;
   icon?: IconName;
+  // Fallback for icons the v2 set does not include yet.
+  mdi?: MdiName;
   // Adds the show/hide toggle and hides the text by default.
   secure?: boolean;
 };
 
-export default function TextField({ label, icon, secure = false, ...input }: Props) {
+export default function TextField({ label, icon, mdi, secure = false, ...input }: Props) {
+  const { type, control } = useDensity();
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(false);
 
   return (
     <View style={styles.field}>
-      <Text style={[Type.bodyStrong, styles.label]}>{label}</Text>
-      <View style={[styles.input, focused && styles.inputFocused]}>
+      {label && <Text style={[type.bodyStrong, styles.label]}>{label}</Text>}
+      <View style={[styles.input, { height: control }, focused && styles.inputFocused]}>
         {icon && <Icon name={icon} size={24} />}
+        {mdi && <Icon mdi={mdi} size={24} />}
         <TextInput
           {...input}
-          style={[Type.body, styles.text]}
+          style={[type.body, styles.text]}
           placeholderTextColor={Colors.textSecondary}
           secureTextEntry={secure && !visible}
           onFocus={() => setFocused(true)}
@@ -71,7 +79,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    height: 64,
     paddingHorizontal: 16,
     backgroundColor: Colors.surface,
     borderWidth: 1.5,

@@ -1,94 +1,64 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  Modal,
-  Animated,
-  ActivityIndicator
-} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { Colors, GradientColors, Type } from "../../constants/theme";
+import Screen from "../../components/layout/Screen";
+import ActionRow from "../../components/ui/ActionRow";
+import Avatar from "../../components/ui/Avatar";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import FormDialog from "../../components/ui/FormDialog";
+import InfoRow from "../../components/ui/InfoRow";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StateMessage from "../../components/ui/StateMessage";
+import TextField from "../../components/ui/TextField";
+import Toast, { ToastMessage } from "../../components/ui/Toast";
+import { Colors, Type } from "../../constants/theme";
+import { routes } from "../../router/routes";
 import { clearAuth } from "../../services/authStore";
-import {
-  getAdminProfile,
-  updateAdminProfile,
-  changePassword,
-} from "../../services/profileService";
+import { changePassword, getAdminProfile, updateAdminProfile } from "../../services/profileService";
+import { formatLongDate } from "../../utils/dates";
 
 type AdminView = {
   name: string;
   email: string;
-  role: string;
-  status: string;
+  active: boolean;
   phone: string;
-  jobTitle: string;
-  avatarUrl: string;
-  createdAt: string;
+  memberSince: string;
 };
 
-const EMPTY_ADMIN: AdminView = {
-  name: "",
-  email: "",
-  role: "Administrador",
-  status: "Activo",
-  phone: "",
-  jobTitle: "",
-  avatarUrl: "",
-  createdAt: "",
+const EMPTY_ADMIN: AdminView = { name: "", email: "", active: true, phone: "", memberSince: "" };
+const EMPTY_PASSWORDS = { current: "", newPass: "", confirmPass: "" };
+
+const memberSince = (iso: string | null): string => {
+  const date = iso ? new Date(iso) : null;
+  return date && !Number.isNaN(date.getTime()) ? formatLongDate(date) : "No disponible";
 };
-
-const MONTHS_ES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-
-function formatMemberSince(iso: string | null): string {
-  if (!iso) return "No disponible";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "No disponible";
-  return `${d.getDate()} de ${MONTHS_ES[d.getMonth()]}, ${d.getFullYear()}`;
-}
 
 export default function AdminProfileScreen() {
   const router = useRouter();
 
-  const [adminData, setAdminData] = useState<AdminView>(EMPTY_ADMIN);
+  const [admin, setAdmin] = useState<AdminView>(EMPTY_ADMIN);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
-
+  const [editOpen, setEditOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", phone: "" });
-
-  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirmPass: "" });
-
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
-  const [toastOpacity] = useState(new Animated.Value(0));
+  const [passwordForm, setPasswordForm] = useState(EMPTY_PASSWORDS);
 
   useEffect(() => {
     let mounted = true;
     getAdminProfile()
       .then((p) => {
         if (!mounted) return;
-        setAdminData({
+        setAdmin({
           name: [p.first_name, p.last_name].filter(Boolean).join(" ").trim(),
           email: p.email,
-          role: "Administrador",
-          status: p.is_active ? "Activo" : "Inactivo",
+          active: p.is_active,
           phone: p.phone ?? "",
-          jobTitle: p.job_title ?? "",
-          avatarUrl: "",
-          createdAt: formatMemberSince(p.created_at),
+          memberSince: memberSince(p.created_at),
         });
       })
       .catch(() => {})
@@ -98,47 +68,36 @@ export default function AdminProfileScreen() {
     };
   }, []);
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToastMessage(message);
-    setToastType(type);
-    Animated.sequence([
-      Animated.timing(toastOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.delay(2500),
-      Animated.timing(toastOpacity, { toValue: 0, duration: 300, useNativeDriver: true })
-    ]).start();
-  };
-
-  const openEditModal = () => {
-    setEditForm({ name: adminData.name, phone: adminData.phone });
-    setEditModalVisible(true);
+  const openEdit = () => {
+    setEditForm({ name: admin.name, phone: admin.phone });
+    setEditOpen(true);
   };
 
   const handleSaveProfile = async () => {
     if (saving) return;
     if (!editForm.name.trim()) {
-      showToast("El nombre no puede estar vacío.", "error");
+      setToast({ text: "El nombre no puede estar vacío.", tone: "danger" });
       return;
     }
-    // Single "full name" field: first token → first_name, the rest → last_name.
+    // A single "full name" field: the first token is the first name, the rest the last name.
     const parts = editForm.name.trim().split(/\s+/);
     const first_name = parts.shift() ?? "";
-    const last_name = parts.join(" ");
     try {
       setSaving(true);
       const updated = await updateAdminProfile({
         first_name,
-        last_name,
+        last_name: parts.join(" "),
         phone: editForm.phone,
       });
-      setAdminData((prev) => ({
+      setAdmin((prev) => ({
         ...prev,
         name: [updated.first_name, updated.last_name].filter(Boolean).join(" ").trim(),
         phone: updated.phone ?? "",
       }));
-      setEditModalVisible(false);
-      showToast("Perfil actualizado correctamente.", "success");
+      setEditOpen(false);
+      setToast({ text: "Perfil actualizado correctamente.", tone: "success" });
     } catch (e: any) {
-      showToast(e?.message ?? "No se pudo actualizar el perfil.", "error");
+      setToast({ text: e?.message ?? "No se pudo actualizar el perfil.", tone: "danger" });
     } finally {
       setSaving(false);
     }
@@ -146,29 +105,27 @@ export default function AdminProfileScreen() {
 
   const handleSavePassword = async () => {
     if (saving) return;
-    if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirmPass) {
-      showToast("Completa todos los campos.", "error");
+    const { current, newPass, confirmPass } = passwordForm;
+    if (!current || !newPass || !confirmPass) {
+      setToast({ text: "Complete todos los campos.", tone: "danger" });
       return;
     }
-    if (passwordForm.newPass !== passwordForm.confirmPass) {
-      showToast("Las contraseñas nuevas no coinciden.", "error");
+    if (newPass !== confirmPass) {
+      setToast({ text: "Las claves nuevas no coinciden.", tone: "danger" });
       return;
     }
-    if (passwordForm.newPass.length < 6) {
-      showToast("La contraseña debe tener al menos 6 caracteres.", "error");
+    if (newPass.length < 6) {
+      setToast({ text: "La clave debe tener al menos 6 caracteres.", tone: "danger" });
       return;
     }
     try {
       setSaving(true);
-      await changePassword({
-        current_password: passwordForm.current,
-        new_password: passwordForm.newPass,
-      });
-      setPasswordModalVisible(false);
-      setPasswordForm({ current: "", newPass: "", confirmPass: "" });
-      showToast("Contraseña cambiada con éxito.", "success");
+      await changePassword({ current_password: current, new_password: newPass });
+      setPasswordOpen(false);
+      setPasswordForm(EMPTY_PASSWORDS);
+      setToast({ text: "Clave cambiada con éxito.", tone: "success" });
     } catch (e: any) {
-      showToast(e?.message ?? "No se pudo cambiar la contraseña.", "error");
+      setToast({ text: e?.message ?? "No se pudo cambiar la clave.", tone: "danger" });
     } finally {
       setSaving(false);
     }
@@ -176,459 +133,136 @@ export default function AdminProfileScreen() {
 
   const handleLogout = () => {
     clearAuth();
-    router.replace("/" as any);
+    router.replace(routes.login as any);
   };
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.logoText}>Vida Activa</Text>
-        <TouchableOpacity style={styles.profileIconWrap}>
-          <MaterialCommunityIcons name="account-circle" size={32} color={Colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
-
+    <Screen
+      density="compact"
+      title="Mi perfil"
+      subtitle="Gestione su información personal y su seguridad."
+      nav={{ role: "admin", active: "profile" }}
+      floating={<Toast message={toast} onHide={() => setToast(null)} />}
+    >
       {loading ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.btnTeal} />
-        </View>
+        <StateMessage loading />
       ) : (
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.pageTitle}>Mi Perfil</Text>
-          <Text style={styles.pageSubtitle}>
-            Gestiona tu información personal y seguridad.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.avatarContainer}>
-              {adminData.avatarUrl ? (
-                <Image source={{ uri: adminData.avatarUrl }} style={styles.avatarImage} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarInitials}>
-                    {adminData.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.headerTextInfo}>
-              <Text style={styles.adminName}>{adminData.name}</Text>
-              <Text style={styles.adminRole}>{adminData.role}</Text>
-              <View style={styles.statusPill}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>{adminData.status}</Text>
+        <>
+          <Card>
+            <View style={styles.row}>
+              <Avatar name={admin.name} size={64} />
+              <View style={styles.flex}>
+                <Text style={[Type.title2, styles.textPrimary]}>{admin.name}</Text>
+                <Text style={[Type.secondary, styles.textSecondary]}>Administrador</Text>
               </View>
             </View>
-          </View>
+            <Badge
+              label={admin.active ? "Activo" : "Inactivo"}
+              tone={admin.active ? "info" : "danger"}
+              mdi={admin.active ? "check-circle-outline" : "cancel"}
+            />
+            <InfoRow mdi="email-outline" label="Correo electrónico" value={admin.email} />
+            <InfoRow mdi="phone-outline" label="Teléfono" value={admin.phone || "No establecido"} />
+            <InfoRow mdi="calendar-account-outline" label="Miembro desde" value={admin.memberSince} />
+          </Card>
 
-          <View style={styles.divider} />
-
-          <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="rgba(23, 32, 51, 0.6)" />
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoLabel}>Correo Electrónico</Text>
-              <Text style={styles.infoValue}>{adminData.email}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="phone-outline" size={20} color="rgba(23, 32, 51, 0.6)" />
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoLabel}>Teléfono</Text>
-              <Text style={styles.infoValue}>{adminData.phone || "No establecido"}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="calendar-account-outline" size={20} color="rgba(23, 32, 51, 0.6)" />
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoLabel}>Miembro desde</Text>
-              <Text style={styles.infoValue}>{adminData.createdAt}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.actionsContainer}>
-          <Text style={styles.sectionSubtitle}>Ajustes de cuenta</Text>
-          
-          <TouchableOpacity style={styles.actionButton} onPress={openEditModal}>
-            <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.textPrimary} />
-            <Text style={styles.actionButtonText}>Editar perfil</Text>
-            <MaterialCommunityIcons name="chevron-right" size={20} color="rgba(23, 32, 51, 0.4)" style={{marginLeft: 'auto'}} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton} onPress={() => setPasswordModalVisible(true)}>
-            <MaterialCommunityIcons name="lock-outline" size={20} color={Colors.textPrimary} />
-            <Text style={styles.actionButtonText}>Cambiar contraseña</Text>
-            <MaterialCommunityIcons name="chevron-right" size={20} color="rgba(23, 32, 51, 0.4)" style={{marginLeft: 'auto'}} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionButton, styles.logoutButton]} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={20} color={Colors.danger} />
-            <Text style={[styles.actionButtonText, {color: Colors.danger}]}>Cerrar sesión</Text>
-          </TouchableOpacity>
-        </View>
-
-      </ScrollView>
+          <SectionTitle>Ajustes de cuenta</SectionTitle>
+          <Card style={styles.list}>
+            <ActionRow mdi="pencil-outline" label="Editar perfil" onPress={openEdit} />
+            <View style={styles.divider} />
+            <ActionRow
+              mdi="lock-outline"
+              label="Cambiar clave"
+              onPress={() => setPasswordOpen(true)}
+            />
+          </Card>
+          <Button title="Cerrar sesión" variant="danger" onPress={handleLogout} />
+        </>
       )}
 
-      <Modal visible={isEditModalVisible} transparent={true} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Editar Perfil</Text>
-
-            <Text style={styles.inputLabel}>Nombre Completo *</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editForm.name}
-              onChangeText={(text) => setEditForm({...editForm, name: text})}
-              placeholder="Nombre del administrador"
-            />
-
-            <Text style={styles.inputLabel}>Correo Electrónico (No editable)</Text>
-            <TextInput
-              style={[styles.modalInput, styles.modalInputDisabled]}
-              value={adminData.email}
-              editable={false}
-            />
-
-            <Text style={styles.inputLabel}>Teléfono (Opcional)</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editForm.phone}
-              onChangeText={(text) => setEditForm({...editForm, phone: text})}
-              placeholder="+34 600 000 000"
-              keyboardType="phone-pad"
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setEditModalVisible(false)}>
-                <Text style={styles.modalButtonTextCancel}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonSave]} onPress={handleSaveProfile}>
-                <Text style={styles.modalButtonTextSave}>Guardar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={isPasswordModalVisible} transparent={true} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Cambiar Contraseña</Text>
-
-            <Text style={styles.inputLabel}>Contraseña Actual *</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={passwordForm.current}
-              onChangeText={(text) => setPasswordForm({...passwordForm, current: text})}
-              secureTextEntry
-              placeholder="••••••••"
-            />
-
-            <Text style={styles.inputLabel}>Nueva Contraseña *</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={passwordForm.newPass}
-              onChangeText={(text) => setPasswordForm({...passwordForm, newPass: text})}
-              secureTextEntry
-              placeholder="Mínimo 6 caracteres"
-            />
-
-            <Text style={styles.inputLabel}>Confirmar Nueva Contraseña *</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={passwordForm.confirmPass}
-              onChangeText={(text) => setPasswordForm({...passwordForm, confirmPass: text})}
-              secureTextEntry
-              placeholder="Vuelve a escribirla"
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setPasswordModalVisible(false)}>
-                <Text style={styles.modalButtonTextCancel}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonSave]} onPress={handleSavePassword}>
-                <Text style={styles.modalButtonTextSave}>Actualizar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Animated.View style={[
-        styles.toastContainer, 
-        { opacity: toastOpacity, backgroundColor: toastType === "success" ? Colors.info : Colors.danger }
-      ]}>
-        <MaterialCommunityIcons
-          name={toastType === "success" ? "check-circle-outline" : "alert-circle-outline"}
-          size={20} color={Colors.textOnDark}
+      <FormDialog
+        visible={editOpen}
+        title="Editar perfil"
+        confirmLabel="Guardar"
+        loading={saving}
+        onConfirm={handleSaveProfile}
+        onCancel={() => setEditOpen(false)}
+      >
+        <TextField
+          label="Nombre completo"
+          value={editForm.name}
+          onChangeText={(name) => setEditForm({ ...editForm, name })}
+          placeholder="Nombre del administrador"
         />
-        <Text style={styles.toastText}>{toastMessage}</Text>
-      </Animated.View>
+        <TextField label="Correo electrónico (no editable)" value={admin.email} editable={false} />
+        <TextField
+          label="Teléfono (opcional)"
+          value={editForm.phone}
+          onChangeText={(phone) => setEditForm({ ...editForm, phone })}
+          placeholder="+56 9 1234 5678"
+          keyboardType="phone-pad"
+        />
+      </FormDialog>
 
-      <BottomNav role="admin" active="profile" />
-    </LinearGradient>
+      <FormDialog
+        visible={passwordOpen}
+        title="Cambiar clave"
+        confirmLabel="Actualizar"
+        loading={saving}
+        onConfirm={handleSavePassword}
+        onCancel={() => setPasswordOpen(false)}
+      >
+        <TextField
+          label="Clave actual"
+          secure
+          value={passwordForm.current}
+          onChangeText={(current) => setPasswordForm({ ...passwordForm, current })}
+          placeholder="••••••••"
+          autoCapitalize="none"
+        />
+        <TextField
+          label="Clave nueva"
+          secure
+          value={passwordForm.newPass}
+          onChangeText={(newPass) => setPasswordForm({ ...passwordForm, newPass })}
+          placeholder="Mínimo 6 caracteres"
+          autoCapitalize="none"
+        />
+        <TextField
+          label="Confirmar clave nueva"
+          secure
+          value={passwordForm.confirmPass}
+          onChangeText={(confirmPass) => setPasswordForm({ ...passwordForm, confirmPass })}
+          placeholder="Vuelva a escribirla"
+          autoCapitalize="none"
+        />
+      </FormDialog>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  flex: {
     flex: 1,
   },
-  loadingWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 54,
-    paddingBottom: 10,
-    backgroundColor: Colors.primary,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  logoText: {
-    ...Type.button,
-    color: Colors.onPrimary,
-  },
-  profileIconWrap: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 20,
-    padding: 2,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
-  sectionHeader: {
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  pageTitle: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-  },
-  pageSubtitle: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.8)",
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    marginRight: 16,
-  },
-  avatarImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-  avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitials: {
-    ...Type.button,
-    color: Colors.textPrimary,
-  },
-  headerTextInfo: {
-    flex: 1,
-  },
-  adminName: {
-    ...Type.bodyStrong,
-    color: Colors.textPrimary,
-  },
-  adminRole: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginTop: 4,
-    gap: 4,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.primaryPressed,
-  },
-  statusText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
+  list: {
+    gap: 0,
+    padding: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(23, 32, 51, 0.1)",
-    marginBottom: 16,
+    marginHorizontal: 12,
+    backgroundColor: Colors.border,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  infoTextContainer: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  infoLabel: {
-    ...Type.label,
-    color: "rgba(23, 32, 51, 0.6)",
-  },
-  infoValue: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-    marginTop: 2,
-  },
-  actionsContainer: {
-    marginBottom: 30,
-  },
-  sectionSubtitle: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.8)",
-    marginBottom: 12,
-    marginLeft: 4,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  actionButtonText: {
-    ...Type.labelStrong,
-    color: Colors.textPrimary,
-    marginLeft: 12,
-  },
-  logoutButton: {
-    marginTop: 10,
-    backgroundColor: 'rgba(231, 87, 86, 0.1)',
-  },
-  
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContainer: {
-    width: '100%',
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  modalTitle: {
-    ...Type.bodyStrong,
-    color: Colors.textPrimary,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  inputLabel: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.8)",
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  modalInput: {
-    ...Type.label,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  textPrimary: {
     color: Colors.textPrimary,
   },
-  modalInputDisabled: {
-    backgroundColor: Colors.primarySoft,
-    color: Colors.textPrimary,
+  textSecondary: {
+    color: Colors.textSecondary,
   },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalButtonCancel: {
-    backgroundColor: Colors.primarySoft,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  modalButtonSave: {
-    backgroundColor: Colors.primaryPressed,
-  },
-  modalButtonTextCancel: {
-    ...Type.labelStrong,
-    color: "rgba(23, 32, 51, 0.7)",
-  },
-  modalButtonTextSave: {
-    ...Type.labelStrong,
-    color: Colors.onPrimary,
-  },
-
-  toastContainer: {
-    position: 'absolute',
-    bottom: 90, // Above navbar
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  toastText: {
-    ...Type.labelStrong,
-    color: Colors.onPrimary,
-    marginLeft: 8,
-  }
 });

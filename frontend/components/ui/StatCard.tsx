@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Radius, Type } from "../../constants/theme";
+import { Colors, Radius } from "../../constants/theme";
 import type { MdiName } from "./Icon";
 import IconBadge, { Tone } from "./IconBadge";
+import { useDensity } from "../../hooks/useDensity";
 
 type Props = {
   mdi: MdiName;
@@ -14,12 +15,13 @@ type Props = {
 };
 
 export default function StatCard({ mdi, value, label, tone = "primary", alert = false }: Props) {
+  const { type } = useDensity();
   return (
     <View style={styles.card}>
       {alert && <View style={styles.dot} />}
       <IconBadge mdi={mdi} tone={tone} size={44} />
-      <Text style={[Type.title1, styles.value]}>{value}</Text>
-      <Text style={[Type.secondary, styles.label]}>{label}</Text>
+      <Text style={[type.title1, styles.value]}>{value}</Text>
+      <Text style={[type.secondary, styles.label]}>{label}</Text>
     </View>
   );
 }

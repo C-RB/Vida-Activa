@@ -1,7 +1,9 @@
 import React from "react";
 import { Text } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
 
 export default function SectionTitle({ children }: { children: string }) {
-  return <Text style={[Type.title2, { color: Colors.textPrimary }]}>{children}</Text>;
+  const { type } = useDensity();
+  return <Text style={[type.title2, { color: Colors.textPrimary }]}>{children}</Text>;
 }

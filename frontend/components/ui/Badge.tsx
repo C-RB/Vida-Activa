@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Colors, Type } from "../../constants/theme";
+import { Colors } from "../../constants/theme";
 import Icon, { MdiName } from "./Icon";
 import type { Tone } from "./IconBadge";
+import { useDensity } from "../../hooks/useDensity";
 
 const TONES: Record<Tone, { bg: string; fg: string }> = {
   primary: { bg: Colors.primarySoft, fg: Colors.primary },
@@ -18,11 +19,12 @@ type Props = {
 };
 
 export default function Badge({ label, tone = "primary", mdi }: Props) {
+  const { type } = useDensity();
   const { bg, fg } = TONES[tone];
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       {mdi && <Icon mdi={mdi} size={16} color={fg} />}
-      <Text style={[Type.label, { color: fg }]}>{label}</Text>
+      <Text style={[type.label, { color: fg }]}>{label}</Text>
     </View>
   );
 }
