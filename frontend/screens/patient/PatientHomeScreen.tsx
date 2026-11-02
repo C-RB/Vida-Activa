@@ -115,7 +115,7 @@ export default function PatientHomeScreen() {
     routines.forEach((r) => {
       const from = new Date(`${r.start_date}T00:00:00`);
       const to = new Date(`${r.end_date}T23:59:59`);
-      if (from < end && to >= start) planned.add((r.day_of_week - 1) % 7);
+      if (from < end && to >= start) r.days_of_week.forEach((d) => planned.add((d - 1) % 7));
     });
 
     return {

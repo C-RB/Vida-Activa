@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, Integer, Date, Time, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -16,7 +16,7 @@ class Routine(Base):
     name = Column(String, nullable=True)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
-    day_of_week = Column(Integer, nullable=True)  # 1 (Monday) to 7 (Sunday)
+    days_of_week = Column(ARRAY(Integer), nullable=False, default=list)  # each 1 (Monday) to 7 (Sunday)
     scheduled_time = Column(Time, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 

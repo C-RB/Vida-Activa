@@ -2,7 +2,7 @@ from datetime import date, time, datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 # Accept any valid UUID, not only v4: seeded or imported data may use other versions.
 UUID4 = UUID
@@ -23,9 +23,22 @@ class RoutineCreate(BaseModel):
     name: str
     start_date: date
     end_date: date
-    day_of_week: int
+    # Weekdays, 1 = Monday … 7 = Sunday; at least one.
+    days_of_week: List[int] = Field(min_length=1)
     scheduled_time: time
     exercises: List[RoutineExerciseCreate]
+
+    @field_validator("days_of_week")
+    @classmethod
+    def _valid_days(cls, days: List[int]) -> List[int]:
+        if any(d < 1 or d > 7 for d in days):
+            raise ValueError("days_of_week must be between 1 and 7")
+        return sorted(set(days))
+
+
+class RoutineUpdate(RoutineCreate):
+    # Same fields as a new routine; the patient cannot change.
+    patient_id: UUID4 | None = None
 
 
 class RoutineResponse(BaseModel):
@@ -35,7 +48,7 @@ class RoutineResponse(BaseModel):
     name: str
     start_date: date
     end_date: date
-    day_of_week: int
+    days_of_week: List[int]
     scheduled_time: time
     created_at: datetime
 

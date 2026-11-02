@@ -1,27 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
-import { routes } from "../../router/routes";
-import {
-  deleteRoutine,
-  getRoutinesByPatient,
-  RoutineWithExercises,
-} from "../../services/routineService";
+import React, { useCallback, useState } from "react";
+import { Alert } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import Screen from "../../components/layout/Screen";
 import RoutineCard from "../../components/specialist/RoutineCard";
-import { formatIsoDate, weekdayName } from "../../utils/dates";
+import FabButton from "../../components/ui/FabButton";
 import StateMessage from "../../components/ui/StateMessage";
+import { routes } from "../../router/routes";
+import { deleteRoutine, getRoutinesByPatient, RoutineWithExercises } from "../../services/routineService";
+import { formatDays, formatIsoDate, shortTime } from "../../utils/dates";
 
 export default function RoutineListScreen() {
   const router = useRouter();
@@ -38,25 +24,22 @@ export default function RoutineListScreen() {
       setLoading(false);
       return;
     }
-    setLoading(true);
     setError(null);
     try {
-      const data = await getRoutinesByPatient(patientId);
-      setRoutines(data);
+      setRoutines(await getRoutinesByPatient(patientId));
     } catch (e: any) {
-      setError(e?.message ?? "No se pudieron cargar las rutinas");
+      setError(e?.message ?? "No se pudieron cargar las rutinas.");
     } finally {
       setLoading(false);
     }
   }, [patientId]);
 
-  useEffect(() => {
-    loadRoutines();
-  }, [loadRoutines]);
-
-  const handleCreate = () => {
-    router.push({ pathname: routes.createRoutine as any, params: { patientId } });
-  };
+  // Reload on focus so a routine created or edited on the next screen shows up when coming back.
+  useFocusEffect(
+    useCallback(() => {
+      loadRoutines();
+    }, [loadRoutines])
+  );
 
   const handleDelete = (routine: RoutineWithExercises) => {
     Alert.alert("¿Eliminar rutina?", `Se eliminará "${routine.name}".`, [
@@ -70,10 +53,7 @@ export default function RoutineListScreen() {
             await deleteRoutine(routine.id);
             await loadRoutines();
           } catch (e: any) {
-            Alert.alert(
-              "Error",
-              e?.message ?? "No se pudo eliminar la rutina."
-            );
+            Alert.alert("Error", e?.message ?? "No se pudo eliminar la rutina.");
           } finally {
             setDeletingId(null);
           }
@@ -83,95 +63,45 @@ export default function RoutineListScreen() {
   };
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.banner}>
-        <View style={styles.bannerRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
-            <Text style={styles.bannerTitle}>Rutinas del Paciente</Text>
-          </View>
-        </View>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color={Colors.textPrimary}
-            style={{ marginTop: 40 }}
-          />
-        ) : error ? (
-          <StateMessage error={error} />
-        ) : routines.length === 0 ? (
-          <StateMessage empty="
-            Este paciente aún no tiene rutinas asignadas.
-          " />
-        ) : (
-          routines.map((r) => (
-            <RoutineCard
-              key={r.id}
-              routine={r}
-              dayLabel={weekdayName(r.day_of_week)}
-              rangeLabel={`${formatIsoDate(r.start_date)} – ${formatIsoDate(r.end_date)}`}
-              deleting={deletingId === r.id}
-              onDelete={() => handleDelete(r)}
-            />
-          ))
-        )}
-      </ScrollView>
-
-      <TouchableOpacity
-        style={styles.primaryCta}
-        onPress={handleCreate}
-        activeOpacity={0.85}
-      >
-        <MaterialCommunityIcons
-          name="plus-circle-outline"
-          size={20}
-          color={Colors.textOnDark}
+    <Screen
+      title="Rutinas"
+      subtitle="Las rutinas asignadas a este paciente."
+      onBack={() => router.back()}
+      nav={{ role: "specialist", active: "patients" }}
+      floating={
+        <FabButton
+          mdi="plus"
+          label="Crear rutina"
+          text="Crear rutina"
+          onPress={() => router.push({ pathname: routes.createRoutine as any, params: { patientId } })}
         />
-        <Text style={styles.primaryCtaText}>Crear rutina</Text>
-      </TouchableOpacity>
-
-      <BottomNav role="specialist" active="patients" />
-    </LinearGradient>
+      }
+    >
+      {loading ? (
+        <StateMessage loading />
+      ) : error ? (
+        <StateMessage error={error} />
+      ) : routines.length === 0 ? (
+        <StateMessage empty="Este paciente aún no tiene rutinas asignadas." />
+      ) : (
+        routines.map((r) => (
+          <RoutineCard
+            key={r.id}
+            routine={r}
+            dayLabel={formatDays(r.days_of_week)}
+            timeLabel={shortTime(r.scheduled_time)}
+            rangeLabel={`${formatIsoDate(r.start_date)} – ${formatIsoDate(r.end_date)}`}
+            deleting={deletingId === r.id}
+            onEdit={() =>
+              router.push({
+                pathname: routes.createRoutine as any,
+                params: { patientId, routineId: r.id },
+              })
+            }
+            onDelete={() => handleDelete(r)}
+          />
+        ))
+      )}
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
-
-  banner: { ...BannerStyle },
-  bannerRow: { flexDirection: "row", alignItems: "center" },
-  bannerSubtitle: {
-    ...AdminType.label,
-    color: Colors.bannerSubtitle,
-    marginBottom: 4,
-  },
-  bannerTitle: {
-    ...AdminType.title2,
-    color: Colors.bannerTitle,
-  },
-
-
-
-  primaryCta: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: Colors.btnPrimary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginHorizontal: 16,
-    marginBottom: 12,
-  },
-  primaryCtaText: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textOnDark,
-  },
-});

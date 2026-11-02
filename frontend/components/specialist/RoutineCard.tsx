@@ -11,12 +11,14 @@ type Props = {
   routine: RoutineWithExercises;
   // Already formatted for display.
   dayLabel: string;
+  timeLabel: string;
   rangeLabel: string;
   deleting: boolean;
+  onEdit: () => void;
   onDelete: () => void;
 };
 
-export default function RoutineCard({ routine, dayLabel, rangeLabel, deleting, onDelete }: Props) {
+export default function RoutineCard({ routine, dayLabel, timeLabel, rangeLabel, deleting, onEdit, onDelete }: Props) {
   return (
     <Card>
       <View style={styles.top}>
@@ -25,6 +27,7 @@ export default function RoutineCard({ routine, dayLabel, rangeLabel, deleting, o
           <Text style={AdminType.bodyStrong}>{routine.name}</Text>
           <Text style={[AdminType.secondary, styles.meta]}>{routine.exercises.length} ejercicios</Text>
         </View>
+        <IconButton mdi="pencil-outline" label="Editar rutina" onPress={onEdit} />
         <IconButton
           danger
           mdi="trash-can-outline"
@@ -35,6 +38,7 @@ export default function RoutineCard({ routine, dayLabel, rangeLabel, deleting, o
       </View>
       <View style={styles.badges}>
         <Badge mdi="calendar-week-outline" label={dayLabel} />
+        <Badge mdi="clock-outline" label={timeLabel} />
         <Badge mdi="calendar-range" label={rangeLabel} />
       </View>
     </Card>
