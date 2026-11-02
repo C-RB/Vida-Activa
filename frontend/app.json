@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "Vida Activa",
+    "slug": "vida-activa",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "vidaactiva",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vidaactiva.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1D5FD1",
+        "foregroundImage": "./assets/images/adaptive-foreground.png",
+        "monochromeImage": "./assets/images/adaptive-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vidaactiva.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F6F8FB",
+          "dark": {
+            "backgroundColor": "#172033"
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-web-browser",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Vida Activa necesita la cámara para evaluar los ejercicios en tiempo real."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "72015a62-13b3-4066-b9e2-f5523ed4bda9"
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 Aplicación móvil de **telerrehabilitación** que conecta a especialistas (kinesiólogos, fisioterapeutas) con sus pacientes. El especialista prescribe rutinas de ejercicios y hace seguimiento de la adherencia y el dolor; el paciente ejecuta sus ejercicios desde el celular, guiado por la cámara, y reporta cómo se siente antes y después de cada sesión.
 
-> **Estado:** en desarrollo. El proyecto se está migrando de GitLab a GitHub y el nombre cambió de *ActivaMente* a **Vida Activa**. El rediseño de la interfaz está pendiente. Por ahora la aplicación no se despliega.
+> **Estado:** en desarrollo. El rediseño de la interfaz (guía de estilo v2) está en curso: ya están el Login y el Inicio del paciente. Por ahora la aplicación no se despliega.
 
 ## Qué hace
 
@@ -27,16 +27,14 @@ La app tiene tres roles, cada uno con su propia experiencia:
 
 ```
 .
-├── activamente-back/    API REST (FastAPI + SQLAlchemy + PostgreSQL)
+├── backend/    API REST (FastAPI + SQLAlchemy + PostgreSQL)
 │   ├── app/             routers, modelos, schemas, servicios, seguridad (JWT)
 │   ├── database/        init.sql (esquema) y seed.sql (datos de prueba)
 │   └── tests/           pytest contra un Postgres real
-├── activamente-front/   App móvil (React Native + Expo Router + TypeScript)
+├── frontend/   App móvil (React Native + Expo Router + TypeScript)
 ├── docker-compose.yml   Postgres + backend
 └── .github/workflows/   CI (tests)
 ```
-
-> Las carpetas aún conservan el nombre `activamente-*`; se renombrarán más adelante.
 
 | Capa | Tecnología |
 |------|-----------|
@@ -81,7 +79,7 @@ La primera vez, la base se crea con `init.sql` y se llena con `seed.sql` (usuari
 
 ### 3. App móvil
 ```bash
-cd activamente-front
+cd frontend
 npm install
 npx expo start
 ```
@@ -93,14 +91,13 @@ EXPO_PUBLIC_API_URL=http://192.168.x.x:8000 npx expo start
 ### 4. Tests del backend
 ```bash
 docker compose up -d db
-cd activamente-back
+cd backend
 pip install -r requirements-dev.txt
 pytest
 ```
-Los tests crean una base limpia `activamente_test`, cargan `init.sql` y `seed.sql`, y la eliminan al terminar. El mismo flujo corre en GitHub Actions ([ci.yml](.github/workflows/ci.yml)).
+Los tests crean una base limpia `vida_activa_test`, cargan `init.sql` y `seed.sql`, y la eliminan al terminar. El mismo flujo corre en GitHub Actions ([ci.yml](.github/workflows/ci.yml)).
 
 ## Pendiente
-- Rediseño de la interfaz.
-- Renombrar carpetas, paquetes y textos de *ActivaMente* a *Vida Activa*.
+- Rediseño del resto de las pantallas (paciente, especialista y admin).
 - Migraciones de base de datos (hoy solo existen `init.sql` / `seed.sql`).
 - Despliegue (omitido por ahora).

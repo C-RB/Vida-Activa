@@ -1,0 +1,307 @@
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.core.deps import get_current_user, require_specialist
+from app.core.security import hash_password
+from app.models.user_model import User, UserRole
+from app.models.patient_model import Patient
+from app.models.specialist_patient_model import SpecialistPatient
+
+from app.schemas.user_schema import UserResponse
+from app.services.temp_password import generate_temp_password
+from app.services.patient_metrics import (
+    get_patient_alert,
+    get_patient_metrics_and_sessions,
+)
+from app.schemas.patient_schema import (
+    PatientResponse,
+    PatientStatusUpdate,
+    AssignPatientRequest,
+    CreatePatientRequest,
+    PatientListResponse,
+)
+
+router = APIRouter(prefix="/api/patients", tags=["patients"])
+
+
+def normalize_rut(rut: str) -> str:
+    """
+    Normalizes a RUT to compare with the stored one: strips dots, spaces and hyphens and uppercases it.
+    The frontend sends it formatted ("98.765.432-1") but the DB stores it without dots ("98765432-1").
+    """
+    return (rut or "").replace(".", "").replace(" ", "").replace("-", "").upper()
+
+
+def _rut_column_normalized(column):
+    """Same as normalize_rut() but applied in SQL on the column, so matching does not depend on the stored format."""
+    return func.upper(
+        func.replace(func.replace(func.replace(column, ".", ""), " ", ""), "-", "")
+    )
+
+
+def canonical_rut(rut: str) -> str:
+    """Stored form: digits plus hyphen and check digit, no dots (e.g. "12345678-9")."""
+    plain = normalize_rut(rut)
+    return f"{plain[:-1]}-{plain[-1]}" if len(plain) > 1 else plain
+
+
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_patient(
+    body: CreatePatientRequest,
+    db: Session = Depends(get_db),
+    specialist: User = Depends(require_specialist),
+):
+    """
+    A specialist registers a new patient, who is added to their own list right away. Like the admin flow, the
+    temporary password is returned once so the specialist can hand it over in person.
+    """
+    if len(normalize_rut(body.rut)) < 2:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="RUT inválido")
+    if db.query(User).filter(User.email == body.email).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ya existe un usuario con ese correo")
+    if db.query(Patient).filter(_rut_column_normalized(Patient.rut) == normalize_rut(body.rut)).first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un paciente con ese RUT. Búsquelo por RUT para agregarlo a su lista.",
+        )
+
+    first_name, last_name = body.split_name()
+    temp_password = generate_temp_password(first_name)
+
+    user = User(
+        first_name=first_name,
+        last_name=last_name,
+        email=body.email,
+        password_hash=hash_password(temp_password),
+        role=UserRole.PATIENT,
+    )
+    db.add(user)
+    db.flush()  # get user.id before committing
+
+    db.add(Patient(
+        user_id=user.id,
+        rut=canonical_rut(body.rut),
+        age=body.age,
+        gender=body.gender,
+        phone=body.phone,
+        address=body.address,
+    ))
+    db.add(SpecialistPatient(specialist_id=specialist.id, patient_id=user.id))
+    db.commit()
+    db.refresh(user)
+
+    return UserResponse(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role=user.role,
+        temp_password=temp_password,
+    )
+
+
+@router.get("/", response_model=list[PatientListResponse])
+def get_patients(
+    limit: int = Query(50, ge=1, le=100, description="Max rows to return (paginación)"),
+    offset: int = Query(0, ge=0, description="Rows to skip (paginación)"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # A specialist only lists their assigned patients; admins list everyone; patients cannot list.
+    if current_user.role not in (UserRole.SPECIALIST, UserRole.ADMIN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes acceso a esta lista")
+
+    query = db.query(User).filter(User.role == UserRole.PATIENT)
+    if current_user.role == UserRole.SPECIALIST:
+        query = query.join(SpecialistPatient, SpecialistPatient.patient_id == User.id).filter(
+            SpecialistPatient.specialist_id == current_user.id
+        )
+    patients = query.order_by(User.created_at.desc()).offset(offset).limit(limit).all()
+    details = {
+        row.user_id: row
+        for row in db.query(Patient).filter(Patient.user_id.in_([p.id for p in patients])).all()
+    }
+    results = []
+
+    for p in patients:
+        has_alert, alert_message = get_patient_alert(db, p.id)
+        detail = details.get(p.id)
+
+        results.append(
+            PatientListResponse(
+                id=str(p.id),
+                first_name=p.first_name,
+                last_name=p.last_name,
+                email=p.email,
+                created_at=p.created_at,
+                hasAlert=has_alert,
+                alertMessage=alert_message,
+                rut=detail.rut if detail else None,
+                age=detail.age if detail else None,
+            )
+        )
+    return results
+
+@router.get("/by-rut/{rut}", response_model=PatientResponse)
+def get_patient_by_rut(
+    rut: str,
+    db: Session = Depends(get_db),
+    specialist: User = Depends(require_specialist),
+):
+    patient = db.query(Patient).filter(
+        _rut_column_normalized(Patient.rut) == normalize_rut(rut)
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paciente no encontrado. Verifica el RUT.")
+
+    user = db.query(User).filter(User.id == patient.user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paciente no encontrado.")
+
+    assigned = (
+        db.query(SpecialistPatient)
+        .filter(
+            SpecialistPatient.specialist_id == specialist.id,
+            SpecialistPatient.patient_id == patient.user_id,
+        )
+        .first()
+        is not None
+    )
+
+    # Before the assignment the specialist only sees who the patient is, not their contact data or history.
+    if not assigned:
+        return PatientResponse(
+            id=str(patient.user_id),
+            fullName=f"{user.first_name} {user.last_name}".strip(),
+            rut=patient.rut,
+            age=patient.age,
+            gender=patient.gender,
+            email="",
+            active=patient.is_active,
+            assigned=False,
+        )
+
+    metrics, sessions_list = get_patient_metrics_and_sessions(db, str(patient.user_id))
+
+    return PatientResponse(
+        id=str(patient.user_id),
+        fullName=f"{user.first_name} {user.last_name}".strip(),
+        rut=patient.rut,
+        age=patient.age,
+        gender=patient.gender,
+        email=user.email,
+        phone=patient.phone,
+        address=patient.address,
+        active=patient.is_active,
+        metrics=metrics,
+        sessions=sessions_list,
+        assigned=True,
+    )
+
+
+@router.get("/{patient_id}", response_model=PatientResponse)
+def get_patient_by_id(
+    patient_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    patient = db.query(User).filter(User.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    # A specialist can only see patients assigned in specialist_patient; other roles (admin) are not restricted.
+    if current_user.role == UserRole.SPECIALIST:
+        assigned = (
+            db.query(SpecialistPatient)
+            .filter(
+                SpecialistPatient.specialist_id == current_user.id,
+                SpecialistPatient.patient_id == patient_id,
+            )
+            .first()
+        )
+        if not assigned:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes acceso a este paciente")
+
+    # patients.is_active is the source of truth for the patient status (same as /by-rut and PATCH /status).
+    patient_row = db.query(Patient).filter(Patient.user_id == patient_id).first()
+    
+    metrics, sessions_list = get_patient_metrics_and_sessions(db, patient_id)
+    
+    return PatientResponse(
+        id=str(patient.id),
+        fullName=f"{patient.first_name} {patient.last_name}".strip(),
+        email=patient.email,
+        active=patient_row.is_active if patient_row else True,
+        rut=patient_row.rut if patient_row else None,
+        age=patient_row.age if patient_row else None,
+        gender=patient_row.gender if patient_row else None,
+        phone=patient_row.phone if patient_row else None,
+        address=patient_row.address if patient_row else None,
+        metrics=metrics,
+        sessions=sessions_list
+    )
+
+# Assigns a patient (RUT in the body) to the specialist taken from the token.
+@router.post("/assign", status_code=status.HTTP_200_OK)
+def assign_patient_to_specialist(
+    body: AssignPatientRequest,
+    db: Session = Depends(get_db),
+    specialist: User = Depends(require_specialist),
+):
+    patient = db.query(Patient).filter(
+        _rut_column_normalized(Patient.rut) == normalize_rut(body.rut)
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paciente no encontrado. Verifica el RUT.")
+
+    already_assigned = (
+        db.query(SpecialistPatient)
+        .filter(
+            SpecialistPatient.specialist_id == specialist.id,
+            SpecialistPatient.patient_id == patient.user_id,
+        )
+        .first()
+    )
+    if already_assigned:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Paciente ya está asignado a este especialista")
+
+    db.add(SpecialistPatient(specialist_id=specialist.id, patient_id=patient.user_id))
+    db.commit()
+
+    return {"message": "Paciente asignado correctamente"}
+
+@router.patch("/{patient_id}/status", response_model=PatientResponse)
+def update_patient_status(
+    patient_id: str,
+    body: PatientStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = db.query(User).filter(User.id == patient_id, User.role == UserRole.PATIENT).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    patient = db.query(Patient).filter(Patient.user_id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    patient.is_active = body.active
+    db.commit()
+    db.refresh(patient)
+
+    return PatientResponse(
+        id=str(user.id),
+        fullName=f"{user.first_name} {user.last_name}".strip(),
+        email=user.email,
+        active=patient.is_active,
+        rut=patient.rut,
+        age=patient.age,
+        gender=patient.gender,
+        phone=patient.phone,
+        address=patient.address,
+    )
+
+
+

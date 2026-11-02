@@ -1,0 +1,109 @@
+import { apiFetch } from "./apiClient";
+import type { UserRole } from "./authStore";
+
+export type UserRoleKey = "admin" | "specialist" | "patient";
+
+export const ROLE_LABEL: Record<UserRoleKey, string> = {
+  admin: "Administrador",
+  specialist: "Especialista",
+  patient: "Paciente",
+};
+
+const toRoleKey = (role: UserRole): UserRoleKey =>
+  role.toLowerCase() as UserRoleKey;
+
+interface UserListItemDto {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string | null;
+}
+
+export interface AdminUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRoleKey;
+  isActive: boolean;
+  createdAt: string | null;
+}
+
+const toAdminUser = (dto: UserListItemDto): AdminUser => ({
+  id: dto.id,
+  fullName: `${dto.first_name} ${dto.last_name}`.trim(),
+  email: dto.email,
+  role: toRoleKey(dto.role),
+  isActive: dto.is_active,
+  createdAt: dto.created_at,
+});
+
+export interface ListUsersParams {
+  search?: string;
+  role?: UserRoleKey;
+  limit?: number;
+  offset?: number;
+}
+
+export const listUsers = async (
+  params: ListUsersParams = {}
+): Promise<AdminUser[]> => {
+  const query = new URLSearchParams();
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.role) query.set("role", params.role);
+  if (params.limit != null) query.set("limit", String(params.limit));
+  if (params.offset != null) query.set("offset", String(params.offset));
+
+  const qs = query.toString();
+  const data = await apiFetch<UserListItemDto[]>(
+    `/api/users${qs ? `?${qs}` : ""}`
+  );
+  return data.map(toAdminUser);
+};
+
+export const setUserStatus = async (
+  id: string,
+  isActive: boolean
+): Promise<AdminUser> => {
+  const data = await apiFetch<UserListItemDto>(`/api/users/${id}/status`, {
+    method: "PATCH",
+    body: { is_active: isActive },
+  });
+  return toAdminUser(data);
+};
+
+// The backend generates a temporary password and returns it once, so the admin can hand it to the new user.
+
+export interface CreateUserPayload {
+  fullName: string;
+  email: string;
+  role: "patient" | "specialist";
+  rut?: string;
+  phone?: string;
+  age?: number;
+  gender?: string;
+  address?: string;
+  specialty?: string;
+}
+
+export interface CreatedUser {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: UserRole;
+  temp_password?: string;
+}
+
+export const createUserApi = async (
+  userData: CreateUserPayload
+): Promise<CreatedUser> =>
+  apiFetch<CreatedUser>("/api/users", {
+    method: "POST",
+    body: {
+      ...userData,
+      email: userData.email.trim().toLowerCase(),
+    },
+  });

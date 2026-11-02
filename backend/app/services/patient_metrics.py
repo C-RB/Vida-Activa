@@ -1,0 +1,82 @@
+"""Patient domain logic shared by routers (kept here so routers do not import from each other)."""
+
+from datetime import datetime, timedelta
+
+from sqlalchemy.orm import Session
+
+from app.models.session import Session as SessionModel
+from app.models.survey_model import Survey
+from app.models.routine_model import Routine
+from app.schemas.patient_schema import ComplianceMetrics, SessionItem
+
+
+ALERT_INACTIVE = "Inactivo por más de 5 días"
+ALERT_PAIN = "Nivel de dolor alto"
+ALERT_NO_SESSIONS = "Sin sesiones registradas"
+
+# Machine-readable kind of each alert message, so clients can pick an icon.
+ALERT_KINDS = {ALERT_INACTIVE: "inactive", ALERT_PAIN: "pain", ALERT_NO_SESSIONS: "no_sessions"}
+
+
+def get_patient_alert(db: Session, patient_id):
+    """
+    Whether a patient has an active alert, and its message. Criteria, in order: last session over 5 days ago →
+    inactive; PRE survey of the last session with pain_level > 7 → high pain; no sessions → no records.
+    Returns (has_alert, alert_message).
+    """
+    has_alert = False
+    alert_message = None
+
+    last_session = db.query(SessionModel).filter(SessionModel.patient_id == patient_id).order_by(SessionModel.date.desc()).first()
+
+    if last_session:
+        if last_session.date and (datetime.now() - last_session.date) > timedelta(days=5):
+            has_alert = True
+            alert_message = ALERT_INACTIVE
+
+        last_survey = db.query(Survey).filter(Survey.session_id == last_session.id).first()
+        if last_survey and last_survey.pain_level and last_survey.pain_level > 7:
+            has_alert = True
+            alert_message = ALERT_PAIN
+    else:
+        has_alert = True
+        alert_message = ALERT_NO_SESSIONS
+
+    return has_alert, alert_message
+
+
+def get_patient_metrics_and_sessions(db: Session, patient_id: str):
+    all_sessions = db.query(SessionModel).filter(SessionModel.patient_id == patient_id).all()
+
+    total_sessions = len(all_sessions)
+    completed_sessions = sum(1 for s in all_sessions if s.is_completed)
+    adherence = int((completed_sessions / total_sessions * 100) if total_sessions > 0 else 0)
+
+    metrics = ComplianceMetrics(
+        sessionsCompleted=completed_sessions,
+        sessionsTotal=total_sessions,
+        adherencePercent=adherence
+    )
+
+    recent_sessions = db.query(SessionModel, Routine).outerjoin(
+        Routine, SessionModel.routine_id == Routine.id
+    ).filter(
+        SessionModel.patient_id == patient_id
+    ).order_by(SessionModel.date.desc()).limit(10).all()
+
+    sessions_list = []
+    for s, r in recent_sessions:
+        duration_str = f"{s.duration_minutes} min" if s.duration_minutes else "N/A"
+        date_str = s.date.strftime("%d %b · %H:%M") if s.date else "Desconocido"
+        sessions_list.append(
+            SessionItem(
+                id=str(s.id),
+                name=r.name if r and r.name else "Sesión",
+                duration=duration_str,
+                date=date_str,
+                dateIso=s.date.isoformat() if s.date else None,
+                completed=s.is_completed or False
+            )
+        )
+
+    return metrics, sessions_list

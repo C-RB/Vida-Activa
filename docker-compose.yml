@@ -1,9 +1,9 @@
 services:
   db:
     build:
-      context: ./activamente-back
+      context: ./backend
       dockerfile: Dockerfile.db
-    container_name: activamente-db
+    container_name: vida-activa-db
     restart: unless-stopped
     env_file: .env
     environment:
@@ -14,8 +14,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./activamente-back
-    container_name: activamente-back
+    build: ./backend
+    container_name: vida-activa-backend
     restart: unless-stopped
     env_file: .env
     environment:
