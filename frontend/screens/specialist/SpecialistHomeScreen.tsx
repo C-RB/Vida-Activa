@@ -55,7 +55,7 @@ export default function SpecialistHomeScreen() {
           mdi="plus"
           label="Agregar paciente"
           text="Agregar paciente"
-          onPress={() => router.push(routes.assignPatient as any)}
+          onPress={() => router.push(routes.createPatient as any)}
         />
       }
     >

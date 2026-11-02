@@ -9,6 +9,8 @@ from app.models.user_model import User, UserRole
 from app.models.patient_model import Patient
 from app.models.specialist_patient_model import SpecialistPatient
 
+from app.schemas.user_schema import UserResponse
+from app.services.temp_password import generate_temp_password
 from app.services.patient_metrics import (
     get_patient_alert,
     get_patient_metrics_and_sessions,
@@ -17,6 +19,7 @@ from app.schemas.patient_schema import (
     PatientResponse,
     PatientStatusUpdate,
     AssignPatientRequest,
+    CreatePatientRequest,
     PatientListResponse,
 )
 
@@ -35,6 +38,67 @@ def _rut_column_normalized(column):
     """Same as normalize_rut() but applied in SQL on the column, so matching does not depend on the stored format."""
     return func.upper(
         func.replace(func.replace(func.replace(column, ".", ""), " ", ""), "-", "")
+    )
+
+
+def canonical_rut(rut: str) -> str:
+    """Stored form: digits plus hyphen and check digit, no dots (e.g. "12345678-9")."""
+    plain = normalize_rut(rut)
+    return f"{plain[:-1]}-{plain[-1]}" if len(plain) > 1 else plain
+
+
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_patient(
+    body: CreatePatientRequest,
+    db: Session = Depends(get_db),
+    specialist: User = Depends(require_specialist),
+):
+    """
+    A specialist registers a new patient, who is added to their own list right away. Like the admin flow, the
+    temporary password is returned once so the specialist can hand it over in person.
+    """
+    if len(normalize_rut(body.rut)) < 2:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="RUT inválido")
+    if db.query(User).filter(User.email == body.email).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ya existe un usuario con ese correo")
+    if db.query(Patient).filter(_rut_column_normalized(Patient.rut) == normalize_rut(body.rut)).first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un paciente con ese RUT. Búsquelo por RUT para agregarlo a su lista.",
+        )
+
+    first_name, last_name = body.split_name()
+    temp_password = generate_temp_password(first_name)
+
+    user = User(
+        first_name=first_name,
+        last_name=last_name,
+        email=body.email,
+        password_hash=hash_password(temp_password),
+        role=UserRole.PATIENT,
+    )
+    db.add(user)
+    db.flush()  # get user.id before committing
+
+    db.add(Patient(
+        user_id=user.id,
+        rut=canonical_rut(body.rut),
+        age=body.age,
+        gender=body.gender,
+        phone=body.phone,
+        address=body.address,
+    ))
+    db.add(SpecialistPatient(specialist_id=specialist.id, patient_id=user.id))
+    db.commit()
+    db.refresh(user)
+
+    return UserResponse(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role=user.role,
+        temp_password=temp_password,
     )
 
 

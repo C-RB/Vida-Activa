@@ -151,3 +151,23 @@ export const assignPatientToSpecialist = async (rut: string): Promise<void> => {
     body: { rut },
   });
 };
+
+export interface NewPatient {
+  fullName: string;
+  email: string;
+  rut: string;
+  phone?: string;
+  age?: number;
+  gender?: string;
+  address?: string;
+}
+
+export interface CreatedPatient {
+  id: string;
+  email: string;
+  // Returned once, so the specialist can hand it to the patient.
+  temp_password: string;
+}
+
+export const createPatient = (data: NewPatient): Promise<CreatedPatient> =>
+  apiFetch<CreatedPatient>("/api/patients", { method: "POST", auth: true, body: data });

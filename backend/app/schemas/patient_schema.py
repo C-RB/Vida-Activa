@@ -46,6 +46,20 @@ class PatientCreateResponse(PatientBase):
     model_config = {"from_attributes": True}
 
 
+class CreatePatientRequest(BaseModel):
+    fullName: str
+    email: EmailStr
+    rut: str
+    phone: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None
+
+    def split_name(self) -> tuple[str, str]:
+        parts = self.fullName.strip().split(" ", 1)
+        return parts[0], (parts[1] if len(parts) > 1 else "")
+
+
 class PatientResponse(BaseModel):
     id: str
     fullName: str

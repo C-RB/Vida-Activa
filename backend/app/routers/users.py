@@ -1,6 +1,3 @@
-import secrets
-import string
-import unicodedata
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -10,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.deps import require_admin
 from app.core.security import hash_password
+from app.services.temp_password import generate_temp_password
 from app.models.user_model import User, UserRole
 from app.models.patient_model import Patient
 from app.models.specialist_model import Specialist
@@ -25,20 +23,8 @@ from app.schemas.user_schema import (
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-_TEMP_PASSWORD_SYMBOLS = "!#$"
 
 
-def _generate_temp_password(name: str) -> str:
-    """Memorable temporary password: Name + 3 digits + 1 symbol (e.g. "Juan704#"); the random part differs each time."""
-    # Normalize: first token, no accents, ASCII letters only, capitalized.
-    first_token = name.strip().split(" ")[0] if name and name.strip() else ""
-    normalized = unicodedata.normalize("NFKD", first_token)
-    ascii_only = "".join(c for c in normalized if c.isascii() and c.isalpha())
-    base = ascii_only.capitalize() or "User"
-
-    digits = "".join(secrets.choice(string.digits) for _ in range(3))
-    symbol = secrets.choice(_TEMP_PASSWORD_SYMBOLS)
-    return f"{base}{digits}{symbol}"
 
 
 @router.get("", response_model=list[UserListItem])
@@ -112,7 +98,7 @@ def create_user(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
     first_name, last_name = body.split_name()
-    temp_password = _generate_temp_password(first_name)
+    temp_password = generate_temp_password(first_name)
 
     user = User(
         first_name=first_name,

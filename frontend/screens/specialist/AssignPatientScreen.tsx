@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../components/layout/Screen";
+import AddPatientMode from "../../components/specialist/AddPatientMode";
 import Avatar from "../../components/ui/Avatar";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -75,10 +76,12 @@ export default function AssignPatientScreen() {
   return (
     <Screen
       title="Agregar paciente"
-      subtitle="Busque por RUT a un paciente ya registrado y agréguelo a su lista."
+      subtitle="Busque por RUT a un paciente que ya esté registrado y agréguelo a su lista."
       onBack={() => router.back()}
       floating={<Toast message={toast} onHide={() => setToast(null)} />}
     >
+      <AddPatientMode active="existing" />
+
       <TextField
         label="RUT del paciente"
         value={rut}
