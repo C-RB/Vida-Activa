@@ -1,172 +1,215 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import BottomNav from "../../components/layout/BottomNav";
-import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
+import Screen from "../../components/layout/Screen";
+import ActionRow from "../../components/ui/ActionRow";
+import Avatar from "../../components/ui/Avatar";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import ChangePasswordDialog from "../../components/ui/ChangePasswordDialog";
+import ContactRow from "../../components/ui/ContactRow";
+import FormDialog from "../../components/ui/FormDialog";
+import StateMessage from "../../components/ui/StateMessage";
+import TextField from "../../components/ui/TextField";
+import Toast, { ToastMessage } from "../../components/ui/Toast";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
+import { routes } from "../../router/routes";
 import { clearAuth } from "../../services/authStore";
-import { getSpecialistProfile, SpecialistProfile } from "../../services/profileService";
-import InfoRow from "../../components/ui/InfoRow";
-import SectionTitle from "../../components/ui/SectionTitle";
-
-
-const PLACEHOLDER = "No establecido";
+import { getSpecialistProfile, SpecialistProfile, updateSpecialistProfile } from "../../services/profileService";
+import { getDashboard } from "../../services/specialistService";
 
 export default function SpecialistProfileScreen() {
   const router = useRouter();
+  const { type } = useDensity();
 
   const [profile, setProfile] = useState<SpecialistProfile | null>(null);
+  const [patients, setPatients] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", specialty: "", phone: "" });
+
 
   useEffect(() => {
     let mounted = true;
-    getSpecialistProfile()
-      .then((p) => mounted && setProfile(p))
-      .catch(() => mounted && setProfile(null))
+    Promise.all([
+      getSpecialistProfile().catch(() => null),
+      getDashboard()
+        .then((d) => d.stats.total_patients)
+        .catch(() => null),
+    ])
+      .then(([p, count]) => {
+        if (!mounted) return;
+        setProfile(p);
+        setPatients(count);
+      })
       .finally(() => mounted && setLoading(false));
     return () => {
       mounted = false;
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuth();
-    router.replace("/" as any);
+  const openEdit = () => {
+    setForm({
+      name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim(),
+      specialty: profile?.specialty ?? "",
+      phone: profile?.phone ?? "",
+    });
+    setEditOpen(true);
   };
 
-  const fullName =
-    [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim() || PLACEHOLDER;
+  const handleSave = async () => {
+    if (saving) return;
+    if (!form.name.trim()) {
+      setToast({ text: "El nombre no puede estar vacío.", tone: "danger" });
+      return;
+    }
+    // A single "full name" field: the first token is the first name, the rest the last name.
+    const parts = form.name.trim().split(/\s+/);
+    const first_name = parts.shift() ?? "";
+    try {
+      setSaving(true);
+      setProfile(
+        await updateSpecialistProfile({
+          first_name,
+          last_name: parts.join(" "),
+          specialty: form.specialty.trim(),
+          phone: form.phone.trim(),
+        })
+      );
+      setEditOpen(false);
+      setToast({ text: "Perfil actualizado correctamente.", tone: "success" });
+    } catch (e: any) {
+      setToast({ text: e?.message ?? "No se pudo actualizar el perfil.", tone: "danger" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    router.replace(routes.login as any);
+  };
+
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim();
+  const summary = [
+    profile?.specialty,
+    patients != null ? `${patients} ${patients === 1 ? "paciente" : "pacientes"}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.banner}>
-        <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
-        <Text style={styles.bannerTitle}>Mi Perfil</Text>
-      </View>
-
+    <Screen
+      title="Mi perfil"
+      nav={{ role: "specialist", active: "profile" }}
+      floating={<Toast message={toast} onHide={() => setToast(null)} />}
+    >
       {loading ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.btnTeal} />
-        </View>
+        <StateMessage loading />
+      ) : !profile ? (
+        <StateMessage error="No se pudo cargar su perfil." />
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.profileCard}>
-            <View style={styles.avatarWrap}>
-              <MaterialCommunityIcons name="account-circle-outline" size={72} color={Colors.textPrimary} />
+        <>
+          <Card style={styles.header}>
+            <Avatar name={fullName} size={60} />
+            <View style={styles.flex}>
+              <Text style={[type.title2, styles.textPrimary]}>{fullName}</Text>
+              {summary !== "" && (
+                <Text style={[type.secondary, styles.textSecondary]}>{summary}</Text>
+              )}
             </View>
-            <Text style={styles.profileName}>{fullName}</Text>
-            <View style={styles.specialtyPill}>
-              <MaterialCommunityIcons name="stethoscope" size={14} color={Colors.textOnDark} />
-              <Text style={styles.specialtyText}>{profile?.specialty || "Especialista"}</Text>
-            </View>
-          </View>
+          </Card>
 
-          <SectionTitle>Información personal</SectionTitle>
-          <View style={styles.infoCard}>
-            <InfoRow mdi="email-outline" label="Correo electrónico" value={profile?.email || PLACEHOLDER} />
-            <View style={styles.divider} />
-            <InfoRow mdi="phone-outline" label="Teléfono" value={profile?.phone || PLACEHOLDER} />
-            <View style={styles.divider} />
-            <InfoRow mdi="card-account-details-outline" label="RUT" value={profile?.rut || PLACEHOLDER} />
-          </View>
+          <Card>
+            <ContactRow mdi="email-outline" text={profile.email} />
+            <ContactRow mdi="phone-outline" text={profile.phone || "Teléfono no establecido"} />
+            <ContactRow
+              mdi="card-account-details-outline"
+              text={profile.rut || "RUT no establecido"}
+            />
+          </Card>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="logout" size={20} color={Colors.textOnDark} />
-            <Text style={styles.logoutText}>Cerrar sesión</Text>
-          </TouchableOpacity>
-        </ScrollView>
+          <Card style={styles.list}>
+            <ActionRow mdi="pencil-outline" label="Editar perfil" onPress={openEdit} />
+            <View style={styles.divider} />
+            <ActionRow
+              mdi="lock-outline"
+              label="Cambiar clave"
+              onPress={() => setPasswordOpen(true)}
+            />
+          </Card>
+
+          <Button title="Cerrar sesión" variant="destructive" onPress={handleLogout} />
+        </>
       )}
 
-      <BottomNav role="specialist" active="profile" />
-    </LinearGradient>
+      <FormDialog
+        visible={editOpen}
+        title="Editar perfil"
+        confirmLabel="Guardar"
+        loading={saving}
+        onConfirm={handleSave}
+        onCancel={() => setEditOpen(false)}
+      >
+        <TextField
+          label="Nombre completo"
+          value={form.name}
+          onChangeText={(name) => setForm({ ...form, name })}
+          placeholder="Su nombre"
+        />
+        <TextField
+          label="Especialidad"
+          value={form.specialty}
+          onChangeText={(specialty) => setForm({ ...form, specialty })}
+          placeholder="Ej. Kinesiología"
+        />
+        <TextField
+          label="Teléfono"
+          value={form.phone}
+          onChangeText={(phone) => setForm({ ...form, phone })}
+          placeholder="+56 9 1234 5678"
+          keyboardType="phone-pad"
+        />
+        <TextField label="Correo electrónico (no editable)" value={profile?.email ?? ""} editable={false} />
+      </FormDialog>
+
+      <ChangePasswordDialog
+        visible={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+        onResult={setToast}
+      />
+    </Screen>
   );
 }
 
-
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
-
-  banner: { ...BannerStyle },
-  bannerSubtitle: {
-    ...AdminType.label,
-    color: Colors.bannerSubtitle,
-    marginBottom: 4,
-  },
-  bannerTitle: {
-    ...AdminType.title2,
-    color: Colors.bannerTitle,
-  },
-
-  profileCard: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 16,
-    paddingVertical: 22,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-  },
-  avatarWrap: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  profileName: {
-    ...AdminType.button,
-    color: Colors.textPrimary,
-  },
-  profileMeta: {
-    ...AdminType.label,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  specialtyPill: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    backgroundColor: Colors.btnTeal,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginTop: 10,
-  },
-  specialtyText: {
-    ...AdminType.labelStrong,
-    color: Colors.textOnDark,
-  },
-
-  infoCard: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 16,
+    gap: 14,
     padding: 16,
-    marginBottom: 20,
+  },
+  list: {
+    gap: 0,
+    padding: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(23, 32, 51, 0.1)",
-    marginVertical: 4,
+    marginHorizontal: 12,
+    backgroundColor: Colors.border,
   },
-
-  logoutBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: Colors.btnDanger,
-    borderRadius: 12,
-    paddingVertical: 14,
+  flex: {
+    flex: 1,
   },
-  logoutText: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textOnDark,
+  textPrimary: {
+    color: Colors.textPrimary,
+  },
+  textSecondary: {
+    color: Colors.textSecondary,
   },
 });

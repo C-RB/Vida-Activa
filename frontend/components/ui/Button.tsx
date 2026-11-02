@@ -9,8 +9,8 @@ import {
 import { Colors, Radius } from "../../constants/theme";
 import { useDensity } from "../../hooks/useDensity";
 
-// One primary action per screen; "danger" only for finishing or irreversible actions.
-type Variant = "primary" | "soft" | "outline" | "danger" | "text";
+// One primary action per screen; "danger" (outline) and "destructive" (filled) only for finishing or irreversible actions.
+type Variant = "primary" | "soft" | "outline" | "danger" | "destructive" | "text";
 
 type Props = {
   title: string;
@@ -28,6 +28,7 @@ const PALETTE: Record<Variant, { bg: string; fg: string; border?: string }> = {
   soft: { bg: Colors.primarySoft, fg: Colors.primary },
   outline: { bg: Colors.surface, fg: Colors.primary, border: Colors.primary },
   danger: { bg: Colors.surface, fg: Colors.danger, border: Colors.danger },
+  destructive: { bg: Colors.danger, fg: Colors.onPrimary },
   text: { bg: "transparent", fg: Colors.primary },
 };
 
