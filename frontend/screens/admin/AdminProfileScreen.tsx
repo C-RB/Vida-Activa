@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../components/layout/Screen";
 import ActionRow from "../../components/ui/ActionRow";
+import ChangePasswordDialog from "../../components/ui/ChangePasswordDialog";
 import Avatar from "../../components/ui/Avatar";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -16,7 +17,7 @@ import Toast, { ToastMessage } from "../../components/ui/Toast";
 import { Colors, Type } from "../../constants/theme";
 import { routes } from "../../router/routes";
 import { clearAuth } from "../../services/authStore";
-import { changePassword, getAdminProfile, updateAdminProfile } from "../../services/profileService";
+import { getAdminProfile, updateAdminProfile } from "../../services/profileService";
 import { formatLongDate } from "../../utils/dates";
 
 type AdminView = {
@@ -28,7 +29,6 @@ type AdminView = {
 };
 
 const EMPTY_ADMIN: AdminView = { name: "", email: "", active: true, phone: "", memberSince: "" };
-const EMPTY_PASSWORDS = { current: "", newPass: "", confirmPass: "" };
 
 const memberSince = (iso: string | null): string => {
   const date = iso ? new Date(iso) : null;
@@ -46,7 +46,6 @@ export default function AdminProfileScreen() {
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", phone: "" });
-  const [passwordForm, setPasswordForm] = useState(EMPTY_PASSWORDS);
 
   useEffect(() => {
     let mounted = true;
@@ -98,34 +97,6 @@ export default function AdminProfileScreen() {
       setToast({ text: "Perfil actualizado correctamente.", tone: "success" });
     } catch (e: any) {
       setToast({ text: e?.message ?? "No se pudo actualizar el perfil.", tone: "danger" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSavePassword = async () => {
-    if (saving) return;
-    const { current, newPass, confirmPass } = passwordForm;
-    if (!current || !newPass || !confirmPass) {
-      setToast({ text: "Complete todos los campos.", tone: "danger" });
-      return;
-    }
-    if (newPass !== confirmPass) {
-      setToast({ text: "Las claves nuevas no coinciden.", tone: "danger" });
-      return;
-    }
-    if (newPass.length < 6) {
-      setToast({ text: "La clave debe tener al menos 6 caracteres.", tone: "danger" });
-      return;
-    }
-    try {
-      setSaving(true);
-      await changePassword({ current_password: current, new_password: newPass });
-      setPasswordOpen(false);
-      setPasswordForm(EMPTY_PASSWORDS);
-      setToast({ text: "Clave cambiada con éxito.", tone: "success" });
-    } catch (e: any) {
-      setToast({ text: e?.message ?? "No se pudo cambiar la clave.", tone: "danger" });
     } finally {
       setSaving(false);
     }
@@ -203,39 +174,11 @@ export default function AdminProfileScreen() {
         />
       </FormDialog>
 
-      <FormDialog
+      <ChangePasswordDialog
         visible={passwordOpen}
-        title="Cambiar clave"
-        confirmLabel="Actualizar"
-        loading={saving}
-        onConfirm={handleSavePassword}
-        onCancel={() => setPasswordOpen(false)}
-      >
-        <TextField
-          label="Clave actual"
-          secure
-          value={passwordForm.current}
-          onChangeText={(current) => setPasswordForm({ ...passwordForm, current })}
-          placeholder="••••••••"
-          autoCapitalize="none"
-        />
-        <TextField
-          label="Clave nueva"
-          secure
-          value={passwordForm.newPass}
-          onChangeText={(newPass) => setPasswordForm({ ...passwordForm, newPass })}
-          placeholder="Mínimo 6 caracteres"
-          autoCapitalize="none"
-        />
-        <TextField
-          label="Confirmar clave nueva"
-          secure
-          value={passwordForm.confirmPass}
-          onChangeText={(confirmPass) => setPasswordForm({ ...passwordForm, confirmPass })}
-          placeholder="Vuelva a escribirla"
-          autoCapitalize="none"
-        />
-      </FormDialog>
+        onClose={() => setPasswordOpen(false)}
+        onResult={setToast}
+      />
     </Screen>
   );
 }
