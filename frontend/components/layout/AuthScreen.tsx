@@ -42,7 +42,6 @@ export default function AuthScreen({ title, subtitle, children }: Props) {
         </View>
 
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
-          <View style={styles.handle} />
           <View style={styles.heading}>
             <Text style={[type.title1, styles.title]}>{title}</Text>
             <Text style={[type.body, styles.subtitle]}>{subtitle}</Text>
@@ -84,13 +83,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: -4 },
     elevation: 6,
-  },
-  handle: {
-    alignSelf: "center",
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: Colors.border,
   },
   heading: {
     gap: 6,
