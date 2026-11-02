@@ -4,12 +4,15 @@ export interface SurveyCreatePre {
     session_id: string;
     pain_level: number;
     fatigue_level: number;
+    mood_level?: number;
     comments?: string;
 }
 
 export interface SurveyCreatePost {
     session_id: string;
     mood_level: number;
+    // Where it hurt during the exercise; omitted when there was no pain.
+    pain_area?: string;
     comments?: string;
 }
 
