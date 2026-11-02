@@ -7,7 +7,6 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import ContactRow from "../../components/ui/ContactRow";
 import StateMessage from "../../components/ui/StateMessage";
-import ToggleRow from "../../components/ui/ToggleRow";
 import { Colors } from "../../constants/theme";
 import { useDensity } from "../../hooks/useDensity";
 import { routes } from "../../router/routes";
@@ -23,10 +22,6 @@ export default function SpecialistProfileScreen() {
   const [patients, setPatients] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // These switches only change the screen for now: there is no notification service to apply them yet.
-  const [onPain, setOnPain] = useState(true);
-  const [onInactive, setOnInactive] = useState(true);
-  const [dailySummary, setDailySummary] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -87,22 +82,7 @@ export default function SpecialistProfileScreen() {
             />
           </Card>
 
-          <Card style={styles.notices}>
-            <Text style={[type.secondary, styles.textSecondary]}>Avisarme cuando…</Text>
-            <ToggleRow label="Un paciente reporta dolor" value={onPain} onChange={setOnPain} />
-            <ToggleRow
-              label="Alguien lleva 3 días sin sesión"
-              value={onInactive}
-              onChange={setOnInactive}
-            />
-            <ToggleRow
-              label="Resumen del día a las 18:00"
-              value={dailySummary}
-              onChange={setDailySummary}
-            />
-          </Card>
-
-          <Button title="Cerrar sesión" variant="text" onPress={handleLogout} />
+          <Button title="Cerrar sesión" variant="destructive" onPress={handleLogout} />
         </>
       )}
     </Screen>
@@ -115,9 +95,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
     padding: 16,
-  },
-  notices: {
-    gap: 0,
   },
   flex: {
     flex: 1,
