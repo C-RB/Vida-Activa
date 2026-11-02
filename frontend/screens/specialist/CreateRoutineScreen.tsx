@@ -1,623 +1,207 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  Platform,
-} from "react-native";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { routes } from "../../router/routes";
-import { AdminType, BannerStyle, Colors, GradientColors } from "../../constants/theme";
-import { getExercises, Exercise } from "../../services/exerciseService";
-import { createRoutine, RoutineCreate } from "../../services/routineService";
-import Stepper from "../../components/ui/Stepper";
+import { StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Screen from "../../components/layout/Screen";
+import ExerciseCard from "../../components/specialist/ExerciseCard";
+import RoutineExerciseCard, { BuilderItem } from "../../components/specialist/RoutineExerciseCard";
+import Avatar from "../../components/ui/Avatar";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import DayPicker from "../../components/ui/DayPicker";
+import FormDialog from "../../components/ui/FormDialog";
 import SectionTitle from "../../components/ui/SectionTitle";
 import StateMessage from "../../components/ui/StateMessage";
+import Stepper from "../../components/ui/Stepper";
+import TextField from "../../components/ui/TextField";
+import TimeField from "../../components/ui/TimeField";
+import { Colors } from "../../constants/theme";
+import { useDensity } from "../../hooks/useDensity";
+import { routes } from "../../router/routes";
+import { Exercise, getExercises } from "../../services/exerciseService";
+import { getPatientById } from "../../services/patientService";
+import { createRoutine } from "../../services/routineService";
 
-// Exercise inside the routine being built (editable by the specialist).
-type BuilderItem = {
-  exercise_id: string;
-  name: string;
-  level: number;
-  total_series: number;
-  total_reps: number;
-  rest_time_seconds: number;
-};
-
-// Backend day_of_week: 1 = Monday … 7 = Sunday.
-const DAYS: { value: number; label: string }[] = [
-  { value: 1, label: "Lun" },
-  { value: 2, label: "Mar" },
-  { value: 3, label: "Mié" },
-  { value: 4, label: "Jue" },
-  { value: 5, label: "Vie" },
-  { value: 6, label: "Sáb" },
-  { value: 7, label: "Dom" },
-];
-
-const LEVELS = [1, 2, 3];
-
+const DEFAULT_WEEKS = 4;
 const pad2 = (n: number) => n.toString().padStart(2, "0");
-// "HH:MM" for display.
-const formatDisplayTime = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const isoDate = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 // "HH:MM:00" for the PostgreSQL TIME column.
-const formatBackendTime = (d: Date) =>
-  `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
+const backendTime = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
+const shortDate = (d: Date) => d.toLocaleDateString("es-CL", { day: "numeric", month: "short" });
+
+const defaultTime = () => {
+  const d = new Date();
+  d.setHours(10, 0, 0, 0);
+  return d;
+};
 
 export default function CreateRoutineScreen() {
   const router = useRouter();
+  const { type } = useDensity();
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
 
-  const [available, setAvailable] = useState<Exercise[]>([]);
-  const [loadingExercises, setLoadingExercises] = useState(true);
-  const [exercisesError, setExercisesError] = useState<string | null>(null);
+  const [patientName, setPatientName] = useState("");
+  const [library, setLibrary] = useState<Exercise[]>([]);
+  const [libraryError, setLibraryError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<BuilderItem[]>([]);
   const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [dayOfWeek, setDayOfWeek] = useState(1);
-  const [scheduledTime, setScheduledTime] = useState<Date | null>(null);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [items, setItems] = useState<BuilderItem[]>([]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [days, setDays] = useState<number[]>([]);
+  const [time, setTime] = useState<Date>(defaultTime);
+  const [weeks, setWeeks] = useState(DEFAULT_WEEKS);
 
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let active = true;
-    (async () => {
-      setLoadingExercises(true);
-      setExercisesError(null);
-      try {
-        const data = await getExercises();
-        if (active) setAvailable(data);
-      } catch (e: any) {
-        if (active)
-          setExercisesError(e?.message ?? "No se pudieron cargar los ejercicios");
-      } finally {
-        if (active) setLoadingExercises(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+    getExercises()
+      .then(setLibrary)
+      .catch((e) => setLibraryError(e?.message ?? "No se pudieron cargar los ejercicios."));
   }, []);
 
-  const isAdded = (id: string) => selected.some((s) => s.exercise_id === id);
+  useEffect(() => {
+    if (!patientId) return;
+    getPatientById(patientId)
+      .then((p) => setPatientName(p.fullName))
+      .catch(() => setPatientName(""));
+  }, [patientId]);
 
-  const handleAdd = (ex: Exercise) => {
-    if (isAdded(ex.id)) return;
-    setSelected((prev) => [
+  // The routine starts today and lasts the chosen number of weeks.
+  const start = new Date();
+  const end = new Date(start);
+  end.setDate(end.getDate() + weeks * 7 - 1);
+
+  const available = library.filter((ex) => !items.some((i) => i.exercise_id === ex.id));
+
+  const addExercise = (ex: Exercise) => {
+    setItems((prev) => [
       ...prev,
-      {
-        exercise_id: ex.id,
-        name: ex.name,
-        level: 1,
-        total_series: 3,
-        total_reps: 10,
-        rest_time_seconds: 30,
-      },
+      { exercise_id: ex.id, name: ex.name, level: 1, total_series: 3, total_reps: 10, rest_time_seconds: 30 },
     ]);
+    setExpanded(ex.id);
+    setPickerOpen(false);
   };
 
-  const handleRemove = (id: string) => {
-    setSelected((prev) => prev.filter((s) => s.exercise_id !== id));
-  };
+  const updateItem = (id: string, changes: Partial<BuilderItem>) =>
+    setItems((prev) => prev.map((i) => (i.exercise_id === id ? { ...i, ...changes } : i)));
 
-  const updateItem = <K extends keyof BuilderItem>(
-    id: string,
-    field: K,
-    value: BuilderItem[K]
-  ) => {
-    setSelected((prev) =>
-      prev.map((s) => (s.exercise_id === id ? { ...s, [field]: value } : s))
-    );
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((i) => i.exercise_id !== id));
+    setExpanded(null);
   };
 
   const handleSave = async () => {
-    setSaveError(null);
-
-    if (!patientId) return setSaveError("No se recibió el paciente.");
-    if (!name.trim()) return setSaveError("Ingresá un nombre para la rutina.");
-    if (selected.length === 0)
-      return setSaveError("Agregá al menos un ejercicio.");
-    if (!startDate.trim() || !endDate.trim())
-      return setSaveError("Completá las fechas (YYYY-MM-DD).");
-    if (!scheduledTime)
-      return setSaveError("Seleccioná la hora de la rutina.");
-
-    const payload: RoutineCreate = {
-      patient_id: patientId,
-      name: name.trim(),
-      start_date: startDate.trim(),
-      end_date: endDate.trim(),
-      day_of_week: dayOfWeek,
-      scheduled_time: formatBackendTime(scheduledTime),
-      exercises: selected.map((s, index) => ({
-        exercise_id: s.exercise_id,
-        order_index: index,
-        level: s.level,
-        total_series: s.total_series,
-        total_reps: s.total_reps,
-        rest_time_seconds: s.rest_time_seconds,
-      })),
-    };
+    setError(null);
+    if (!patientId) return setError("No se recibió el paciente.");
+    if (!name.trim()) return setError("Escriba un nombre para la rutina.");
+    if (items.length === 0) return setError("Añada al menos un ejercicio.");
+    if (days.length === 0) return setError("Elija al menos un día.");
 
     setSaving(true);
+    let saved = 0;
     try {
-      await createRoutine(payload);
-      router.replace({
-        pathname: routes.routineList as any,
-        params: { patientId },
-      });
+      // The backend stores one weekday per routine, so each chosen day is its own routine.
+      for (const day of days) {
+        await createRoutine({
+          patient_id: patientId,
+          name: name.trim(),
+          start_date: isoDate(start),
+          end_date: isoDate(end),
+          day_of_week: day,
+          scheduled_time: backendTime(time),
+          exercises: items.map((item, index) => ({
+            exercise_id: item.exercise_id,
+            order_index: index,
+            level: item.level,
+            total_series: item.total_series,
+            total_reps: item.total_reps,
+            rest_time_seconds: item.rest_time_seconds,
+          })),
+        });
+        saved += 1;
+      }
+      router.replace({ pathname: routes.routineList as any, params: { patientId } });
     } catch (e: any) {
-      setSaveError(e?.message ?? "No se pudo guardar la rutina");
+      const partial = saved > 0 ? ` Se guardaron ${saved} de ${days.length} días.` : "";
+      setError(`${e?.message ?? "No se pudo guardar la rutina."}${partial}`);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => router.push(routes.patientList as any);
-
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <View style={styles.banner}>
-        <Text style={styles.bannerSubtitle}>Panel Profesional</Text>
-        <Text style={styles.bannerTitle}>Crear Rutina</Text>
-      </View>
+    <Screen title="Nueva rutina" onBack={() => router.back()}>
+      {patientName !== "" && (
+        <View style={styles.patient}>
+          <Avatar name={patientName} size={40} />
+          <Text style={[type.bodyStrong, styles.textPrimary]}>Para {patientName}</Text>
+        </View>
+      )}
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <TextField
+        label="Nombre de la rutina"
+        value={name}
+        onChangeText={setName}
+        placeholder="Ej. Rehabilitación lumbar"
+      />
+
+      <SectionTitle>1. Ejercicios</SectionTitle>
+      {items.map((item) => (
+        <RoutineExerciseCard
+          key={item.exercise_id}
+          item={item}
+          expanded={expanded === item.exercise_id}
+          onToggle={() => setExpanded(item.exercise_id)}
+          onRemove={() => removeItem(item.exercise_id)}
+          onChange={(changes) => updateItem(item.exercise_id, changes)}
+        />
+      ))}
+      <Button title="+ Añadir ejercicio" variant="outline" onPress={() => setPickerOpen(true)} />
+
+      <SectionTitle>2. ¿Cuándo le llega el aviso?</SectionTitle>
+      <Card>
+        <Text style={[type.secondary, styles.textSecondary]}>Días</Text>
+        <DayPicker value={days} onChange={setDays} />
+        <TimeField label="Hora del aviso" value={time} onChange={setTime} />
+        <Stepper label="Duración (semanas)" value={weeks} min={1} onChange={setWeeks} />
+        <Text style={[type.secondary, styles.textSecondary]}>
+          Del {shortDate(start)} al {shortDate(end)}
+        </Text>
+      </Card>
+
+      {error && <StateMessage error={error} />}
+      <Button title="Guardar rutina" loading={saving} onPress={handleSave} />
+
+      <FormDialog
+        visible={pickerOpen}
+        title="Añadir ejercicio"
+        confirmLabel="Listo"
+        onConfirm={() => setPickerOpen(false)}
+        onCancel={() => setPickerOpen(false)}
       >
-        <View style={styles.section}>
-          <SectionTitle>Datos de la rutina</SectionTitle>
-
-          <Text style={styles.label}>Nombre</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Ej: Rehabilitación lumbar"
-            placeholderTextColor="rgba(23, 32, 51, 0.4)"
-          />
-
-          <View style={styles.rowBlock}>
-            <View style={styles.fieldHalf}>
-              <Text style={styles.label}>Inicio (YYYY-MM-DD)</Text>
-              <TextInput
-                style={styles.input}
-                value={startDate}
-                onChangeText={setStartDate}
-                placeholder="2026-06-13"
-                placeholderTextColor="rgba(23, 32, 51, 0.4)"
-                autoCapitalize="none"
-              />
-            </View>
-            <View style={styles.fieldHalf}>
-              <Text style={styles.label}>Fin (YYYY-MM-DD)</Text>
-              <TextInput
-                style={styles.input}
-                value={endDate}
-                onChangeText={setEndDate}
-                placeholder="2026-07-13"
-                placeholderTextColor="rgba(23, 32, 51, 0.4)"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
-
-          <Text style={styles.label}>Hora</Text>
-          <TouchableOpacity
-            style={styles.timeInput}
-            onPress={() => setShowTimePicker(true)}
-            activeOpacity={0.8}
-          >
-            <Text
-              style={[
-                styles.timeInputText,
-                !scheduledTime && styles.timeInputPlaceholder,
-              ]}
-            >
-              {scheduledTime ? formatDisplayTime(scheduledTime) : "Seleccionar hora"}
-            </Text>
-            <MaterialCommunityIcons
-              name="clock-outline"
-              size={20}
-              color={Colors.textPrimary}
-            />
-          </TouchableOpacity>
-          {showTimePicker && (
-            <DateTimePicker
-              value={scheduledTime ?? new Date()}
-              mode="time"
-              is24Hour
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              onChange={(event: DateTimePickerEvent, date?: Date) => {
-                // On Android the picker closes itself after the interaction.
-                if (Platform.OS !== "ios") setShowTimePicker(false);
-                if (event.type === "set" && date) setScheduledTime(date);
-              }}
-            />
-          )}
-
-          <Text style={styles.label}>Día de la semana</Text>
-          <View style={styles.daysRow}>
-            {DAYS.map((d) => {
-              const active = dayOfWeek === d.value;
-              return (
-                <TouchableOpacity
-                  key={d.value}
-                  style={[styles.dayBtn, active && styles.dayBtnActive]}
-                  onPress={() => setDayOfWeek(d.value)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.dayText, active && styles.dayTextActive]}>
-                    {d.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <SectionTitle>Ejercicios disponibles</SectionTitle>
-
-          {loadingExercises ? (
-            <ActivityIndicator
-              size="large"
-              color={Colors.textPrimary}
-              style={{ marginTop: 16 }}
-            />
-          ) : exercisesError ? (
-            <StateMessage error={exercisesError} />
-          ) : available.length === 0 ? (
-            <Text style={styles.mutedText}>No hay ejercicios en la biblioteca.</Text>
-          ) : (
-            available.map((ex) => {
-              const added = isAdded(ex.id);
-              return (
-                <View key={ex.id} style={styles.libraryRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.libraryName}>{ex.name}</Text>
-                    {ex.description ? (
-                      <Text style={styles.libraryDesc}>{ex.description}</Text>
-                    ) : null}
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.addBtn, added && styles.addBtnDisabled]}
-                    onPress={() => handleAdd(ex)}
-                    disabled={added}
-                    activeOpacity={0.85}
-                  >
-                    <MaterialCommunityIcons
-                      name={added ? "check" : "plus"}
-                      size={16}
-                      color={Colors.textOnDark}
-                    />
-                    <Text style={styles.addText}>
-                      {added ? "Agregado" : "Agregar"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Rutina en construcción ({selected.length})
-          </Text>
-
-          {selected.length === 0 ? (
-            <Text style={styles.mutedText}>
-              Agregá ejercicios desde la lista de arriba.
-            </Text>
-          ) : (
-            selected.map((item) => (
-              <View key={item.exercise_id} style={styles.builderCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.exerciseName}>{item.name}</Text>
-                  <TouchableOpacity
-                    style={styles.deleteBtn}
-                    onPress={() => handleRemove(item.exercise_id)}
-                    activeOpacity={0.8}
-                  >
-                    <MaterialCommunityIcons
-                      name="trash-can-outline"
-                      size={18}
-                      color={Colors.textOnDark}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={styles.label}>Nivel</Text>
-                <View style={styles.levelRow}>
-                  {LEVELS.map((lvl) => {
-                    const active = item.level === lvl;
-                    return (
-                      <TouchableOpacity
-                        key={lvl}
-                        style={[styles.levelBtn, active && styles.levelBtnActive]}
-                        onPress={() => updateItem(item.exercise_id, "level", lvl)}
-                        activeOpacity={0.8}
-                      >
-                        <Text
-                          style={[
-                            styles.levelText,
-                            active && styles.levelTextActive,
-                          ]}
-                        >
-                          {lvl}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                <View style={styles.rowBlock}>
-                  <Stepper
-                    label="Series"
-                    value={item.total_series}
-                    onChange={(v) =>
-                      updateItem(item.exercise_id, "total_series", v)
-                    }
-                  />
-                  <Stepper
-                    label="Repeticiones"
-                    value={item.total_reps}
-                    onChange={(v) =>
-                      updateItem(item.exercise_id, "total_reps", v)
-                    }
-                  />
-                </View>
-
-                <Stepper
-                  label="Descanso (seg)"
-                  value={item.rest_time_seconds}
-                  step={5}
-                  onChange={(v) =>
-                    updateItem(item.exercise_id, "rest_time_seconds", v)
-                  }
-                />
-              </View>
-            ))
-          )}
-        </View>
-
-        {saveError ? <StateMessage error={saveError} /> : null}
-
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={handleCancel}
-            activeOpacity={0.85}
-            disabled={saving}
-          >
-            <Text style={styles.cancelText}>Cancelar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
-            onPress={handleSave}
-            activeOpacity={0.85}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color={Colors.textOnDark} />
-            ) : (
-              <Text style={styles.saveText}>Guardar rutina</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </LinearGradient>
+        {libraryError ? (
+          <StateMessage error={libraryError} />
+        ) : available.length === 0 ? (
+          <StateMessage empty="No quedan ejercicios por añadir." />
+        ) : (
+          available.map((ex) => <ExerciseCard key={ex.id} exercise={ex} onAdd={addExercise} />)
+        )}
+      </FormDialog>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  scrollContent: { padding: 16, paddingBottom: 32 },
-
-  banner: { ...BannerStyle },
-  bannerSubtitle: {
-    ...AdminType.label,
-    color: Colors.bannerSubtitle,
-    marginBottom: 4,
-  },
-  bannerTitle: {
-    ...AdminType.title2,
-    color: Colors.bannerTitle,
-  },
-
-  section: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-    padding: 14,
-    marginTop: 16,
-  },
-  sectionTitle: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textPrimary,
-    marginBottom: 12,
-  },
-
-  label: {
-    ...AdminType.labelStrong,
-    color: Colors.textPrimary,
-    marginBottom: 6,
-  },
-  input: {
-    ...AdminType.label,
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: Colors.textPrimary,
-    marginBottom: 12,
-  },
-
-  timeInput: {
+  patient: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    marginBottom: 12,
+    gap: 12,
   },
-  timeInputText: {
-    ...AdminType.label,
+  textPrimary: {
     color: Colors.textPrimary,
   },
-  timeInputPlaceholder: {
-    color: "rgba(23, 32, 51, 0.4)",
-  },
-
-  daysRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 6,
-  },
-  dayBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.cardBgAlt,
-    alignItems: "center",
-  },
-  dayBtnActive: { backgroundColor: Colors.btnPrimary },
-  dayText: {
-    ...AdminType.label,
-    color: Colors.textPrimary,
-  },
-  dayTextActive: { ...AdminType.labelStrong, color: Colors.textOnDark },
-
-  libraryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.cardBgAlt,
-  },
-  libraryName: {
-    ...AdminType.labelStrong,
-    color: Colors.textPrimary,
-  },
-  libraryDesc: {
-    ...AdminType.label,
+  textSecondary: {
     color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: Colors.btnTeal,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginLeft: 10,
-  },
-  addBtnDisabled: { opacity: 0.5 },
-  addText: {
-    ...AdminType.labelStrong,
-    color: Colors.textOnDark,
-  },
-
-  builderCard: {
-    backgroundColor: Colors.cardBgAlt,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  exerciseName: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  deleteBtn: {
-    backgroundColor: Colors.btnDanger,
-    borderRadius: 8,
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  levelRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12,
-  },
-  levelBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: Colors.cardBg,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.btnTeal,
-  },
-  levelBtnActive: { backgroundColor: Colors.btnPrimary, borderColor: Colors.btnPrimary },
-  levelText: {
-    ...AdminType.labelStrong,
-    color: Colors.textPrimary,
-  },
-  levelTextActive: { color: Colors.textOnDark },
-
-  rowBlock: { flexDirection: "row", gap: 12, marginBottom: 12 },
-  fieldHalf: { flex: 1 },
-
-  mutedText: {
-    ...AdminType.label,
-    color: Colors.textSecondary,
-  },
-
-  actionsRow: { flexDirection: "row", gap: 10, marginTop: 16 },
-  cancelBtn: {
-    flex: 1,
-    backgroundColor: Colors.btnDanger,
-    borderRadius: 10,
-    paddingVertical: 13,
-    alignItems: "center",
-  },
-  cancelText: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textOnDark,
-  },
-  saveBtn: {
-    flex: 1,
-    backgroundColor: Colors.btnPrimary,
-    borderRadius: 10,
-    paddingVertical: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-  saveText: {
-    ...AdminType.secondaryStrong,
-    color: Colors.textOnDark,
   },
 });
