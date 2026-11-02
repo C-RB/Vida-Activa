@@ -9,3 +9,15 @@ export const formatIsoDate = (iso: string): string => {
   const [y, m, d] = iso.split("-");
   return d && m && y ? `${d}/${m}/${y}` : iso;
 };
+
+const WEEKDAYS_SUNDAY_FIRST = [
+  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado",
+];
+const MONTHS = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+// "Sábado 24 de octubre"
+export const formatLongDate = (d: Date): string =>
+  `${WEEKDAYS_SUNDAY_FIRST[d.getDay()]} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;

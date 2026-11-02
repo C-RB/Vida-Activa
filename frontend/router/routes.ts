@@ -1,6 +1,6 @@
 
 export const routes = {
-  profile: "/",
+  login: "/",
   patientHome: "/patient-home",
   patientProfile: "/patient-profile",
   previousSurvey: "/previous-survey",

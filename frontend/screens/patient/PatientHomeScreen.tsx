@@ -25,19 +25,9 @@ import {
 } from "../../services/routineService";
 import { getPatientById, Session } from "../../services/patientService";
 import { getSession } from "../../services/authStore";
+import { formatLongDate } from "../../utils/dates";
 
-const WEEKDAYS_LONG = [
-  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado",
-];
-const MONTHS_LONG = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
 const WEEK_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
-
-// "Sábado 24 de octubre"
-const formatLongDate = (d: Date): string =>
-  `${WEEKDAYS_LONG[d.getDay()]} ${d.getDate()} de ${MONTHS_LONG[d.getMonth()]}`;
 
 // "2026-10-29" → "Jueves 29 de octubre"
 const formatAppointmentDate = (date: string): string =>

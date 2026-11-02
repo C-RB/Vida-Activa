@@ -9,7 +9,7 @@ import {
 import { Colors, Radius, Type } from "../../constants/theme";
 
 // One primary action per screen; "danger" only for finishing or irreversible actions.
-type Variant = "primary" | "soft" | "outline" | "danger";
+type Variant = "primary" | "soft" | "outline" | "danger" | "text";
 
 type Props = {
   title: string;
@@ -27,6 +27,7 @@ const PALETTE: Record<Variant, { bg: string; fg: string; border?: string }> = {
   soft: { bg: Colors.primarySoft, fg: Colors.primary },
   outline: { bg: Colors.surface, fg: Colors.primary, border: Colors.primary },
   danger: { bg: Colors.surface, fg: Colors.danger, border: Colors.danger },
+  text: { bg: "transparent", fg: Colors.primary },
 };
 
 export default function Button({
