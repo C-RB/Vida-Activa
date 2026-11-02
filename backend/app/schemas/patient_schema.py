@@ -23,7 +23,9 @@ class PatientListResponse(BaseModel):
     created_at: Optional[datetime] = None
     hasAlert: bool = False
     alertMessage: Optional[str] = None
-    
+    rut: Optional[str] = None
+    age: Optional[int] = None
+
     model_config = {"from_attributes": True}
 
 
