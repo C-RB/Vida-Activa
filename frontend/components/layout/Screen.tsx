@@ -17,7 +17,8 @@ import BottomNav from "./BottomNav";
 import { DensityName, DensityProvider, useDensity } from "../../hooks/useDensity";
 
 type Props = {
-  title: string;
+  // Without a title the screen starts straight with its children.
+  title?: string;
   subtitle?: string;
   // Shows the logo and app name above the title.
   brand?: boolean;
@@ -27,12 +28,14 @@ type Props = {
   nav?: { role: NavRole; active: string };
   // Rendered over the content, above the bottom bar (toast, floating button).
   floating?: React.ReactNode;
+  // Fixed at the bottom, under the scrolling content (a main action).
+  footer?: React.ReactNode;
   // Overrides the density chosen for the user's role (see RoleDensity).
   density?: DensityName;
   children: React.ReactNode;
 };
 
-function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, children }: Omit<Props, "density">) {
+function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, footer, children }: Omit<Props, "density">) {
   const { type } = useDensity();
   const insets = useSafeAreaInsets();
 
@@ -43,7 +46,10 @@ function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, chi
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + 16, paddingBottom: footer ? 24 : 112 },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -55,13 +61,18 @@ function Layout({ title, subtitle, brand, avatarName, onBack, nav, floating, chi
               {avatarName ? <Avatar name={avatarName} size={44} /> : null}
             </View>
           )}
-          <View style={styles.heading}>
-            <Text style={[type.title1, styles.textPrimary]}>{title}</Text>
-            {subtitle && <Text style={[type.body, styles.textSecondary]}>{subtitle}</Text>}
-          </View>
+          {title && (
+            <View style={styles.heading}>
+              <Text style={[type.title1, styles.textPrimary]}>{title}</Text>
+              {subtitle && <Text style={[type.body, styles.textSecondary]}>{subtitle}</Text>}
+            </View>
+          )}
           {children}
         </ScrollView>
         {floating}
+        {footer && (
+          <View style={[styles.footer, { paddingBottom: (nav ? 16 : insets.bottom + 16) }]}>{footer}</View>
+        )}
       </KeyboardAvoidingView>
       {nav && <BottomNav role={nav.role} active={nav.active} />}
     </View>
@@ -85,6 +96,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 112,
     gap: 16,
+  },
+  footer: {
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
   brand: {
     flexDirection: "row",

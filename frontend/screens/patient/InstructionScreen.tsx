@@ -1,22 +1,20 @@
-import React, { useRef, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Screen from "../../components/layout/Screen";
+import ExerciseVideo from "../../components/exercise/ExerciseVideo";
+import NumberedSteps from "../../components/exercise/NumberedSteps";
+import Button from "../../components/ui/Button";
+import Icon from "../../components/ui/Icon";
+import IconButton from "../../components/ui/IconButton";
+import SegmentedProgress from "../../components/ui/SegmentedProgress";
+import StateMessage from "../../components/ui/StateMessage";
 import { EXERCISES } from "../../constants/exercises";
-import { Video, ResizeMode } from "expo-av";
+import { Colors, Type } from "../../constants/theme";
 import { getActiveRoutine, RoutineExercise } from "../../services/routineService";
 import { getExercises, Exercise } from "../../services/exerciseService";
 import { getSession } from "../../services/authStore";
 
-import { Colors, GradientColors, Type } from "../../constants/theme";
 const VIDEO_MAP: Record<string, any> = {
   toe_touch: require("../../assets/videos/toe_touch.mp4"),
   leg_raise: require("../../assets/videos/leg_raise.mp4"),
@@ -41,7 +39,6 @@ const splitInstructions = (text: string): string[] =>
 
 export default function InstructionScreen() {
   const router = useRouter();
-  const videoRef = useRef<Video>(null);
 
   const { index, sessionId, seIds } = useLocalSearchParams();
   const currentIndex = Number(index ?? 0);
@@ -62,9 +59,7 @@ export default function InstructionScreen() {
     Promise.all([getActiveRoutine(patientId), getExercises()])
       .then(([routine, exercises]) => {
         if (!routine) return;
-        const ordered = [...routine.exercises].sort(
-          (a, b) => a.order_index - b.order_index
-        );
+        const ordered = [...routine.exercises].sort((a, b) => a.order_index - b.order_index);
         const re = ordered[currentIndex] ?? null;
         setRoutineExercise(re);
         setTotalExercises(ordered.length);
@@ -83,217 +78,83 @@ export default function InstructionScreen() {
     EXERCISES.find((e) => e.exerciseId === exerciseId)?.exerciseName ??
     exerciseId ??
     "Ejercicio";
-  const totalSeries = routineExercise?.total_series ?? null;
-  const totalReps = routineExercise?.total_reps ?? null;
   const totalCount = totalExercises || EXERCISES.length;
   const instructions =
     catalog?.instructions && catalog.instructions.trim().length > 0
       ? splitInstructions(catalog.instructions)
       : FALLBACK_INSTRUCTIONS;
+  const volume = routineExercise
+    ? `${routineExercise.total_series} ${routineExercise.total_series === 1 ? "serie" : "series"} de ${routineExercise.total_reps}`
+    : "";
 
   return (
-    <LinearGradient colors={GradientColors as any} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={{ padding: 6 }}>
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={32}
-              color={Colors.textPrimary}
-            />
-          </TouchableOpacity>
-          <View style={styles.headerPill}>
-            <Text style={styles.headerPillText}>{`Ejercicio ${currentIndex + 1} de ${totalCount}`}</Text>
+    <Screen
+      footer={
+        <>
+          <View style={styles.warning}>
+            <Icon name="alertTriangle" size={18} />
+            <Text style={[Type.secondary, styles.warningText]}>Si se marea, deténgase y siéntese.</Text>
           </View>
+          <Button
+            title="Comenzar"
+            onPress={() =>
+              router.push(`/active-exercise?index=${currentIndex}&sessionId=${sessionId ?? ""}&seIds=${seIds ?? ""}`)
+            }
+          />
+        </>
+      }
+    >
+      <View style={styles.bar}>
+        <IconButton mdi="arrow-left" label="Volver" onPress={() => router.back()} />
+        <View style={styles.progress}>
+          <Text style={[Type.secondaryStrong, styles.progressText]}>
+            Ejercicio {currentIndex + 1} de {totalCount}
+          </Text>
+          <SegmentedProgress total={totalCount} current={currentIndex + 1} />
         </View>
+      </View>
 
-        <View style={[styles.videoCard, { overflow: 'hidden' }]}>
-          {exerciseId && VIDEO_MAP[exerciseId] && (
-            <Video
-              ref={videoRef}
-              style={{ width: "100%", height: "100%" }}
-              source={VIDEO_MAP[exerciseId]}
-              useNativeControls
-              resizeMode={ResizeMode.COVER}
-              isLooping
-              shouldPlay
-            />
-          )}
-          <TouchableOpacity
-            style={styles.fullscreenButton}
-            onPress={() => videoRef.current?.presentFullscreenPlayer()}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <MaterialCommunityIcons name="fullscreen" size={24} color={Colors.onPrimary} />
-          </TouchableOpacity>
-        </View>
+      {exerciseId && VIDEO_MAP[exerciseId] && <ExerciseVideo source={VIDEO_MAP[exerciseId]} />}
 
-        <Text style={styles.exerciseName}>{exerciseName}</Text>
+      <View style={styles.heading}>
+        <Text style={[Type.title1, styles.title]}>{exerciseName}</Text>
+        {volume !== "" && <Text style={[Type.body, styles.volume]}>{volume}</Text>}
+      </View>
 
-        {loading ? (
-          <ActivityIndicator size="small" color={Colors.textPrimary} style={{ marginTop: 18 }} />
-        ) : (
-          <View style={styles.pillsRow}>
-            <View style={styles.seriePill}>
-              <Text style={styles.seriePillText}>
-                {totalSeries != null ? `${totalSeries} Series` : "— Series"}
-              </Text>
-            </View>
-            <View style={styles.repsPill}>
-              <Text style={styles.repsPillText}>
-                {totalReps != null ? `${totalReps} Repeticiones` : "— Repeticiones"}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        <View style={styles.instructionsList}>
-          {instructions.map((instruction, i) => (
-            <View key={i} style={styles.instructionRow}>
-              <View style={styles.instructionNumber}>
-                <Text style={styles.instructionNumberText}>{i + 1}</Text>
-              </View>
-              <Text style={styles.instructionText}>{instruction}</Text>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-
-      <TouchableOpacity
-        style={styles.startButton}
-        onPress={() => router.push(`/active-exercise?index=${currentIndex}&sessionId=${sessionId ?? ""}&seIds=${seIds ?? ""}`)}
-      >
-        <Text style={styles.startButtonText}>Iniciar Ejercicio</Text>
-      </TouchableOpacity>
-    </LinearGradient>
+      {loading ? <StateMessage loading /> : <NumberedSteps steps={instructions} />}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  progress: {
     flex: 1,
+    gap: 8,
   },
-  scrollContent: {
-    paddingBottom: 20,
+  progressText: {
+    color: Colors.textSecondary,
   },
-  header: {
+  heading: {
+    gap: 8,
+  },
+  title: {
+    color: Colors.textPrimary,
+  },
+  volume: {
+    color: Colors.textSecondary,
+  },
+  warning: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 50,
-    marginHorizontal: 16,
-  },
-  headerPill: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginLeft: 12,
-  },
-  headerPillText: {
-    ...Type.button,
-    color: Colors.textPrimary,
-  },
-  videoCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginTop: 24,
-    height: 200,
-    alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: Colors.primary,
+    gap: 8,
   },
-  fullscreenButton: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "rgba(23, 32, 51, 0.7)",
-    borderRadius: 8,
-    padding: 6,
-  },
-  videoCardText: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-    marginTop: 10,
-  },
-  exerciseName: {
-    ...Type.title1,
-    color: Colors.textPrimary,
-    marginTop: 24,
-    marginHorizontal: 16,
-    textAlign: "center",
-  },
-  pillsRow: {
-    flexDirection: "row",
-    marginTop: 18,
-    marginHorizontal: 16,
-    gap: 10,
-    flexWrap: 'wrap',
-  },
-  seriePill: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  seriePillText: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-  },
-  repsPill: {
-    backgroundColor: Colors.background,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  repsPillText: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-  },
-  instructionsList: {
-    marginTop: 24,
-    marginHorizontal: 16,
-  },
-  instructionRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 18,
-  },
-  instructionNumber: {
-    backgroundColor: Colors.primaryPressed,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  instructionNumberText: {
-    ...Type.title2,
-    color: Colors.onPrimary,
-  },
-  instructionText: {
-    ...Type.title2,
-    color: Colors.textPrimary,
-    flex: 1,
-    marginLeft: 14,
-  },
-  startButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-    marginHorizontal: 25,
-    marginBottom: 30,
-    marginTop: 16,
-    height: 84,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  startButtonText: {
-    ...Type.title1,
-    color: Colors.onPrimary,
+  warningText: {
+    color: Colors.textSecondary,
   },
 });
