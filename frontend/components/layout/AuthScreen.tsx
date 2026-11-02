@@ -52,7 +52,9 @@ export default function AuthScreen({ title, subtitle, children }: Props) {
               opacity={0.22}
             />
           </Svg>
-          <Icon name="logo" size={96} />
+          <View style={styles.logoBadge}>
+            <Icon name="logo" size={72} />
+          </View>
           <Text style={[type.title2, styles.brand]}>Vida Activa</Text>
         </View>
 
@@ -81,8 +83,21 @@ const styles = StyleSheet.create({
     height: HERO_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 12,
     overflow: "hidden",
+  },
+  logoBadge: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.surface,
+    shadowColor: Colors.shadow,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   brand: {
     color: Colors.primary,
